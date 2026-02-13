@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voraman Vuth - UX/UI Designer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..900;1,6..96,400..900&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'brand-black': '#060606',
+                        'brand-grey': '#282828',
+                        'brand-purple': '#C63AEB',
+                        'brand-white': '#FFFFFF',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        serif: ['Bodoni Moda', 'serif'],
+                    },
+                    animation: {
+                        'float': 'float 6s ease-in-out infinite',
+                        'pulse-glow': 'pulse-glow 3s infinite',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-10px)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #060606;
+            color: #ffffff;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* --- Abstract Animated Background --- */
+        .bg-orb {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(100px);
+            z-index: -1;
+            opacity: 0.3;
+            animation: orb-move 25s infinite alternate ease-in-out;
+            pointer-events: none;
+        }
+        .orb-1 { top: 10%; left: 20%; width: 400px; height: 400px; background: #282828; }
+        .orb-2 { bottom: 20%; right: 10%; width: 500px; height: 500px; background: #1a1a1a; animation-delay: -5s; }
+        .orb-3 { top: 40%; left: 50%; width: 300px; height: 300px; background: #2a0a33; animation-duration: 35s; }
+
+        @keyframes orb-move {
+            0% { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(50px, 80px) scale(1.2); }
+        }
+
+        /* --- Button Hover Effects --- */
+        .btn-main {
+            background-color: #282828;
+            color: white;
+            transition: all 0.3s ease;
+        }
+        .btn-main:hover {
+            background-color: white;
+            color: black;
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.6);
+            transform: translateY(-2px);
+        }
+
+        /* --- Project Card Styles --- */
+        .project-card {
+            transition: all 0.4s ease;
+            border: 3px solid transparent;
+            position: relative;
+            overflow: hidden;
+        }
+        .project-card:hover {
+            border-color: white;
+            box-shadow: 0 0 30px rgba(255, 255, 255, 0.5);
+            transform: translateY(-5px);
+        }
+
+        /* Slideshow Animation for Cards */
+        .card-slideshow img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+        .card-slideshow img:first-child {
+            opacity: 1; /* Default image */
+        }
+        /* On hover, cycle through images using animation */
+        .project-card:hover .card-slideshow img {
+            animation: slideshow 6s infinite;
+        }
+        .project-card:hover .card-slideshow img:nth-child(1) { animation-delay: 0s; }
+        .project-card:hover .card-slideshow img:nth-child(2) { animation-delay: 2s; }
+        .project-card:hover .card-slideshow img:nth-child(3) { animation-delay: 4s; }
+
+        @keyframes slideshow {
+            0% { opacity: 0; }
+            10% { opacity: 1; }
+            33% { opacity: 1; }
+            43% { opacity: 0; }
+            100% { opacity: 0; }
+        }
+
+        /* --- Form Inputs --- */
+        .input-underline {
+            background: transparent;
+            border: none;
+            border-bottom: 1px solid #4a4a4a;
+            color: white;
+            transition: border-color 0.3s;
+        }
+        .input-underline:focus {
+            outline: none;
+            border-bottom: 1px solid white;
+        }
+
+        /* --- Scroll Animation Utility --- */
+        .reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s ease-out;
+        }
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* --- Nav Marker --- */
+        #nav-marker {
+            position: absolute;
+            bottom: 0;
+            height: 2px;
+            background-color: white;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 0 10px white;
+            opacity: 0; /* Hidden initially */
+            pointer-events: none;
+        }
+
+        /* --- Playground Styles --- */
+        .playground-slider {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 4px;
+            background: #333;
+            outline: none;
+            border-radius: 2px;
+        }
+        .playground-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: white;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(255,255,255,0.5);
+            transition: transform 0.1s;
+        }
+        .playground-slider::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+        }
+
+        /* Preview Card Animations */
+        .preview-btn {
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .preview-btn.force-hover,
+        .preview-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 20px currentColor !important;
+            filter: brightness(1.2);
+        }
+        .preview-btn.force-active,
+        .preview-btn:active {
+            transform: scale(0.95);
+            filter: brightness(0.9);
+        }
+
+        /* Mobile App Mockup Styles */
+        .mobile-mockup {
+            border: 8px solid #333;
+            border-radius: 30px;
+            overflow: hidden;
+            background: #000;
+            position: relative;
+            box-shadow: 0 0 30px rgba(0,0,0,0.8);
+        }
+        .app-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #0f0f11;
+            transition: transform 0.4s ease-in-out;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+        .app-screen.hidden-screen {
+            transform: translateX(100%);
+        }
+        .app-card {
+            background: linear-gradient(135deg, #333, #111);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+        }
+        .app-btn {
+            background: white;
+            color: black;
+            border-radius: 12px;
+            padding: 12px;
+            font-weight: bold;
+            text-align: center;
+            margin-top: auto;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .app-btn:active { transform: scale(0.98); }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #060606; }
+        ::-webkit-scrollbar-thumb { background: #282828; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #444; }
+
+        /* Detail Page Overlay */
+        .detail-page {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            background: #060606;
+            z-index: 100;
+            overflow-y: auto;
+            transform: translateY(100%);
+            transition: transform 0.5s cubic-bezier(0.77, 0, 0.175, 1);
+        }
+        .detail-page.active {
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body class="font-sans antialiased selection:bg-brand-white selection:text-brand-black">
+
+    <!-- Ambient Background -->
+    <div class="bg-orb orb-1"></div>
+    <div class="bg-orb orb-2"></div>
+    <div class="bg-orb orb-3"></div>
+
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full p-8 z-50 bg-gradient-to-b from-black/80 to-transparent backdrop-blur-[2px]">
+        <div class="max-w-7xl mx-auto flex justify-between items-center relative">
+            <a href="#home" class="logo text-3xl font-bold tracking-tighter hover:text-gray-300 transition-colors z-10">VV</a>
+            
+            <div id="nav-container" class="relative flex space-x-8 text-sm font-semibold tracking-wider">
+                <a href="#projects" class="nav-link py-2 hover:text-gray-300 transition-colors uppercase">Projects</a>
+                <a href="#playground" class="nav-link py-2 hover:text-gray-300 transition-colors uppercase">Playground</a>
+                <a href="#contact" class="nav-link py-2 hover:text-gray-300 transition-colors uppercase">Contact</a>
+                <!-- Animated Underline Marker -->
+                <div id="nav-marker"></div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Social Sidebar -->
+    <div class="fixed bottom-10 left-8 z-40 flex flex-col gap-6 text-xl mix-blend-difference">
+        <a href="#" class="hover:text-gray-400 transition-colors hover:-translate-y-1 transform duration-300"><i class="fab fa-facebook-f"></i></a>
+        <a href="#" class="hover:text-gray-400 transition-colors hover:-translate-y-1 transform duration-300"><i class="fab fa-instagram"></i></a>
+        <a href="https://github.com/VoRaMaN" target="_blank" class="hover:text-gray-400 transition-colors hover:-translate-y-1 transform duration-300"><i class="fab fa-github"></i></a>
+        <a href="https://t.me/voraman9966" target="_blank" class="hover:text-brand-purple transition-colors hover:-translate-y-1 transform duration-300"><i class="fab fa-telegram"></i></a>
+    </div>
+
+    <!-- MAIN CONTENT WRAPPER -->
+    <main id="main-content">
+        
+        <!-- HOME SECTION -->
+        <section id="home" class="min-h-screen flex flex-col justify-center items-center text-center relative px-4 pt-20">
+            <div class="reveal">
+                <p class="text-xs md:text-sm tracking-[0.2em] text-gray-400 mb-4 font-bold">I AM</p>
+                <h1 class="text-6xl md:text-8xl lg:text-9xl font-serif font-bold tracking-tight mb-4 text-brand-white">
+                    VORAMAN
+                </h1>
+                <p class="text-sm md:text-base tracking-widest text-gray-400 text-right w-full max-w-2xl mx-auto pr-4 md:pr-10">
+                    UX / UI DESIGNER
+                </p>
+            </div>
+            
+            <div class="absolute bottom-20 reveal delay-200">
+                <a href="#projects" class="btn-main px-8 py-3 rounded text-xs font-bold tracking-widest uppercase inline-block">
+                    Explore
+                </a>
+            </div>
+        </section>
+
+        <!-- PROJECTS SECTION -->
+        <section id="projects" class="min-h-screen py-20 px-4 md:px-12 flex flex-col justify-center items-center">
+            
+            <h2 class="text-sm font-bold tracking-[0.3em] text-gray-500 mb-16 uppercase reveal">Selected Works</h2>
+
+            <!-- Cards Container -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 w-full max-w-6xl mb-20">
+                
+                <!-- Game Card -->
+                <div class="reveal group cursor-pointer" onclick="alert('Game Projects Page - Coming Soon')">
+                    <p class="text-center text-xs font-bold tracking-widest mb-4 text-gray-400 group-hover:text-white transition-colors">GAME</p>
+                    <div class="project-card h-[400px] md:h-[500px] rounded-3xl bg-brand-grey relative">
+                        <div class="card-slideshow w-full h-full absolute inset-0">
+                            <img src="https://images.unsplash.com/photo-1550745165-9bc0b252726f?q=80&w=2070&auto=format&fit=crop" alt="Game 1">
+                            <img src="https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=2070&auto=format&fit=crop" alt="Game 2">
+                            <img src="https://images.unsplash.com/photo-1538481199705-c710c4e965fc?q=80&w=2165&auto=format&fit=crop" alt="Game 3">
+                        </div>
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent flex items-end p-6 z-10 pointer-events-none">
+                            <div class="transform translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">
+                                <h3 class="text-xl font-bold">Immersive Gaming</h3>
+                                <p class="text-xs text-gray-300 mt-1">Click to view collection</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Desktop Card -->
+                <div class="reveal delay-100 group cursor-pointer" onclick="openDetail('desktop')">
+                    <p class="text-center text-xs font-bold tracking-widest mb-4 text-gray-400 group-hover:text-white transition-colors">DESKTOP</p>
+                    <div class="project-card h-[400px] md:h-[500px] rounded-3xl bg-brand-grey relative">
+                         <div class="card-slideshow w-full h-full absolute inset-0">
+                            <img src="https://images.unsplash.com/photo-1611162617474-5b21e879e113?q=80&w=1974&auto=format&fit=crop" alt="Desktop 1">
+                            <img src="https://images.unsplash.com/photo-1481487484168-9b995ecc1679?q=80&w=2070&auto=format&fit=crop" alt="Desktop 2">
+                            <img src="https://images.unsplash.com/photo-1517694712202-14dd9538aa97?q=80&w=2070&auto=format&fit=crop" alt="Desktop 3">
+                        </div>
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent flex items-end p-6 z-10 pointer-events-none">
+                            <div class="transform translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">
+                                <h3 class="text-xl font-bold">Web Applications</h3>
+                                <p class="text-xs text-gray-300 mt-1">View Full Portfolio</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Mobile Card -->
+                <div class="reveal delay-200 group cursor-pointer" onclick="alert('Mobile Projects Page - Coming Soon')">
+                    <p class="text-center text-xs font-bold tracking-widest mb-4 text-gray-400 group-hover:text-white transition-colors">MOBILE</p>
+                    <div class="project-card h-[400px] md:h-[500px] rounded-3xl bg-brand-grey relative">
+                         <div class="card-slideshow w-full h-full absolute inset-0">
+                            <img src="https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?q=80&w=2070&auto=format&fit=crop" alt="Mobile 1">
+                            <img src="https://images.unsplash.com/photo-1555421689-d68471e189f2?q=80&w=2070&auto=format&fit=crop" alt="Mobile 2">
+                            <img src="https://images.unsplash.com/photo-1526498460520-4c246339dccb?q=80&w=2070&auto=format&fit=crop" alt="Mobile 3">
+                        </div>
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent flex items-end p-6 z-10 pointer-events-none">
+                            <div class="transform translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">
+                                <h3 class="text-xl font-bold">Mobile UI/UX</h3>
+                                <p class="text-xs text-gray-300 mt-1">Click to view collection</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- INTERACTIVE PLAYGROUND SECTION -->
+        <section id="playground" class="min-h-screen py-20 px-4 md:px-12 flex flex-col justify-center items-center relative overflow-hidden">
+            <div class="absolute inset-0 bg-brand-purple/5 radial-gradient z-0"></div>
+            
+            <div class="reveal text-center mb-12 z-10 w-full">
+                <h2 class="text-4xl md:text-5xl font-bold mb-4 uppercase">Playground</h2>
+                <p class="text-gray-400">Interactive UI Lab & Component Testing</p>
+            </div>
+
+            <!-- Playground Container Grid -->
+            <div class="reveal w-full max-w-7xl grid grid-cols-1 lg:grid-cols-2 gap-8 z-10">
+                
+                <!-- 1. Component Customizer -->
+                <div class="bg-[#0e0e0e] border border-[#1a1a1a] rounded-3xl p-8 flex flex-col shadow-2xl">
+                    <h3 class="text-xl font-bold mb-6 text-gray-200 border-b border-gray-800 pb-2 flex justify-between items-center">
+                        <span>UI Component Tester</span>
+                        <i class="fas fa-sliders-h text-sm text-gray-500"></i>
+                    </h3>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 flex-grow">
+                        <!-- Controls -->
+                        <div class="space-y-6 text-sm">
+                            <div>
+                                <label class="block text-xs font-bold tracking-widest text-gray-400 mb-2">LABEL TEXT</label>
+                                <input type="text" id="labelText" value="Interactive Card" class="w-full bg-[#1a1a1a] border border-[#333] rounded px-3 py-2 text-white focus:border-brand-purple outline-none transition-colors">
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-bold tracking-widest text-gray-400 mb-2">THEME COLOR</label>
+                                <div class="flex items-center gap-3">
+                                    <input type="color" id="colorPicker" value="#C63AEB" class="w-10 h-10 rounded cursor-pointer bg-transparent border-none">
+                                    <span id="colorValue" class="text-gray-500 text-xs">#C63AEB</span>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-bold tracking-widest text-gray-400 mb-2">BORDER RADIUS</label>
+                                <input type="range" min="0" max="50" value="20" class="playground-slider" id="radiusInput">
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-bold tracking-widest text-gray-400 mb-2">STATE PREVIEW</label>
+                                <div class="flex gap-2">
+                                    <button onclick="setPreviewState('default')" class="px-3 py-1 bg-[#1a1a1a] rounded text-xs hover:bg-[#333]">Default</button>
+                                    <button onclick="setPreviewState('hover')" class="px-3 py-1 bg-[#1a1a1a] rounded text-xs hover:bg-[#333]">Hover</button>
+                                    <button onclick="setPreviewState('active')" class="px-3 py-1 bg-[#1a1a1a] rounded text-xs hover:bg-[#333]">Click</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Preview Area -->
+                        <div class="flex items-center justify-center bg-[#060606] rounded-xl border border-dashed border-gray-800 relative min-h-[250px]">
+                            <p class="absolute top-4 left-4 text-xs text-gray-600">PREVIEW</p>
+                            
+                            <div id="previewCard" class="preview-btn bg-brand-grey h-40 w-full max-w-[200px] flex items-center justify-center flex-col relative text-center px-4 cursor-pointer select-none">
+                                <h4 id="previewTitle" class="text-xl font-bold z-10 relative">Card</h4>
+                                <p class="text-xs opacity-70 mt-1 z-10">Component</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. Mobile App Simulator -->
+                <div class="bg-[#0e0e0e] border border-[#1a1a1a] rounded-3xl p-8 flex flex-col shadow-2xl items-center">
+                    <h3 class="text-xl font-bold mb-6 text-gray-200 border-b border-gray-800 pb-2 w-full flex justify-between items-center">
+                        <span>Mobile App Mockup</span>
+                        <i class="fas fa-mobile-alt text-sm text-gray-500"></i>
+                    </h3>
+                    
+                    <!-- Phone Frame -->
+                    <div class="mobile-mockup w-[280px] h-[500px]">
+                        
+                        <!-- Screen 1: Dashboard -->
+                        <div id="screen-dashboard" class="app-screen">
+                            <div class="flex justify-between items-center mb-6">
+                                <i class="fas fa-bars text-white"></i>
+                                <span class="font-bold">MyBank</span>
+                                <i class="fas fa-bell text-white"></i>
+                            </div>
+
+                            <div class="app-card">
+                                <p class="text-xs text-gray-400 mb-1">Total Balance</p>
+                                <h2 class="text-2xl font-bold mb-4">$12,450.00</h2>
+                                <div class="flex justify-between text-xs">
+                                    <span>**** 4589</span>
+                                    <span>VISA</span>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-4 gap-4 mb-6 text-center">
+                                <div class="flex flex-col items-center gap-2 cursor-pointer hover:text-brand-purple transition-colors" onclick="goToTransfer()">
+                                    <div class="w-10 h-10 bg-[#222] rounded-full flex items-center justify-center"><i class="fas fa-paper-plane"></i></div>
+                                    <span class="text-[10px]">Send</span>
+                                </div>
+                                <div class="flex flex-col items-center gap-2">
+                                    <div class="w-10 h-10 bg-[#222] rounded-full flex items-center justify-center"><i class="fas fa-wallet"></i></div>
+                                    <span class="text-[10px]">Topup</span>
+                                </div>
+                                <div class="flex flex-col items-center gap-2">
+                                    <div class="w-10 h-10 bg-[#222] rounded-full flex items-center justify-center"><i class="fas fa-qrcode"></i></div>
+                                    <span class="text-[10px]">Scan</span>
+                                </div>
+                                <div class="flex flex-col items-center gap-2">
+                                    <div class="w-10 h-10 bg-[#222] rounded-full flex items-center justify-center"><i class="fas fa-ellipsis-h"></i></div>
+                                    <span class="text-[10px]">More</span>
+                                </div>
+                            </div>
+                            
+                            <p class="text-xs text-gray-500 mt-auto text-center">Tap "Send" to interact</p>
+                        </div>
+
+                        <!-- Screen 2: Transfer -->
+                        <div id="screen-transfer" class="app-screen hidden-screen bg-[#151515]">
+                            <div class="flex items-center mb-8">
+                                <i class="fas fa-arrow-left mr-4 cursor-pointer" onclick="goBack()"></i>
+                                <span class="font-bold">Transfer</span>
+                            </div>
+
+                            <div class="text-center mb-8">
+                                <div class="w-16 h-16 bg-gray-700 rounded-full mx-auto mb-2 flex items-center justify-center text-2xl">👤</div>
+                                <p class="font-bold">Jane Doe</p>
+                                <p class="text-xs text-gray-400">Bank of America</p>
+                            </div>
+
+                            <div class="bg-[#222] rounded-xl p-4 flex items-center justify-between mb-8">
+                                <span class="text-2xl font-bold">$</span>
+                                <input type="number" value="150" class="bg-transparent text-right text-2xl font-bold w-full outline-none">
+                            </div>
+
+                            <div class="app-btn" onclick="confirmTransfer()">
+                                Confirm Transfer
+                            </div>
+                        </div>
+
+                        <!-- Screen 3: Success -->
+                        <div id="screen-success" class="app-screen hidden-screen bg-brand-purple flex items-center justify-center text-center">
+                            <div class="bg-white text-black p-2 rounded-full mb-4 w-16 h-16 flex items-center justify-center">
+                                <i class="fas fa-check text-2xl"></i>
+                            </div>
+                            <h2 class="text-2xl font-bold mb-2">Success!</h2>
+                            <p class="text-sm opacity-90 mb-8">You sent $150.00 to Jane Doe</p>
+                            <button onclick="goBack()" class="bg-black text-white px-6 py-2 rounded-full text-sm font-bold">Done</button>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- CONTACT SECTION -->
+        <section id="contact" class="min-h-screen flex items-center justify-center px-4 md:px-12 py-20">
+            <div class="max-w-7xl w-full grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
+                
+                <div class="reveal space-y-12 pt-10">
+                    <div class="text-center lg:text-left">
+                        <h2 class="text-4xl md:text-5xl font-bold mb-6">CONTACT INFO</h2>
+                        <p class="text-gray-400 leading-relaxed max-w-md mx-auto lg:mx-0">
+                            I'm open to UX/UI roles, freelance design, and collaborations. Feel free to reach out via the platforms below.
+                        </p>
+                    </div>
+
+                    <div class="space-y-8 text-center lg:text-left">
+                        <div>
+                            <h3 class="text-xl font-bold text-gray-300 mb-1 uppercase tracking-wider">Email</h3>
+                            <a href="mailto:voramanvuth@gmail.com" class="text-lg hover:text-brand-purple transition-colors">voramanvuth@gmail.com</a>
+                        </div>
+                        
+                        <div>
+                            <h3 class="text-xl font-bold text-gray-300 mb-1 uppercase tracking-wider">Phone</h3>
+                            <a href="tel:+85595908373" class="text-lg hover:text-brand-purple transition-colors">+855 95 908 373</a>
+                        </div>
+
+                        <div>
+                            <h3 class="text-xl font-bold text-gray-300 mb-1 uppercase tracking-wider">Telegram</h3>
+                            <a href="https://t.me/voraman9966" target="_blank" class="text-lg hover:text-brand-purple transition-colors">@voraman9966</a>
+                        </div>
+
+                        <div>
+                            <h3 class="text-xl font-bold text-gray-300 mb-1 uppercase tracking-wider">Github</h3>
+                            <a href="https://github.com/VoRaMaN" target="_blank" class="text-lg hover:text-brand-purple transition-colors underline decoration-gray-600 underline-offset-4">https://github.com/VoRaMaN</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="reveal bg-[#0e0e0e] p-8 md:p-12 rounded-lg border border-[#1a1a1a]">
+                    <h2 class="text-3xl md:text-4xl font-bold mb-12 text-center">CONTACT FORM</h2>
+                    <form action="mailto:voramanvuth@gmail.com" method="post" enctype="text/plain" class="space-y-10">
+                        <div><input type="text" name="name" placeholder="Your name" required class="input-underline w-full py-3 bg-transparent placeholder-gray-500"></div>
+                        <div><input type="tel" name="phone" placeholder="Your phone" class="input-underline w-full py-3 bg-transparent placeholder-gray-500"></div>
+                        <div><input type="email" name="email" placeholder="Your e-mail" required class="input-underline w-full py-3 bg-transparent placeholder-gray-500"></div>
+                        <div><textarea name="message" placeholder="message" rows="3" required class="input-underline w-full py-3 bg-transparent placeholder-gray-500 resize-none"></textarea></div>
+                        <div class="pt-8 text-center md:text-right">
+                            <button type="submit" class="btn-main px-8 py-3 rounded text-xs font-bold tracking-widest uppercase">Send Message</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="py-8 text-center text-xs text-gray-600 border-t border-[#1a1a1a] mt-auto">
+            <p>&copy; 2024 Voraman Vuth. All rights reserved.</p>
+        </footer>
+    </main>
+
+    <!-- DESKTOP DETAIL PAGE OVERLAY -->
+    <div id="desktop-detail" class="detail-page">
+        <button onclick="closeDetail()" class="fixed top-8 right-8 z-50 text-white hover:text-brand-purple transition-colors text-xl font-bold tracking-widest mix-blend-difference">
+            CLOSE <i class="fas fa-times ml-2"></i>
+        </button>
+        <div class="max-w-7xl mx-auto px-4 py-20">
+            <h2 class="text-4xl md:text-6xl font-serif font-bold mb-20 text-center">DESKTOP PROJECTS</h2>
+            <div class="grid grid-cols-1 gap-20">
+                <div class="group">
+                    <div class="relative rounded-2xl overflow-hidden border border-gray-800 group-hover:border-white transition-colors duration-500">
+                        <img src="https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=2070&auto=format&fit=crop" alt="Vinland Saga" class="w-full h-[500px] object-cover opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700">
+                        <div class="absolute bottom-10 left-10">
+                            <h3 class="text-3xl font-bold mb-2">Vinland Saga</h3>
+                            <p class="text-gray-400">Immersive Web Experience</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="group relative rounded-2xl overflow-hidden border border-gray-800 group-hover:border-white transition-colors duration-500 h-[400px]">
+                        <img src="https://images.unsplash.com/photo-1552820728-8b83bb6b773f?q=80&w=2070&auto=format&fit=crop" alt="Comet Game" class="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-all duration-500">
+                        <div class="absolute bottom-8 left-8">
+                            <h3 class="text-2xl font-bold mb-1">Comet Game</h3>
+                            <p class="text-gray-400 text-sm">Dashboard UI</p>
+                        </div>
+                    </div>
+                    <div class="group relative rounded-2xl overflow-hidden border border-gray-800 group-hover:border-white transition-colors duration-500 h-[400px]">
+                        <img src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=2073&auto=format&fit=crop" alt="Vogue" class="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-all duration-500">
+                        <div class="absolute bottom-8 left-8">
+                            <h3 class="text-2xl font-bold mb-1">VOGUE</h3>
+                            <p class="text-gray-400 text-sm">E-Commerce Design</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-20 text-center">
+                <button onclick="closeDetail(); document.getElementById('contact').scrollIntoView();" class="btn-main px-10 py-4 rounded text-sm font-bold tracking-widest uppercase">
+                    Work With Me
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- Smooth Scroll Reveal ---
+        const initReveal = () => {
+            const reveals = document.querySelectorAll('.reveal');
+            const windowHeight = window.innerHeight;
+            const elementVisible = 150;
+
+            reveals.forEach((reveal) => {
+                const elementTop = reveal.getBoundingClientRect().top;
+                if (elementTop < windowHeight - elementVisible) {
+                    reveal.classList.add('active');
+                }
+            });
+        }
+        window.addEventListener('scroll', initReveal);
+        window.addEventListener('load', initReveal);
+
+        // --- Detail Page Logic ---
+        function openDetail(type) {
+            if(type === 'desktop') {
+                document.getElementById('desktop-detail').classList.add('active');
+                document.body.style.overflow = 'hidden';
+            }
+        }
+
+        function closeDetail() {
+            document.getElementById('desktop-detail').classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+
+        // --- Playground: Component Logic ---
+        const previewCard = document.getElementById('previewCard');
+        const previewTitle = document.getElementById('previewTitle');
+        const colorPicker = document.getElementById('colorPicker');
+        
+        // 1. Radius
+        document.getElementById('radiusInput').addEventListener('input', (e) => {
+            previewCard.style.borderRadius = `${e.target.value}px`;
+        });
+        
+        // 2. Text Rename
+        document.getElementById('labelText').addEventListener('input', (e) => {
+            previewTitle.textContent = e.target.value;
+        });
+
+        // 3. Color Picker
+        colorPicker.addEventListener('input', (e) => {
+            const color = e.target.value;
+            document.getElementById('colorValue').textContent = color;
+            previewCard.style.color = color;
+            previewCard.style.boxShadow = `0 0 10px ${color}`;
+        });
+
+        // 4. State Toggles
+        function setPreviewState(state) {
+            previewCard.classList.remove('force-hover', 'force-active');
+            if (state === 'hover') previewCard.classList.add('force-hover');
+            if (state === 'active') previewCard.classList.add('force-active');
+        }
+
+        // --- Playground: Mobile App Logic ---
+        function goToTransfer() {
+            document.getElementById('screen-dashboard').classList.add('hidden-screen');
+            document.getElementById('screen-transfer').classList.remove('hidden-screen');
+        }
+
+        function confirmTransfer() {
+            document.getElementById('screen-transfer').classList.add('hidden-screen');
+            document.getElementById('screen-success').classList.remove('hidden-screen');
+        }
+
+        function goBack() {
+            document.querySelectorAll('.app-screen').forEach(el => el.classList.add('hidden-screen'));
+            document.getElementById('screen-dashboard').classList.remove('hidden-screen');
+        }
+
+        // --- Nav Marker Animation (Fixed Positioning) ---
+        const sections = document.querySelectorAll('section');
+        const marker = document.getElementById('nav-marker');
+        const navContainer = document.getElementById('nav-container');
+
+        // Function to update marker position based on a specific link element
+        function updateMarker(link) {
+            if(!link) {
+                marker.style.opacity = '0';
+                return;
+            }
+            
+            // Get positions relative to the viewport
+            const linkRect = link.getBoundingClientRect();
+            const containerRect = navContainer.getBoundingClientRect();
+
+            // Calculate 'left' relative to the container
+            const relativeLeft = linkRect.left - containerRect.left;
+
+            marker.style.opacity = '1';
+            marker.style.left = `${relativeLeft}px`;
+            marker.style.width = `${linkRect.width}px`;
+        }
+
+        const observerOptions = { threshold: 0.3 };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const id = entry.target.getAttribute('id');
+                    const activeLink = document.querySelector(`a[href="#${id}"]`);
+                    if(activeLink) updateMarker(activeLink);
+                }
+            });
+        }, observerOptions);
+
+        sections.forEach(section => observer.observe(section));
+
+        // Update on resize to fix positioning
+        window.addEventListener('resize', () => {
+            // Re-find the active link manually or just wait for next scroll
+            // For robustness, find currently intersecting section
+            sections.forEach(section => {
+                const rect = section.getBoundingClientRect();
+                if(rect.top >= 0 && rect.top < window.innerHeight / 2) {
+                     const id = section.getAttribute('id');
+                     const activeLink = document.querySelector(`a[href="#${id}"]`);
+                     if(activeLink) updateMarker(activeLink);
+                }
+            });
+        });
+
+        // Update on load (fonts loading fix)
+        window.addEventListener('load', () => {
+             const homeLink = document.querySelector('a[href="#home"]');
+             // Optionally hide marker on home or set to Home
+             marker.style.opacity = '0';
+        });
+
+    </script>
+</body>
+</html>
