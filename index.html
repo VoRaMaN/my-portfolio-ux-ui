@@ -293,6 +293,31 @@
             color: white !important;
         }
 
+        /* New Game UI Specifics */
+        .game-nav-item {
+            position: relative;
+        }
+        .game-nav-item::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0%;
+            height: 2px;
+            background-color: #facc15;
+            transition: width 0.3s ease;
+        }
+        .game-nav-item:hover::after {
+            width: 100%;
+        }
+
+        /* Scanline effect for Retro mode */
+        .scanlines {
+            background: linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,0) 50%, rgba(0,0,0,0.2) 50%, rgba(0,0,0,0.2));
+            background-size: 100% 4px;
+            pointer-events: none;
+        }
+
     </style>
 </head>
 <body class="font-sans antialiased selection:bg-brand-white selection:text-brand-black">
@@ -582,56 +607,164 @@
                 <p class="text-xl md:text-2xl text-brand-purple italic font-serif">"With better UI, players stay immersed — not confused."</p>
             </div>
 
-            <!-- INTERACTIVE GAME AREA -->
-            <div class="bg-gray-900 border-4 border-gray-800 rounded-3xl overflow-hidden mb-16 relative shadow-2xl">
-                <!-- Game Scene Background (Pixel Art Placeholder) -->
-                <div class="h-[400px] w-full relative bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1550745165-9bc0b252726f?q=80&w=2070&auto=format&fit=crop'); image-rendering: pixelated;">
-                    <div class="absolute inset-0 bg-black/40"></div>
+            <!-- INTERACTIVE GAME AREA (Main Menu Simulation) -->
+            <!-- Note: Container height increased for menu layout -->
+            <div id="game-ui-container" class="relative h-[600px] w-full bg-cover bg-center rounded-3xl overflow-hidden shadow-2xl transition-all duration-500 mb-16" style="background-image: url('Game/background.jpg');">
+                
+                <!-- Overlay for readability -->
+                <div id="game-bg-overlay" class="absolute inset-0 bg-black/60 transition-opacity duration-500"></div>
+                
+                <!-- Scanlines (Hidden by default, used for Retro) -->
+                <div id="game-scanlines" class="absolute inset-0 pointer-events-none opacity-0 transition-opacity duration-300 scanlines z-20"></div>
+
+                <!-- MAIN MENU UI LAYER -->
+                <div class="absolute inset-0 p-8 flex flex-col justify-between z-10 font-sans transition-all duration-500" id="game-ui-layer">
                     
-                    <!-- Character (Static for demo) -->
-                    <div class="absolute bottom-10 left-20 w-16 h-16 bg-red-500 animate-pulse-glow" style="clip-path: polygon(20% 0%, 80% 0%, 100% 100%, 0% 100%);"></div>
-                    <div class="absolute bottom-10 right-20 w-24 h-24 bg-blue-500" style="clip-path: polygon(50% 0%, 0% 100%, 100% 100%);"></div>
-                    <div class="absolute top-10 left-1/2 -translate-x-1/2 text-center">
-                        <h3 class="font-pixel text-yellow-400 text-2xl drop-shadow-md">ROUND 1</h3>
-                    </div>
-
-                    <!-- HUD UI LAYER (The part that swaps) -->
-                    <div class="absolute inset-0 p-6 flex flex-col justify-between">
-                        <!-- Health Bars -->
-                        <div class="flex justify-between w-full">
-                            <div class="w-1/3 h-4 bg-gray-700 border border-white relative"><div class="h-full bg-green-500 w-3/4"></div></div>
-                            <div class="w-10 text-center font-bold text-white">VS</div>
-                            <div class="w-1/3 h-4 bg-gray-700 border border-white relative"><div class="h-full bg-red-500 w-1/2"></div></div>
+                    <!-- TOP NAVIGATION -->
+                    <div class="flex justify-between items-center border-b border-white/10 pb-4 backdrop-blur-sm" id="game-top-nav">
+                        <div class="text-3xl font-black italic tracking-tighter text-yellow-400 drop-shadow-lg">CYBER WORLD</div>
+                        
+                        <div class="hidden md:flex gap-10 text-sm font-bold tracking-widest text-gray-300">
+                            <span class="game-nav-item hover:text-white cursor-pointer transition-colors text-white">HOME</span>
+                            <span class="game-nav-item hover:text-white cursor-pointer transition-colors">WEAPONS</span>
+                            <span class="game-nav-item hover:text-white cursor-pointer transition-colors">CHARACTERS</span>
+                            <span class="game-nav-item hover:text-white cursor-pointer transition-colors">TEST</span>
                         </div>
-
-                        <!-- Action Buttons (Bottom Right) -->
-                        <div id="game-controls" class="flex gap-4 justify-end items-end mt-auto">
-                            <button class="game-action-btn w-16 h-16 flex items-center justify-center transition-all">A</button>
-                            <button class="game-action-btn w-16 h-16 flex items-center justify-center transition-all">B</button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- CONTROLS PANEL -->
-                <div class="bg-[#111] p-6 border-t border-gray-700 flex flex-col md:flex-row items-center justify-between gap-6">
-                    <div>
-                        <h3 class="text-sm font-bold text-gray-400 mb-2 uppercase tracking-widest">Select UI Style</h3>
-                        <div class="flex gap-3">
-                            <button onclick="setGameUI('retro')" class="px-4 py-2 border border-gray-600 rounded hover:bg-white hover:text-black transition-colors text-xs font-pixel">Retro</button>
-                            <button onclick="setGameUI('modern')" class="px-4 py-2 border border-gray-600 rounded hover:bg-white hover:text-black transition-colors text-xs">Modern Glass</button>
-                            <button onclick="setGameUI('minimal')" class="px-4 py-2 border border-gray-600 rounded hover:bg-white hover:text-black transition-colors text-xs">Minimalist</button>
+                        
+                        <div class="flex items-center gap-4">
+                            <div class="w-10 h-10 flex items-center justify-center bg-white/10 rounded-lg hover:bg-white/20 cursor-pointer backdrop-blur-md transition-colors">
+                                <i class="fas fa-cog text-white"></i>
+                            </div>
+                            <div class="w-10 h-10 flex items-center justify-center bg-white/10 rounded-lg hover:bg-white/20 cursor-pointer backdrop-blur-md transition-colors relative">
+                                <i class="fas fa-envelope text-white"></i>
+                                <div class="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full"></div>
+                            </div>
+                            <div class="hidden md:flex items-center gap-3 px-4 py-2 bg-gradient-to-r from-yellow-600/80 to-yellow-800/80 rounded-lg backdrop-blur-md border border-yellow-500/30">
+                                <i class="fas fa-medal text-yellow-200"></i> 
+                                <span class="text-xs font-bold text-white tracking-wider">RANK 55</span>
+                            </div>
+                            <div class="w-10 h-10 rounded-lg bg-gray-700 overflow-hidden border-2 border-white/20">
+                                <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=100&q=80" class="w-full h-full object-cover">
+                            </div>
                         </div>
                     </div>
-                    
-                    <div class="w-full md:w-auto flex flex-col gap-2">
-                        <label class="text-xs text-gray-500 font-bold">CUSTOM COLOR</label>
-                        <input type="color" id="customGameColor" class="w-full h-8 rounded cursor-pointer" oninput="setGameCustomColor(this.value)">
+
+                    <!-- CENTER CONTENT AREA -->
+                    <div class="flex flex-col md:flex-row justify-between items-end h-full mt-8 gap-8">
+                        
+                        <!-- Left: Play/Mode Selection -->
+                        <div class="w-full md:w-72 space-y-6">
+                            <!-- Gamemode Card -->
+                            <div class="bg-black/40 border border-white/10 p-4 rounded-2xl backdrop-blur-md hover:bg-black/60 hover:border-yellow-400/50 transition-all cursor-pointer group relative overflow-hidden" id="gamemode-card">
+                                <div class="absolute top-0 right-0 p-2 opacity-50 group-hover:opacity-100 transition-opacity">
+                                    <i class="fas fa-exchange-alt text-white text-xs"></i>
+                                </div>
+                                <div class="h-32 bg-gray-800 rounded-xl mb-3 overflow-hidden relative shadow-inner">
+                                    <img src="Game/map.jpg" class="w-full h-full object-cover opacity-60 group-hover:scale-110 group-hover:opacity-80 transition-all duration-700">
+                                    <div class="absolute inset-0 flex flex-col items-center justify-center">
+                                        <span class="text-xs font-bold tracking-widest text-white/70 mb-1">CURRENT MODE</span>
+                                        <span class="text-xl font-black italic text-white tracking-widest drop-shadow-md">RANKED</span>
+                                    </div>
+                                </div>
+                                <div class="flex justify-between items-center text-xs text-gray-300 font-bold px-1">
+                                    <span>Bomb Defusal</span>
+                                    <div class="flex items-center gap-1 text-green-400">
+                                        <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div> Active
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Big Play Button -->
+                            <button id="game-play-btn" class="w-full py-5 bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-400 hover:to-yellow-500 text-black font-black text-2xl tracking-[0.2em] uppercase rounded-2xl shadow-[0_0_30px_rgba(234,179,8,0.3)] hover:shadow-[0_0_50px_rgba(234,179,8,0.6)] transition-all transform hover:scale-[1.02] active:scale-95 border-b-4 border-yellow-700 relative overflow-hidden group">
+                                <span class="relative z-10 flex items-center justify-center gap-3">
+                                    <i class="fas fa-play text-lg"></i> PLAY NOW
+                                </span>
+                                <!-- Shine Effect -->
+                                <div class="absolute top-0 -left-full w-full h-full bg-gradient-to-r from-transparent via-white/40 to-transparent skew-x-12 group-hover:animate-[shimmer_1s_infinite]"></div>
+                            </button>
+                        </div>
+
+                        <!-- Right: Friends Panel -->
+                        <div class="w-full md:w-80 bg-black/40 backdrop-blur-xl border border-white/10 rounded-2xl p-5 flex flex-col h-[350px] shadow-2xl transition-all" id="friends-panel">
+                            
+                            <!-- Search -->
+                            <div class="flex items-center gap-3 mb-5 bg-white/5 p-3 rounded-xl border border-white/5 focus-within:border-yellow-400/50 focus-within:bg-black/60 transition-colors">
+                                <i class="fas fa-search text-gray-400 text-sm"></i>
+                                <input type="text" placeholder="Search player..." class="bg-transparent border-none outline-none text-sm text-white w-full placeholder-gray-500 font-medium">
+                                <div class="w-6 h-6 bg-white/10 rounded flex items-center justify-center cursor-pointer hover:bg-white/20"><i class="fas fa-plus text-xs"></i></div>
+                            </div>
+                            
+                            <div class="flex justify-between items-center mb-3 px-1">
+                                <span class="text-xs font-bold text-gray-400 uppercase tracking-wider">Friends (4)</span>
+                                <i class="fas fa-user-friends text-gray-500 text-xs"></i>
+                            </div>
+
+                            <!-- List -->
+                            <div class="space-y-2 overflow-y-auto pr-2 custom-scrollbar flex-1">
+                                <!-- Friend 1 -->
+                                <div class="flex items-center gap-3 p-2 hover:bg-white/10 rounded-xl cursor-pointer group transition-colors border border-transparent hover:border-white/5">
+                                    <div class="w-10 h-10 rounded-lg bg-gray-700 relative overflow-hidden">
+                                        <img src="https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?auto=format&fit=crop&w=100&q=80" class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all">
+                                        <div class="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-black"></div>
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <div class="text-sm font-bold text-gray-200 group-hover:text-yellow-400 truncate transition-colors">AVG GOJO#9966</div>
+                                        <div class="text-[10px] text-gray-500 font-mono">RANK III • In Lobby</div>
+                                    </div>
+                                    <i class="fas fa-comment-alt text-gray-600 group-hover:text-white transition-colors text-sm"></i>
+                                </div>
+                                
+                                <!-- Friend 2 -->
+                                <div class="flex items-center gap-3 p-2 hover:bg-white/10 rounded-xl cursor-pointer group transition-colors border border-transparent hover:border-white/5">
+                                    <div class="w-10 h-10 rounded-lg bg-gray-700 relative overflow-hidden">
+                                        <img src="https://images.unsplash.com/photo-1527980965255-d3b416303d12?auto=format&fit=crop&w=100&q=80" class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all">
+                                        <div class="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-black"></div>
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <div class="text-sm font-bold text-gray-200 group-hover:text-yellow-400 truncate transition-colors">Vladimir#4678</div>
+                                        <div class="text-[10px] text-gray-500 font-mono">RANK II • Online</div>
+                                    </div>
+                                    <i class="fas fa-comment-alt text-gray-600 group-hover:text-white transition-colors text-sm"></i>
+                                </div>
+
+                                 <!-- Friend 3 -->
+                                 <div class="flex items-center gap-3 p-2 hover:bg-white/10 rounded-xl cursor-pointer group transition-colors border border-transparent hover:border-white/5">
+                                    <div class="w-10 h-10 rounded-lg bg-gray-700 relative overflow-hidden">
+                                        <img src="https://images.unsplash.com/photo-1633332755192-727a05c4013d?auto=format&fit=crop&w=100&q=80" class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all">
+                                        <div class="absolute bottom-0 right-0 w-3 h-3 bg-gray-500 rounded-full border-2 border-black"></div>
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <div class="text-sm font-bold text-gray-200 group-hover:text-yellow-400 truncate transition-colors">Killerpro#1111</div>
+                                        <div class="text-[10px] text-gray-500 font-mono">RANK III • Offline</div>
+                                    </div>
+                                    <i class="fas fa-comment-alt text-gray-600 group-hover:text-white transition-colors text-sm"></i>
+                                </div>
+                            </div>
+                        </div>
+
                     </div>
                 </div>
             </div>
 
-            <!-- Game Project Gallery -->
-            <h3 class="text-2xl font-bold mb-8 border-b border-gray-800 pb-4">More Game Projects</h3>
+            <!-- CONTROLS PANEL -->
+            <div class="bg-[#111] p-6 border-t border-gray-700 flex flex-col md:flex-row items-center justify-between gap-6">
+                <div>
+                    <h3 class="text-sm font-bold text-gray-400 mb-2 uppercase tracking-widest">Select Visual Style</h3>
+                    <div class="flex gap-3">
+                        <button onclick="setGameUI('modern')" class="px-4 py-2 border border-gray-600 rounded hover:bg-white hover:text-black transition-colors text-xs font-bold bg-white text-black">Modern Glass</button>
+                        <button onclick="setGameUI('retro')" class="px-4 py-2 border border-gray-600 rounded hover:bg-white hover:text-black transition-colors text-xs font-pixel">Retro CRT</button>
+                        <button onclick="setGameUI('minimal')" class="px-4 py-2 border border-gray-600 rounded hover:bg-white hover:text-black transition-colors text-xs">Wireframe</button>
+                    </div>
+                </div>
+                
+                <div class="w-full md:w-auto flex flex-col gap-2 opacity-50 pointer-events-none">
+                    <label class="text-xs text-gray-500 font-bold">CUSTOM COLOR (Disabled for Demo)</label>
+                    <input type="color" id="customGameColor" class="w-full h-8 rounded cursor-not-allowed bg-gray-800 border-none" disabled>
+                </div>
+            </div>
+            
+            <!-- Game Project Gallery (Preserved) -->
+            <h3 class="text-2xl font-bold mb-8 border-b border-gray-800 pb-4 mt-10">More Game Projects</h3>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                  <div class="group relative aspect-video bg-gray-800 rounded-xl overflow-hidden">
                     <img src="Game/Desktop - 1.png" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
@@ -702,7 +835,7 @@
                                 <div class="absolute bottom-2 right-2 bg-black/80 px-2 py-1 rounded text-xs font-bold"><i class="fab fa-windows"></i></div>
                             </div>
                             <div class="p-4">
-                                <h3 class="font-bold text-lg mb-1 truncate">Hotel Room Management</h3>
+                                <h3 class="font-bold text-lg mb-1 truncate">Spider-Man: Remastered</h3>
                                 <div class="flex justify-between items-center mt-3">
                                     <span class="text-brand-purple font-bold">$39.99</span>
                                     <i class="fas fa-cart-plus text-gray-500 hover:text-white transition-colors"></i>
@@ -717,7 +850,7 @@
                                 <div class="absolute bottom-2 right-2 bg-black/80 px-2 py-1 rounded text-xs font-bold"><i class="fab fa-windows"></i></div>
                             </div>
                             <div class="p-4">
-                                <h3 class="font-bold text-lg mb-1 truncate">Net-Cafe App Launcher</h3>
+                                <h3 class="font-bold text-lg mb-1 truncate">God of War</h3>
                                 <div class="flex justify-between items-center mt-3">
                                     <span class="text-brand-purple font-bold">$49.99</span>
                                     <i class="fas fa-cart-plus text-gray-500 hover:text-white transition-colors"></i>
@@ -728,10 +861,10 @@
                         <!-- Card 3 -->
                         <div class="store-card bg-[#151515] rounded-xl overflow-hidden cursor-pointer group border border-transparent" onclick="openGameProduct(3)">
                             <div class="h-64 overflow-hidden relative">
-                                <img src="Desktop/IGGSITE2.png" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                                <img src="Desktop/IGGSITE.png" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
                             </div>
                             <div class="p-4">
-                                <h3 class="font-bold text-lg mb-1 truncate">IGG SITE</h3>
+                                <h3 class="font-bold text-lg mb-1 truncate">Need For Speed</h3>
                                 <div class="flex justify-between items-center mt-3">
                                     <span class="text-brand-purple font-bold">$29.99</span>
                                     <i class="fas fa-cart-plus text-gray-500 hover:text-white transition-colors"></i>
@@ -760,7 +893,7 @@
                                     <div class="flex items-center gap-2 mb-2 text-yellow-500 text-xs">
                                         <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
                                     </div>
-                                    <p class="text-gray-300 text-sm">"The UI in this app is absolutely stunning. Truly immersive!"</p>
+                                    <p class="text-gray-300 text-sm">"The UI in this game is absolutely stunning. Truly immersive!"</p>
                                     <p class="text-gray-600 text-xs mt-2">- Gamer123</p>
                                 </div>
                             </div>
@@ -777,7 +910,7 @@
                             </div>
                             
                             <p class="text-gray-300 leading-relaxed mb-8">
-                                Interface design is the art of turning complex data into a visual experience that speaks before the user even clicks.
+                                Experience the next generation of action-adventure. Swing through the city, fight villains, and uncover a gripping story with stunning visuals and responsive controls.
                             </p>
 
                             <div class="bg-[#111] p-6 rounded-xl border border-gray-800 mb-8">
@@ -1191,7 +1324,7 @@
             }
             
             // Reset Specific Logic
-            if(type === 'game') setGameUI('retro');
+            if(type === 'game') setGameUI('modern'); // Default to Modern for new UI
             if(type === 'mobile') mobileNavigate('home'); 
         }
 
@@ -1201,66 +1334,77 @@
         }
 
         // --- Store Logic (Desktop) ---
-        function openGameProduct(id) {
-            document.getElementById('store-grid-view').style.display = 'none';
-            const productView = document.getElementById('store-product-view');
-            productView.style.display = 'block';
-            productView.classList.remove('animate-fade-in');
-            void productView.offsetWidth; // trigger reflow
-            productView.classList.add('animate-fade-in');
+        // --- Game UI Swapper Logic (UPDATED FOR NEW MENU) ---
+        function setGameUI(style) {
+            const container = document.getElementById('game-ui-container');
+            const overlay = document.getElementById('game-bg-overlay');
+            const scanlines = document.getElementById('game-scanlines');
+            const nav = document.getElementById('game-top-nav');
+            const playBtn = document.getElementById('game-play-btn');
+            const friendsPanel = document.getElementById('friends-panel');
+            const modeCard = document.getElementById('gamemode-card');
+            const uiLayer = document.getElementById('game-ui-layer');
 
-            // Simulate Data Fetching
-            const img = document.getElementById('product-main-img');
-            const title = document.getElementById('product-title');
-            
-            // Updated for 3 items with placeholders for 1920x1080 images
-            if(id === 1) {
-                img.src = "Desktop/Dashboard.png"; 
-                title.innerText = "Hotel Room Management";
-            } else if (id === 2) {
-                img.src = "Desktop/MainMenu.png"; 
-                title.innerText = "Net-Cafe App Launcher";
-            } else if (id === 3) {
-                img.src = "Desktop/IGGSITE2.png";
-                title.innerText = "IGG SITE";
+            // --- Reset Base Styles ---
+            // Remove style-specific classes to allow clean switching
+            container.className = "relative h-[600px] w-full bg-cover bg-center overflow-hidden shadow-2xl transition-all duration-500 mb-16";
+            playBtn.className = "w-full py-5 text-black font-black text-2xl tracking-[0.2em] uppercase transition-all transform hover:scale-[1.02] active:scale-95 relative overflow-hidden group";
+            friendsPanel.className = "w-full md:w-80 flex flex-col h-[350px] transition-all";
+            scanlines.style.opacity = '0';
+            uiLayer.style.fontFamily = "'Inter', sans-serif";
+
+            // --- Apply Styles ---
+
+            if (style === 'modern') {
+                // Modern Glassmorphism (Default)
+                container.classList.add('rounded-3xl');
+                overlay.className = "absolute inset-0 bg-black/60 transition-opacity duration-500";
+                
+                nav.className = "flex justify-between items-center border-b border-white/10 pb-4 backdrop-blur-sm";
+                
+                playBtn.classList.add('bg-gradient-to-r', 'from-yellow-500', 'to-yellow-600', 'hover:from-yellow-400', 'hover:to-yellow-500', 'rounded-2xl', 'shadow-[0_0_30px_rgba(234,179,8,0.3)]', 'border-b-4', 'border-yellow-700');
+                
+                friendsPanel.className += " bg-black/40 backdrop-blur-xl border border-white/10 rounded-2xl p-5 shadow-2xl";
+                modeCard.className = "bg-black/40 border border-white/10 p-4 rounded-2xl backdrop-blur-md hover:bg-black/60 hover:border-yellow-400/50 transition-all cursor-pointer group relative overflow-hidden";
+            } 
+            else if (style === 'retro') {
+                // Retro CRT / Arcade
+                uiLayer.style.fontFamily = "'Press Start 2P', cursive";
+                container.classList.remove('rounded-3xl');
+                container.classList.add('border-4', 'border-green-500', 'bg-black');
+                overlay.className = "absolute inset-0 bg-black/40";
+                
+                // Scanlines on
+                scanlines.style.opacity = '1';
+
+                nav.className = "flex justify-between items-center border-b-4 border-green-500 pb-4 bg-black/80";
+
+                playBtn.classList.add('bg-green-600', 'hover:bg-green-500', 'text-white', 'border-4', 'border-white', 'shadow-[4px_4px_0px_#fff]', 'active:translate-x-1', 'active:translate-y-1', 'active:shadow-none');
+                
+                friendsPanel.className += " bg-black/90 border-4 border-green-500 p-5 shadow-none";
+                modeCard.className = "bg-black border-4 border-green-500 p-4 hover:bg-green-900/20 transition-all cursor-pointer group relative overflow-hidden";
+            } 
+            else if (style === 'minimal') {
+                // Minimalist Wireframe
+                container.classList.add('rounded-lg', 'border', 'border-white');
+                overlay.className = "absolute inset-0 bg-gray-900/95"; // Solid dark background
+                
+                nav.className = "flex justify-between items-center border-b border-white pb-4";
+
+                playBtn.classList.add('bg-transparent', 'text-white', 'border', 'border-white', 'hover:bg-white', 'hover:text-black', 'rounded-lg');
+                
+                friendsPanel.className += " bg-transparent border border-white rounded-lg p-5";
+                modeCard.className = "bg-transparent border border-white p-4 rounded-lg hover:bg-white/10 transition-all cursor-pointer group relative overflow-hidden";
             }
         }
 
-        function backToStore() {
-            document.getElementById('store-product-view').style.display = 'none';
-            document.getElementById('store-grid-view').style.display = 'block';
-        }
-
-        // --- Game UI Swapper Logic ---
-        function setGameUI(style) {
-            const buttons = document.querySelectorAll('.game-action-btn');
-            
-            buttons.forEach(btn => {
-                // Reset classes
-                btn.className = 'game-action-btn w-16 h-16 flex items-center justify-center transition-all';
-                btn.style.backgroundColor = '';
-                btn.style.boxShadow = '';
-                
-                // Add new style class
-                if(style === 'retro') btn.classList.add('game-btn-retro');
-                if(style === 'modern') btn.classList.add('game-btn-modern');
-                if(style === 'minimal') btn.classList.add('game-btn-minimal');
-            });
-        }
-
+        // Optional: No color picker logic needed for this complex UI, keeping function empty to prevent errors if called
         function setGameCustomColor(color) {
-            // Remove preset classes
-            const buttons = document.querySelectorAll('.game-action-btn');
-            buttons.forEach(btn => {
-                btn.className = 'game-action-btn w-16 h-16 flex items-center justify-center transition-all rounded-full text-white font-bold';
-                btn.style.backgroundColor = color;
-                btn.style.boxShadow = `0 0 15px ${color}`;
-                btn.style.border = '2px solid white';
-            });
+            // Custom color logic disabled for main menu demo
         }
         
         // Initialize default UI
-        setGameUI('retro');
+        // setGameUI('modern'); // Called in openDetail now
 
         // --- Playground Component Logic (UPDATED) ---
         const previewCard = document.getElementById('previewCard');
