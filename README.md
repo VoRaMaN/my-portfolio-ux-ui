@@ -23,6 +23,11 @@ From the admin you can:
 - or point the download at an external link (GitHub Releases, itch.io)
 - change site settings: hero status badge, availability, store name, featured game, show/hide concepts, pause downloads, itch.io link
 - browse and delete uploaded files and see storage usage
+- **Analytics:** page views and visitors per day, sections seen, game plays and downloads, and top referrers. Tick "Don't count my own visits" on your own browser.
+- **Leads:** requests from the "Start a project" form. Reply by email, then mark each one replied or archived.
+- **Devlog:** write posts in Markdown, attach them to a game, add a cover, publish
+- **Content:** testimonials, the availability calendar, metrics cards, Figma prototype links for the case studies, and before/after pairs
+- **Community:** moderate the Beat Lab wall (hide or delete) and the Comet Dash leaderboard
 
 ### Hosting big files (e.g. the 142 MB EARTHFALL build)
 
@@ -32,6 +37,39 @@ From the admin you can:
 | **GitHub Release** (repo → Releases → attach the .zip, then paste its link in admin) | 2 GB per file, no bandwidth limit | Browser's own download (no in-page progress) |
 
 Start with the admin upload; if downloads grow, upgrade Supabase or switch the game to a GitHub Release link.
+
+## Portfolio features
+
+Most text lives in **`assets/js/site-data.js`**: profile, CV, projects, process steps, case studies, HUD hotspots, cards and Khmer strings. Anything a visitor reads as a claim (testimonials, metrics, availability, Figma links, before/after pairs) is edited in **admin → Content**, and empty sections show an empty state instead of made-up content.
+
+| Feature | Where it is | Where to edit |
+| --- | --- | --- |
+| Case studies (problem → research → wireframe → decisions), with a blueprint ↔ final slider | `#case/game`, `#case/store`, `#case/mobile` ("Read the case study" under the Work cards) | `CASES` in site-data.js. Figma embeds: admin → Content |
+| Before / after redesigns (fighting HUD v1 → v3, portfolio v1 → v2) | "How I think" section | `BEFORE_AFTER`, or admin → Content |
+| "How I think" process timeline (fills as you scroll) | after Work | `PROCESS` |
+| Metrics cards | under the Work cards | `METRICS`, or admin → Content |
+| Fighting HUD anatomy (numbered hotspots) | Games section and the game case study | `HUD` |
+| Comet Dash, a 30-second mini-game with a Top 10 (Supabase `portfolio_scores`) | Games section (`#arcade`) | `assets/js/arcade.js` |
+| Devlog (from the admin; linked from each game's store page) | Games section, `#devlog`, `#devlog/game/<slug>` | admin → Devlog |
+| Press kit per game (factsheet, screenshots, logos, contact) | `#press/<slug>` and the store page | game data in the admin |
+| Live GitHub and store stats | Games section | automatic |
+| Card collection: one free booster a day plus one per trophy, saved in the browser | bottom-right button, `#binder` | `CARDS` |
+| Achievements (22 trophies) | trophy icon in the nav, or Settings | `ACH` in features.js |
+| Beat Lab song mode (chain patterns A–D, song WAV export, song share links) and community wall | Beat Lab → **Song**, **Wall** | `assets/js/beatlab.js` |
+| UI Lab hearts with live counts (Supabase `portfolio_votes`) | heart under each experiment | automatic |
+| 3D room: objects open sections | "Enter my room" in the hero, `#room` | `ROOM` in showcase.js |
+| Terminal mode: `help`, `ls projects`, `play earthfall`, `open beatlab`, `theme retro` … | press <kbd>~</kbd>, or `#terminal` | `CMDS` in features.js |
+| Themes (Aurora, Cyber, Retro pixel, Minimal), cursor companion, reduce motion | Settings (sliders icon in the nav) | `assets/css/features.css` |
+| Sound-reactive hero: the aurora pulses to Beat Lab | automatic while a beat plays | features.js |
+| "Start a project" 3-step form (Supabase `portfolio_leads`) and availability calendar | Contact section, `#hire` | admin → Leads / Content |
+| Testimonials carousel | before Contact | admin → Content |
+| Skills with proof: click a skill to see the projects that use it | Skills section | `PROJECTS[].skills` |
+| CV page generated from site data, saved as PDF with the browser's print dialog | `cv.html` | `CV` and `PROFILE` |
+| Khmer / English | Settings → Language | `KM` in site-data.js, `data-i18n` attributes |
+| SEO: social card, JSON-LD, sitemap, robots | `<head>`, `sitemap.xml`, `robots.txt`, `assets/img/og-card.jpg` | index.html |
+| Design system page and accessibility statement | `design-system.html`, `accessibility.html` | those files |
+
+Analytics are cookie-free and store no IP address. A random id per browser tab is the only identifier, and visitors with Do Not Track or Global Privacy Control are not counted. Visitors can only insert small, validated rows into the new tables. Leads and analytics are readable only by the admin, enforced by Row Level Security (`supabase/migrations/20261105_portfolio_features.sql`).
 
 ## Skills, UI Lab and sounds
 
@@ -46,6 +84,8 @@ Start with the admin upload; if downloads grow, upgrade Supabase or switch the g
   - **Nudge:** shift any step early or late by ⅙, ⅓ or ½ of a step. ±⅓ places true triplets on the 16th grid; Jersey Club uses this for its kick bounce (two straight kicks, then a quarter-note-triplet trio).
   - **Keys and recording:** Space plays/stops. A–M play the drums and Q–P play 808 notes. Turn on **REC** to record what you play into the grid.
   - **Undo, save, export, share:** undo (⌘/Ctrl Z) and an automatic save in the browser. **WAV** renders the beat offline into a file that loops seamlessly. **Share** copies a link (`?beat=…`) that opens the same beat.
+  - **Song mode:** press **Song** to get four pattern slots (A–D). Edit each one, then build a chain such as `AABA` with **+A … +D**; click a block in the chain to remove it. Playback follows the chain, **WAV** exports the whole song, and **Share** links open the full song.
+  - **Community wall:** **Wall** lists beats other visitors posted. Press play to load one, heart it, or post your own beat or song with a title and name.
 - **Sounds** (`assets/js/sfx.js`): every button plays a click synthesized with Web Audio, so there are no audio files. Visitors can mute it with the speaker icon in the nav, the sidebar or the footer.
 
 ## Play in browser

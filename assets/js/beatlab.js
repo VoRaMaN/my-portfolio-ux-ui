@@ -13,7 +13,7 @@
    ========================================================================= */
 window.BeatLab = (() => {
     'use strict';
-    const MAXS = 128, LENS = [8, 16, 32, 64, 128], AHEAD = 0.12, LS = 'pf_beatlab_v1';
+    const MAXS = 128, LENS = [8, 16, 32, 64, 128], AHEAD = 0.12, LS = 'pf_beatlab_v1', LSS = 'pf_beatlab_song_v1', SL = 'ABCD';
     const NOTES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
     const VEL = [0, 0.45, 0.74, 1];
     const A64 = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_';
@@ -506,6 +506,20 @@ window.BeatLab = (() => {
         const buffer = await oc.startRendering();
         return { buffer, from: Math.round(pre * sr), reps, seconds: loop * reps };
     }
+    // Song: every pattern in the chain, back to back, plus a tail so the last hits ring out
+    async function renderSong(list, S0) {
+        const sr = 44100, dur = 60 / S0.bpm / 4, total = list.reduce((a, x) => a + x.len * dur, 0), tail = 2.5, start = 0.1;
+        const OAC = window.OfflineAudioContext || window.webkitOfflineAudioContext;
+        const oc = new OAC(2, Math.ceil((start + total + tail) * sr), sr), E = createEngine(oc, oc.destination);
+        mix(E, S0, true);
+        let off = start;
+        for (const x of list) {
+            for (let s = 0; s < x.len; s++) playStep(E, x, s, off + s * dur + (s % 2 ? S0.swing * 0.5 * dur : 0), dur);
+            off += x.len * dur;
+        }
+        const buffer = await oc.startRendering();
+        return { buffer, from: 0, seconds: start + total + tail };
+    }
     function wavBlob(b, from) {
         const n = b.length - from, L = b.getChannelData(0), R = b.numberOfChannels > 1 ? b.getChannelData(1) : L;
         const buf = new ArrayBuffer(44 + n * 4), dv = new DataView(buf);
@@ -706,6 +720,28 @@ window.BeatLab = (() => {
     .bt-narrow .bt-play{width:38px;height:38px}
     .bt-narrow .bt-tempo b{font-size:20px}
     @media (prefers-reduced-motion:reduce){.bt-rec[aria-pressed="true"] i{animation:none}}
+    .bt-song{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:6px 0 2px}
+    .bt-song[hidden]{display:none}
+    .bt-slots,.bt-chain,.bt-adds{display:flex;gap:4px;flex-wrap:wrap;align-items:center}
+    .bt-slot{width:30px;height:26px;border-radius:8px;font:800 11px/1 ui-monospace,Menlo,monospace;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);color:#ddd}
+    .bt-slot[aria-pressed="true"]{background:#c63aeb;border-color:#c63aeb;color:#fff}
+    .bt-ch{height:24px;min-width:24px;padding:0 6px;border-radius:7px;font:800 11px/1 ui-monospace,Menlo,monospace;background:rgba(96,165,250,.14);border:1px solid rgba(96,165,250,.35);color:#bfdbfe}
+    .bt-ch.now{background:#60a5fa;color:#05040d}
+    .bt-ch:hover{border-color:#f87171}
+    .bt-add{height:24px;padding:0 7px;border-radius:7px;font:700 10px/1 ui-monospace,Menlo,monospace;color:#9ca3af;border:1px dashed rgba(255,255,255,.2)}
+    .bt-add:hover{color:#fff;border-color:#fff}
+    .bt-songbtn[aria-pressed="true"]{background:rgba(198,58,235,.25);border-color:#c63aeb}
+    .bt-wall{position:absolute;inset:0;z-index:40;background:rgba(8,8,12,.97);display:flex;flex-direction:column;border-radius:inherit}
+    .bt-wall[hidden]{display:none}
+    .bt-wall-h{display:flex;align-items:center;gap:8px;padding:12px 14px;border-bottom:1px solid rgba(255,255,255,.08);font-size:13px}
+    .bt-wall-l{flex:1;overflow:auto;padding:10px 14px;display:flex;flex-direction:column;gap:6px}
+    .bt-wi{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:10px;background:rgba(255,255,255,.04);font-size:12px}
+    .bt-wi b{display:block;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .bt-wi small{display:block;color:#9ca3af;font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .bt-wi .bt-wl[aria-pressed="true"]{color:#fb7185;border-color:rgba(244,63,94,.5)}
+    .bt-wall form{display:flex;gap:6px;flex-wrap:wrap;padding:10px 14px;border-top:1px solid rgba(255,255,255,.08)}
+    .bt-wall input{flex:1;min-width:110px;height:32px;border-radius:8px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);padding:0 10px;color:#fff;font-size:12px;outline:none}
+    .bt-wall input:focus{border-color:#c63aeb}
     `;
     function injectCss() {
         if (document.getElementById('bt-css')) return;
@@ -735,9 +771,13 @@ window.BeatLab = (() => {
                 <button class="bt-btn bt-clear" aria-label="Clear" title="Clear every step"><i class="fas fa-eraser"></i><span>Clear</span></button>
                 <button class="bt-btn bt-wav" aria-label="Export WAV" title="Export the beat as a WAV file"><i class="fas fa-download"></i><span>WAV</span></button>
                 <button class="bt-btn bt-share" aria-label="Share" title="Copy a link to this beat"><i class="fas fa-link"></i><span>Share</span></button>
+                <button class="bt-btn bt-songbtn" aria-pressed="false" aria-label="Song mode" title="Song mode: chain patterns A–D into a song"><i class="fas fa-list-ol"></i><span>Song</span></button>
+                <button class="bt-btn bt-wallbtn" aria-label="Community wall" title="Community wall: post your beat, play other people’s"><i class="fas fa-users"></i><span>Wall</span></button>
             </div>
         </div>
         <div class="bt-bars"><span class="bt-lbl">BARS</span><div class="bt-pages" role="tablist" aria-label="Pattern pages"></div><button class="bt-chip bt-follow" aria-pressed="true" title="Jump to the page that is playing">Follow</button><button class="bt-chip bt-dup" title="Copy this page onto every other page">Copy to all</button></div>
+        <div class="bt-song" hidden><span class="bt-lbl">PATTERN</span><div class="bt-slots" role="group" aria-label="Pattern slots">${SL.split('').map((l, k) => `<button class="bt-slot" data-slot="${k}" aria-pressed="false" title="Edit pattern ${l}">${l}</button>`).join('')}</div>
+            <span class="bt-lbl">CHAIN</span><div class="bt-chain" aria-label="Song chain (click a block to remove it)"></div><div class="bt-adds">${SL.split('').map((l) => `<button class="bt-add" data-add="${l}" title="Add ${l} to the chain">+${l}</button>`).join('')}</div></div>
         <div class="bt-gw"><div class="bt-grid" role="group" aria-label="Step sequencer">${V.map(row).join('')}</div><div class="bt-ph" aria-hidden="true"></div></div>
         <div class="bt-bottom">
             <div class="bt-voice"><button class="bt-pad"><b></b><span></span><kbd></kbd></button><div class="bt-vk"></div>
@@ -747,7 +787,12 @@ window.BeatLab = (() => {
         </div>
         <div class="bt-mini">${play(' sm')}<span class="bt-mbpm bt-mono"><b class="bt-bpmv">120</b> BPM</span><span class="bt-mname"></span><button class="bt-open" title="Open the full drum machine">Full 808 <i class="fas fa-expand"></i></button></div>
         <div class="bt-pop" role="dialog" aria-label="Step settings" hidden></div>
-        <div class="bt-toast" role="status" aria-live="polite"></div>`;
+        <div class="bt-toast" role="status" aria-live="polite"></div>
+        <div class="bt-wall" hidden role="dialog" aria-label="Community beats wall">
+            <div class="bt-wall-h"><i class="fas fa-users" style="color:#c63aeb"></i><b style="flex:1">Community wall</b><button class="bt-btn bt-wall-r" aria-label="Refresh"><i class="fas fa-rotate"></i></button><button class="bt-btn bt-wall-x" aria-label="Close wall"><i class="fas fa-xmark"></i></button></div>
+            <div class="bt-wall-l"></div>
+            <form class="bt-wall-f"><input name="title" maxlength="40" placeholder="Beat title" required aria-label="Beat title"><input name="author" maxlength="24" placeholder="Your name" required aria-label="Your name"><button class="bt-btn" type="submit"><i class="fas fa-paper-plane"></i><span>Post</span></button></form>
+        </div>`;
     }
 
     function knob(host, o) {
@@ -831,6 +876,7 @@ window.BeatLab = (() => {
             try { c = window.SFX?.ctx?.() || null; } catch { c = null; }
             if (!c) { const AC = window.AudioContext || window.webkitAudioContext; if (!AC) return null; c = new AC(); }
             E = createEngine(c, c.destination); fd = new Uint8Array(E.an.frequencyBinCount); mix(E, S, true);
+            try { window.dispatchEvent(new CustomEvent('pf:analyser', { detail: E.an })); } catch { /* old browser */ }
             return c;
         }
         const mixNow = () => { if (E) mix(E, S); };
@@ -839,6 +885,9 @@ window.BeatLab = (() => {
             if (!c) { toast('Audio isn’t available in this browser'); return; }
             if (window.SFX && !window.SFX.enabled) window.SFX.setEnabled(true);
             if (c.state !== 'running') c.resume();
+            if (song.on && song.chain.length) { song.slots[song.cur] = pack(S, MAXS); song.pos = 0; loadSlot(SL.indexOf(song.chain[0]), 0, true); }
+            try { document.dispatchEvent(new CustomEvent('pf:beatplay')); } catch { /* old browser */ }
+            if (song.on && song.chain.length > 1) window.Features?.unlock('dj');
             const early = S.r.some((r) => r.on[0] && r.nud[0] < 0) ? (60 / S.bpm / 4) * 0.5 : 0; // room for hits nudged ahead of step 1
             T.playing = true; T.step = 0; T.next = c.currentTime + 0.08 + early; T.queue.length = 0; T.skip.clear(); T.cur = -1;
             clearInterval(T.timer); T.timer = setInterval(tick, 25); tick();
@@ -865,7 +914,8 @@ window.BeatLab = (() => {
                 try { playStep(E, S, s, t, dur, T.skip); } catch (e) { console.error('[beatlab]', e); }
                 T.queue.push({ s, t, u });
                 if (T.queue.length > 256) T.queue.splice(0, 128);
-                T.next = u + dur; T.step = s + 1 >= S.len ? 0 : s + 1;
+                T.next = u + dur;
+                if (s + 1 >= S.len) { T.step = 0; if (song.on && song.chain.length > 1) songAdvance(u + dur); } else T.step = s + 1;
             }
         }
         function pad(i, note) {
@@ -1303,17 +1353,22 @@ window.BeatLab = (() => {
             busy = true; wavBtn.classList.add('busy');
             const lab = wavBtn.querySelector('span'), old = lab.textContent; lab.textContent = 'Rendering…';
             try {
-                const out = await render(S), name = `beat-lab-${S.preset}-${S.bpm}bpm.wav`;
+                let out, name;
+                if (song.on && song.chain.length) {
+                    song.slots[song.cur] = pack(S, MAXS);
+                    const list = song.chain.split('').map((l) => { const x = blankState(); const o = song.slots[SL.indexOf(l)]; if (o) unpack(x, o); Object.assign(x, globals()); return x; });
+                    out = await renderSong(list, S); out.reps = 1; name = `beat-lab-song-${song.chain}-${S.bpm}bpm.wav`;
+                } else { out = await render(S); name = `beat-lab-${S.preset}-${S.bpm}bpm.wav`; }
                 const url = URL.createObjectURL(wavBlob(out.buffer, out.from)), a = document.createElement('a');
                 a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove();
                 setTimeout(() => URL.revokeObjectURL(url), 5000);
-                toast(`Saved ${name} — ${out.seconds.toFixed(1)} s, ${out.reps} loop${out.reps > 1 ? 's' : ''}, loops seamlessly`);
+                toast(song.on ? `Saved ${name} — ${out.seconds.toFixed(1)} s song` : `Saved ${name} — ${out.seconds.toFixed(1)} s, ${out.reps} loop${out.reps > 1 ? 's' : ''}, loops seamlessly`);
             } catch (err) { console.error('[beatlab] export', err); toast('Export didn’t work in this browser'); }
             busy = false; wavBtn.classList.remove('busy'); lab.textContent = old;
         });
         $('.bt-share').addEventListener('click', async () => {
             try {
-                const url = `${location.origin}${location.pathname}?beat=${await encode(pack(S, S.len))}#playground`;
+                const url = `${location.origin}${location.pathname}?beat=${await shareCode()}#playground`;
                 if (navigator.share && matchMedia('(pointer: coarse)').matches) {
                     try { await navigator.share({ title: 'My beat — Beat Lab 808', url }); return; } catch (err) { if (err && err.name === 'AbortError') return; }
                 }
@@ -1337,6 +1392,153 @@ window.BeatLab = (() => {
         keySel.addEventListener('change', () => { S.key = +keySel.value; renderPage(); changed(); if (!T.playing) pad(BASS, 0); });
         glideBtn.addEventListener('click', () => { S.glide = !S.glide; glideBtn.setAttribute('aria-pressed', String(S.glide)); changed(); });
         $('.bt-open').addEventListener('click', () => opts.openFocus?.());
+
+        // ---------- song mode: four pattern slots (A–D) chained into a song
+        const songEl = $('.bt-song'), chainEl = $('.bt-chain'), songBtn = $('.bt-songbtn');
+        const song = { on: false, slots: [null, null, null, null], chain: 'A', cur: 0, pos: 0, uiT: 0 };
+        try {
+            const j = JSON.parse(localStorage.getItem(LSS) || 'null');
+            if (j && Array.isArray(j.slots)) {
+                song.slots = [0, 1, 2, 3].map((k) => (j.slots[k] && j.slots[k].v === 1 ? j.slots[k] : null));
+                song.chain = typeof j.chain === 'string' && /^[A-D]{1,16}$/.test(j.chain) ? j.chain : 'A';
+                song.cur = clamp(j.cur | 0, 0, 3); song.on = !!j.on;
+            }
+        } catch { /* storage blocked */ }
+        const globals = () => ({ bpm: S.bpm, swing: S.swing, key: S.key, glide: S.glide, vol: S.vol, boom: S.boom, space: S.space });
+        function saveSong() { try { localStorage.setItem(LSS, JSON.stringify({ slots: song.slots, chain: song.chain, cur: song.cur, on: song.on })); } catch { /* full or blocked */ } }
+        function songUi(noLayout) {
+            songEl.hidden = !song.on; songBtn.setAttribute('aria-pressed', String(song.on));
+            $$('.bt-slot').forEach((b, k) => b.setAttribute('aria-pressed', String(k === song.cur)));
+            chainEl.innerHTML = song.chain.split('').map((l, i) => `<button class="bt-ch${T.playing && i === song.pos ? ' now' : ''}" data-ci="${i}" title="Remove this ${l}">${l}</button>`).join('');
+            if (!noLayout) layout(true);
+        }
+        function loadSlot(k, at, now) {
+            const keep = globals();
+            song.cur = k;
+            if (song.slots[k]) unpack(S, song.slots[k]);
+            Object.assign(S, keep);
+            if (T.step >= S.len) T.step = 0;
+            clearTimeout(song.uiT);
+            const delay = !now && at && E ? Math.max(0, (at - E.c.currentTime) * 1000) : 0;
+            song.uiT = setTimeout(() => { refresh(); songUi(); }, delay);
+            saveSong();
+        }
+        function songAdvance(at) {
+            song.slots[song.cur] = pack(S, MAXS);
+            song.pos = (song.pos + 1) % song.chain.length;
+            loadSlot(SL.indexOf(song.chain[song.pos]), at);
+        }
+        function setSong(on) {
+            song.on = on;
+            if (on) {
+                if (!song.slots.some(Boolean)) { const cur = pack(S, MAXS); song.slots = [cur, cur, cur, cur].map((x) => JSON.parse(JSON.stringify(x))); song.cur = 0; song.chain = 'A'; }
+                song.slots[song.cur] = pack(S, MAXS);
+                toast('Song mode: edit patterns A–D, then build the chain with +A … +D');
+            } else { song.slots[song.cur] = pack(S, MAXS); toast('Song mode off — editing a single pattern'); }
+            saveSong(); songUi();
+        }
+        songBtn.addEventListener('click', () => setSong(!song.on));
+        songEl.addEventListener('click', (e) => {
+            const sb = e.target.closest('[data-slot]');
+            if (sb) {
+                const k = +sb.dataset.slot; if (k === song.cur) return;
+                song.slots[song.cur] = pack(S, MAXS);
+                if (!song.slots[k]) song.slots[k] = pack(S, MAXS);
+                hist.length = 0; undoBtn.disabled = true;
+                const pi = song.chain.indexOf(SL[k]); if (pi >= 0) song.pos = pi;
+                loadSlot(k, 0, true); toast(`Editing pattern ${SL[k]}`);
+                return;
+            }
+            const ad = e.target.closest('[data-add]');
+            if (ad) { if (song.chain.length >= 16) { toast('A song can chain up to 16 patterns'); return; } song.chain += ad.dataset.add; saveSong(); songUi(); if (song.chain.length > 1) window.Features?.unlock('dj'); return; }
+            const ch = e.target.closest('[data-ci]');
+            if (ch) {
+                if (song.chain.length <= 1) { toast('The chain needs at least one pattern'); return; }
+                const i = +ch.dataset.ci; song.chain = song.chain.slice(0, i) + song.chain.slice(i + 1);
+                if (song.pos >= song.chain.length) song.pos = 0;
+                saveSong(); songUi();
+            }
+        });
+        async function shareCode() {
+            if (!song.on) return encode(pack(S, S.len));
+            song.slots[song.cur] = pack(S, MAXS);
+            return 's' + await encode({ v: 1, slots: song.slots, chain: song.chain });
+        }
+        async function loadCode(code) {
+            if (code[0] === 's') {
+                const o = await decode(code.slice(1));
+                if (!o || o.v !== 1 || !Array.isArray(o.slots) || typeof o.chain !== 'string' || !/^[A-D]{1,16}$/.test(o.chain)) throw new Error('bad song');
+                song.slots = [0, 1, 2, 3].map((k) => (o.slots[k] && o.slots[k].v === 1 ? o.slots[k] : null));
+                song.chain = o.chain; song.on = true; song.pos = 0;
+                const first = SL.indexOf(o.chain[0]);
+                if (song.slots[first]) unpack(S, song.slots[first]);
+                song.cur = first; saveSong(); refresh(); songUi();
+                return 'song';
+            }
+            const o = await decode(code);
+            if (!unpack(S, o)) throw new Error('bad beat');
+            if (song.on) { song.slots[song.cur] = pack(S, MAXS); saveSong(); }
+            refresh();
+            return 'beat';
+        }
+        songUi(true); // the "go" step below runs refresh() + layout
+        if (song.on && song.slots[song.cur]) { const keep = globals(); unpack(S, song.slots[song.cur]); Object.assign(S, keep); }
+
+        // ---------- community wall (Supabase: portfolio_beats)
+        const wall = $('.bt-wall'), wallL = $('.bt-wall-l'), wallF = $('.bt-wall-f');
+        const FX = () => window.Features;
+        let wallRows = [], liked = new Set();
+        try { liked = new Set(JSON.parse(localStorage.getItem('pf_beat_likes') || '[]')); } catch { /* */ }
+        const escH = (x) => String(x ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+        async function loadWall() {
+            wallL.innerHTML = '<p style="color:#9ca3af;font-size:12px">Loading beats…</p>';
+            try {
+                const get = FX()?.get || window.PF?.rest;
+                wallRows = await get('portfolio_beats?select=id,title,author,code,bpm,style,likes,created_at&order=created_at.desc&limit=40');
+            } catch { wallRows = null; }
+            if (!wallRows) { wallL.innerHTML = '<p style="color:#f87171;font-size:12px">The wall is offline right now.</p>'; return; }
+            if (!wallRows.length) { wallL.innerHTML = '<p style="color:#9ca3af;font-size:12px">No beats yet. Post the first one below!</p>'; return; }
+            wallL.innerHTML = wallRows.map((r) => `<div class="bt-wi"><button class="bt-btn" data-wload="${r.id}" aria-label="Load ${escH(r.title)}"><i class="fas fa-play"></i></button>
+                <div style="flex:1;min-width:0"><b>${escH(r.title)}</b><small>${escH(r.author)} · ${r.bpm || '?'} BPM${r.style ? ` · ${escH(r.style)}` : ''}${r.code[0] === 's' ? ' · song' : ''}</small></div>
+                <button class="bt-btn bt-wl" data-wlike="${r.id}" aria-pressed="${liked.has(r.id)}" aria-label="Like"><i class="fas fa-heart"></i><span>${r.likes}</span></button></div>`).join('');
+        }
+        function openWall() { wall.hidden = false; const n = localStorage.getItem('pf_beat_author'); if (n) wallF.elements.namedItem('author').value = n; loadWall(); }
+        $('.bt-wallbtn').addEventListener('click', openWall);
+        $('.bt-wall-x').addEventListener('click', () => { wall.hidden = true; });
+        $('.bt-wall-r').addEventListener('click', loadWall);
+        wallL.addEventListener('click', async (e) => {
+            const lb = e.target.closest('[data-wload]');
+            if (lb) {
+                const r = wallRows.find((x) => String(x.id) === lb.dataset.wload); if (!r) return;
+                try { snapshot(); const kind = await loadCode(r.code); dirty = true; wave(); wall.hidden = true; toast(`Loaded “${r.title}” by ${r.author}${kind === 'song' ? ' (song)' : ''}`); if (!T.playing) play(); }
+                catch { toast('That beat couldn’t be loaded'); }
+                return;
+            }
+            const lk = e.target.closest('[data-wlike]');
+            if (lk && !liked.has(+lk.dataset.wlike)) {
+                const id = +lk.dataset.wlike; liked.add(id);
+                try { localStorage.setItem('pf_beat_likes', JSON.stringify([...liked])); } catch { /* */ }
+                lk.setAttribute('aria-pressed', 'true'); const sp = lk.querySelector('span'); sp.textContent = String(+sp.textContent + 1);
+                try { const n = await FX()?.rpc('portfolio_like_beat', { p_id: id }); if (typeof n === 'number') sp.textContent = String(n); } catch { /* keep local */ }
+            }
+        });
+        wallF.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const F2 = FX(); if (!F2) { toast('Posting needs the full site'); return; }
+            const title = wallF.elements.namedItem('title').value.trim(), author = wallF.elements.namedItem('author').value.trim();
+            if (!title || !author) return;
+            const lastT = +localStorage.getItem('pf_beat_t') || 0;
+            if (Date.now() - lastT < 60000) { toast('One post a minute, please'); return; }
+            const btn = wallF.querySelector('button'); btn.disabled = true;
+            try {
+                const code = await shareCode();
+                if (code.length > 12000) throw new Error('too long');
+                await F2.post('portfolio_beats', { title, author, code, bpm: S.bpm, style: song.on ? 'song' : S.preset });
+                try { localStorage.setItem('pf_beat_author', author); localStorage.setItem('pf_beat_t', String(Date.now())); } catch { /* */ }
+                wallF.elements.namedItem('title').value = ''; toast('Posted to the wall'); F2.track('beat:post', { song: song.on }); loadWall();
+            } catch (err) { toast(err.message === 'too long' ? 'This song is too long to post — try fewer steps' : 'Couldn’t post right now'); }
+            btn.disabled = false;
+        });
 
         // ---------- keyboard: Space play/stop · pads · 808 notes · undo
         const typing = (el) => !!el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.tagName === 'SELECT' || el.isContentEditable);
@@ -1432,10 +1634,9 @@ window.BeatLab = (() => {
         selectVoice(ID.bd); refresh();
         const code = new URLSearchParams(location.search).get('beat');
         if (code) {
-            decode(code).then((o) => {
-                if (!unpack(S, o)) throw new Error('bad beat');
-                dirty = true; hist.length = 0; undoBtn.disabled = true; refresh(); wave();
-                toast('Shared beat loaded — press play');
+            loadCode(code).then((kind) => {
+                dirty = true; hist.length = 0; undoBtn.disabled = true; wave();
+                toast(kind === 'song' ? 'Shared song loaded — press play' : 'Shared beat loaded — press play');
             }).catch(() => toast('That beat link didn’t work — here’s the default kit'));
         }
 
@@ -1443,14 +1644,14 @@ window.BeatLab = (() => {
             frame,
             start() { visible = true; clearTimeout(grace); layout(); },
             stop() { visible = false; clearTimeout(grace); grace = setTimeout(() => { if (!visible) { halt(); closePop(); } }, 180); },
-            escape() { if (!pop.hidden) { closePop(); return true; } return false; },
+            escape() { if (!wall.hidden) { wall.hidden = true; return true; } if (!pop.hidden) { closePop(); return true; } return false; },
             // handles for tests and the console
-            state: S, transport: T, engine: () => E, play, halt, setBpm, setLen, undo, goPage,
+            state: S, transport: T, engine: () => E, play, halt, setBpm, setLen, undo, goPage, song, setSong, openWall,
             preset: (id) => { presetSel.value = id; presetSel.dispatchEvent(new Event('change')); },
             get mode() { return mode; }, get cols() { return cols; }, get page() { return page; },
         };
         return api;
     }
 
-    return { mount, render, wavBlob, pack, unpack, encode, decode, applyPreset, generate, blankState, createEngine, mix, playStep, PRESETS, VOICES: V, LENS };
+    return { mount, render, renderSong, wavBlob, pack, unpack, encode, decode, applyPreset, generate, blankState, createEngine, mix, playStep, PRESETS, VOICES: V, LENS };
 })();

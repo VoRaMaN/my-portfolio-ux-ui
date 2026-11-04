@@ -1483,7 +1483,10 @@
                     <p class="text-xs text-gray-400 mt-1 leading-relaxed">${d.desc}</p>
                     <div class="flex flex-wrap gap-1 mt-2"><span class="lab-tag" style="color:#e9d5ff;border-color:rgba(198,58,235,.35)">${CATS[d.cat]}</span>${d.tags.map((t) => `<span class="lab-tag">${t}</span>`).join('')}</div>
                 </div>
-                <button class="lab-expand" data-expand="${i}" aria-label="Open ${d.n} full screen" data-sfx="whoosh"><i class="fas fa-expand"></i></button>
+                <div class="flex flex-col items-end gap-2 shrink-0">
+                    <button class="lab-expand" data-expand="${i}" aria-label="Open ${d.n} full screen" data-sfx="whoosh"><i class="fas fa-expand"></i></button>
+                    <button class="lab-heart" data-heart="${d.id}" aria-pressed="false" aria-label="Heart ${d.n}" data-sfx="none"><i class="fas fa-heart"></i><span>·</span></button>
+                </div>
             </div>
         </article>`).join('');
 
@@ -1596,6 +1599,39 @@
     document.addEventListener('visibilitychange', () => { if (document.hidden) state.forEach((_, k) => pause(k)); else state.forEach((s, k) => { if (s.visible && (focusIdx < 0 || k === focusIdx)) run(k); }); });
 
     if (new URLSearchParams(location.search).has('beat')) setTimeout(() => openFocus(DEMOS.findIndex((d) => d.id === 'beats')), 400);
+
+    // ---------- hearts (live counts in Supabase: portfolio_votes via rpc portfolio_vote) ----------
+    (() => {
+        const KEY = 'pf_hearts';
+        let mine = new Set(); try { mine = new Set(JSON.parse(localStorage.getItem(KEY) || '[]')); } catch { /* */ }
+        const counts = {};
+        const btns = [...grid.querySelectorAll('[data-heart]')];
+        const paint = () => btns.forEach((b) => {
+            const id = b.dataset.heart, on = mine.has(id);
+            b.setAttribute('aria-pressed', String(on));
+            const n = counts[id];
+            b.querySelector('span').textContent = n == null ? (on ? '1' : '·') : n >= 1000 ? `${(n / 1000).toFixed(1)}k` : String(n);
+        });
+        const cfg = window.PF;
+        if (cfg) cfg.rest('portfolio_votes?select=item,count').then((rows) => { (rows || []).forEach((r) => { counts[r.item] = r.count; }); paint(); }).catch(() => paint());
+        else paint();
+        let busy = false;
+        grid.addEventListener('click', async (e) => {
+            const b = e.target.closest('[data-heart]'); if (!b || busy) return;
+            const id = b.dataset.heart, on = !mine.has(id);
+            on ? mine.add(id) : mine.delete(id);
+            try { localStorage.setItem(KEY, JSON.stringify([...mine])); } catch { /* */ }
+            counts[id] = Math.max(0, (counts[id] || 0) + (on ? 1 : -1));
+            b.classList.remove('pop'); void b.offsetWidth; if (on) b.classList.add('pop');
+            paint(); SFX(on ? 'pop' : 'tick');
+            if (on) window.Features?.unlock('fan');
+            window.Features?.track('heart', { id, on });
+            if (!window.Features) return;
+            busy = true;
+            try { const n = await window.Features.rpc('portfolio_vote', { p_item: id, p_delta: on ? 1 : -1 }); if (typeof n === 'number') { counts[id] = n; paint(); } } catch { /* offline: keep the local count */ }
+            busy = false;
+        });
+    })();
 
     window.Lab = { DEMOS, openFocus, closeFocus, state };
 })();

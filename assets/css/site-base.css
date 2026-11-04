@@ -1,0 +1,33 @@
+/* Base look shared by the standalone pages (cv.html, design-system.html, accessibility.html).
+   The same tokens and components live inline in index.html. */
+:root {
+    --purple: #C63AEB;
+    --violet: #7c3aed;
+    --blue: #60a5fa;
+    --pink: #f472b6;
+    --ink: #060606;
+    --glass-bg: linear-gradient(135deg, rgba(255,255,255,0.09), rgba(255,255,255,0.025));
+    --glass-border: rgba(255,255,255,0.12);
+    --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+}
+html { scroll-behavior: smooth; }
+body { background: radial-gradient(ellipse at top, #1a0a20 0%, #060606 60%) fixed; background-color: #060606; color: #fff; min-height: 100vh; }
+.glass { background: var(--glass-bg); border: 1px solid var(--glass-border); box-shadow: inset 0 1px 0 rgba(255,255,255,0.10), 0 24px 60px -24px rgba(0,0,0,0.7); }
+.glass-dark { background: rgba(14,14,20,0.72); border: 1px solid rgba(255,255,255,0.08); box-shadow: inset 0 1px 0 rgba(255,255,255,0.06), 0 30px 80px -30px rgba(0,0,0,0.8); }
+.btn-main, .btn-glass { position: relative; overflow: hidden; transition: transform .35s var(--ease-out), box-shadow .35s ease, background-color .35s ease, color .35s ease; }
+.btn-main { background: linear-gradient(135deg, #C63AEB, #7c3aed); color: #fff; box-shadow: 0 10px 30px -10px rgba(198,58,235,0.7); }
+.btn-main:hover { transform: translateY(-2px); box-shadow: 0 16px 40px -10px rgba(198,58,235,0.9); }
+.btn-glass { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.16); color: #fff; }
+.btn-glass:hover { background: #fff; color: #060606; transform: translateY(-2px); box-shadow: 0 0 24px rgba(255,255,255,0.35); }
+.btn-main::after, .btn-glass::after { content: ''; position: absolute; top: 0; left: -120%; width: 60%; height: 100%; background: linear-gradient(110deg, transparent, rgba(255,255,255,0.35), transparent); transform: skewX(-20deg); transition: left .7s var(--ease-out); }
+.btn-main:hover::after, .btn-glass:hover::after { left: 140%; }
+.input-underline { background: transparent; border: none; border-bottom: 1px solid rgba(255,255,255,0.18); color: white; transition: border-color .3s; }
+.input-underline:focus { outline: none; border-bottom-color: #C63AEB; }
+.field { position: relative; }
+.field::after { content: ''; position: absolute; left: 0; bottom: 0; height: 1px; width: 100%; background: linear-gradient(90deg, #C63AEB, #60a5fa); transform: scaleX(0); transform-origin: left; transition: transform .5s var(--ease-out); }
+.field:focus-within::after { transform: scaleX(1); }
+.pulse-dot { position: relative; }
+.pulse-dot::after { content: ''; position: absolute; inset: 0; border-radius: 50%; background: inherit; animation: ping 1.8s cubic-bezier(0,0,.2,1) infinite; }
+@keyframes ping { 75%, 100% { transform: scale(2.4); opacity: 0; } }
+.page-nav { position: sticky; top: 0; z-index: 30; background: rgba(6,6,8,.8); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); border-bottom: 1px solid rgba(255,255,255,.08); }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .001ms !important; transition-duration: .001ms !important; } }

@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CV · Voraman Vuth — UX/UI Designer &amp; Game Developer</title>
+    <meta name="description" content="CV of Voraman Vuth: UX/UI designer and indie game developer (Gojo Studio) in Phnom Penh. Experience, education, skills and projects. Download as PDF.">
+    <meta name="theme-color" content="#060606">
+    <link rel="canonical" href="https://voraman.github.io/my-portfolio-ux-ui/cv.html">
+    <link rel="icon" href="assets/img/gojo-logo.webp" type="image/webp">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,700&family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="assets/css/tailwind.css">
+    <link rel="stylesheet" href="assets/css/site-base.css">
+    <style>
+        .cv { max-width: 900px; margin: 0 auto; }
+        .cv h2 { font-size: 11px; font-weight: 800; letter-spacing: .3em; text-transform: uppercase; color: #C63AEB; margin-bottom: 14px; }
+        .cv-sheet { background: rgba(14,14,20,.72); border: 1px solid rgba(255,255,255,.08); border-radius: 28px; padding: 44px; }
+        .cv-chip { display: inline-block; font-size: 12px; padding: 3px 10px; border-radius: 999px; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.1); margin: 0 6px 6px 0; }
+        @media (max-width: 640px) { .cv-sheet { padding: 24px 18px; border-radius: 20px; } }
+        @page { size: A4; margin: 12mm; }
+        @media print {
+            html, body { background: #fff !important; color: #111 !important; }
+            .no-print { display: none !important; }
+            .cv-sheet { background: #fff !important; border: 0 !important; padding: 0 !important; box-shadow: none !important; }
+            .cv h2 { color: #7c3aed !important; }
+            .cv-chip { background: #f4f4f5 !important; border-color: #e4e4e7 !important; color: #111 !important; }
+            .cv .muted { color: #52525b !important; }
+            .cv a { color: #111 !important; text-decoration: none; }
+            .cv section { break-inside: avoid; }
+            .cv .exp { break-inside: avoid; }
+        }
+    </style>
+</head>
+<body class="font-sans antialiased">
+    <nav class="page-nav no-print">
+        <div class="max-w-5xl mx-auto px-4 py-3 flex items-center gap-3">
+            <a href="index.html" class="font-black text-xl tracking-tighter">VV</a>
+            <span class="text-xs font-bold tracking-widest text-gray-400">CV</span>
+            <div class="ml-auto flex items-center gap-2">
+                <a href="CV%20UX%20UI.pdf" target="_blank" rel="noopener" class="btn-glass rounded-full px-4 py-2 text-xs font-bold"><i class="fas fa-file-pdf mr-1"></i><span class="hidden sm:inline">Designed CV (PDF)</span></a>
+                <button id="print" class="btn-main rounded-full px-4 py-2 text-xs font-bold"><i class="fas fa-download mr-1"></i>Download PDF</button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="px-4 py-10">
+        <article class="cv cv-sheet" id="cv" aria-live="polite"><p class="text-gray-400">Loading…</p></article>
+        <p class="no-print text-center text-xs text-gray-500 mt-6">“Download PDF” opens your browser’s print dialog: choose <b>Save as PDF</b>. This CV is generated from the same data as the portfolio, so it is always up to date.</p>
+    </main>
+
+    <script src="assets/js/config.js"></script>
+    <script src="assets/js/site-data.js"></script>
+    <script>
+    (() => {
+        const S = window.SITE, P = S.PROFILE, C = S.CV;
+        const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+        const projects = S.PROJECTS.filter((p) => ['Game', 'Case study', 'Website', 'Web app', 'Tool'].includes(p.kind));
+        const abs = (l) => (/^https?:/.test(l) ? l : l.startsWith('#') ? P.site + l : P.site + l);
+        document.getElementById('cv').innerHTML = `
+            <header class="flex flex-col sm:flex-row sm:items-end justify-between gap-6 pb-8 mb-8 border-b border-white/10">
+                <div>
+                    <h1 class="text-4xl md:text-5xl font-serif font-bold">${esc(P.name)}</h1>
+                    <p class="text-lg mt-2 text-gray-200">${esc(P.title)}</p>
+                    <p class="text-sm muted text-gray-400 mt-1">${esc(P.location)} · ${esc(P.studio)}</p>
+                </div>
+                <ul class="text-sm space-y-1 sm:text-right">
+                    <li><i class="fas fa-envelope w-4 text-[#C63AEB] mr-1"></i><a href="mailto:${esc(P.email)}">${esc(P.email)}</a></li>
+                    <li><i class="fas fa-phone w-4 text-[#C63AEB] mr-1"></i><a href="tel:${esc(P.phone.replace(/\s/g, ''))}">${esc(P.phone)}</a></li>
+                    <li><i class="fas fa-globe w-4 text-[#C63AEB] mr-1"></i><a href="${esc(P.site)}">${esc(P.site.replace(/^https?:\/\//, '').replace(/\/$/, ''))}</a></li>
+                    <li><i class="fab fa-github w-4 text-[#C63AEB] mr-1"></i><a href="${esc(P.github)}">${esc(P.github.replace(/^https?:\/\//, ''))}</a></li>
+                    <li><i class="fab fa-itch-io w-4 text-[#C63AEB] mr-1"></i><a href="${esc(P.itch)}">${esc(P.itch.replace(/^https?:\/\//, '').replace(/\/$/, ''))}</a></li>
+                </ul>
+            </header>
+            <section class="mb-9"><h2>Profile</h2><p class="leading-relaxed text-gray-200">${esc(P.summary)}</p></section>
+            <div class="grid md:grid-cols-[1fr_260px] gap-10">
+                <div>
+                    <section class="mb-9"><h2>Experience</h2>
+                        ${C.experience.map((e) => `<div class="exp mb-6"><div class="flex flex-wrap items-baseline justify-between gap-2"><h3 class="font-bold text-lg">${esc(e.org)}</h3><span class="text-sm muted text-gray-400">${esc(e.role)}</span></div>
+                            <ul class="list-disc pl-5 mt-2 space-y-1 text-sm text-gray-200">${e.points.map((x) => `<li>${esc(x)}</li>`).join('')}</ul></div>`).join('')}
+                    </section>
+                    <section class="mb-9"><h2>Selected projects</h2>
+                        ${projects.map((p) => `<div class="exp mb-4"><div class="flex flex-wrap items-baseline justify-between gap-2"><h3 class="font-bold"><a href="${esc(abs(p.link))}">${esc(p.title)}</a></h3><span class="text-xs muted text-gray-400">${esc(p.kind)}</span></div><p class="text-sm text-gray-300 mt-1">${esc(p.blurb)}</p><p class="text-xs muted text-gray-500 mt-1">${esc(p.skills.slice(0, 6).join(' · '))}</p></div>`).join('')}
+                    </section>
+                </div>
+                <aside>
+                    <section class="mb-9"><h2>Education</h2>${C.education.map((e) => `<p class="font-bold">${esc(e.org)}</p><p class="text-sm text-gray-200">${esc(e.what)}</p><p class="text-xs muted text-gray-400">${esc(e.when)}</p>`).join('')}</section>
+                    ${C.skillGroups.map((g) => `<section class="mb-7"><h2>${esc(g.name)}</h2><div>${g.items.map((x) => `<span class="cv-chip">${esc(x)}</span>`).join('')}</div></section>`).join('')}
+                    <section><h2>Portfolio</h2><p class="text-sm text-gray-300">Interactive case studies, playable games and a UI Lab at <a class="underline" href="${esc(P.site)}">${esc(P.site.replace(/^https?:\/\//, '').replace(/\/$/, ''))}</a></p></section>
+                </aside>
+            </div>`;
+        document.getElementById('print').addEventListener('click', () => window.print());
+        // privacy-friendly view count (same rules as the main site)
+        try {
+            const C2 = window.PORTFOLIO_CONFIG;
+            if (!(navigator.doNotTrack === '1' || navigator.globalPrivacyControl === true || /^(localhost|127\.)/.test(location.hostname))) {
+                fetch(`${C2.SUPABASE_URL}/rest/v1/portfolio_events`, { method: 'POST', keepalive: true, headers: { apikey: C2.SUPABASE_ANON_KEY, Authorization: `Bearer ${C2.SUPABASE_ANON_KEY}`, 'Content-Type': 'application/json', Prefer: 'return=minimal' }, body: JSON.stringify({ name: 'cv', path: 'cv.html', ref: null, session: null, meta: null }) }).catch(() => {});
+            }
+        } catch { /* offline */ }
+    })();
+    </script>
+</body>
+</html>

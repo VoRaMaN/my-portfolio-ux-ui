@@ -37,6 +37,7 @@
         show('app');
         await Promise.all([loadGames(), loadSettings()]);
         setTab(A.tab);
+        updateLeadBadge().catch(() => {});
     }
 
     $('login-form').addEventListener('submit', async (e) => {
@@ -70,10 +71,15 @@
     function setTab(tab) {
         A.tab = tab;
         document.querySelectorAll('.tab').forEach((b) => b.classList.toggle('on', b.dataset.tab === tab));
-        ['games', 'settings', 'media'].forEach((t) => $(`tab-${t}`).classList.toggle('hidden', t !== tab));
+        ['games', 'settings', 'content', 'media', 'analytics', 'leads', 'devlog', 'community'].forEach((t) => $(`tab-${t}`)?.classList.toggle('hidden', t !== tab));
         if (tab === 'games') renderGames();
         if (tab === 'settings') renderSettings();
         if (tab === 'media') renderMedia();
+        if (tab === 'analytics') renderAnalytics();
+        if (tab === 'leads') renderLeads();
+        if (tab === 'devlog') renderDevlog();
+        if (tab === 'community') renderCommunity();
+        if (tab === 'content') renderContent();
     }
 
     // ---------- Data ----------
@@ -716,7 +722,11 @@
         let files = [];
         try { files = await listAll(''); } catch (e) { box.innerHTML = `<p class="text-red-400">${esc(e.message)}</p>`; return; }
         const used = files.reduce((a, f) => a + f.size, 0);
-        const usedBy = new Set(A.games.flatMap((g) => [g.icon_url, g.banner_url, g.capsule_url, ...(g.screenshots || []), ...(g.videos || []).flatMap((v) => (v.parts || []).map((p) => p.path)), ...((g.download?.parts) || []).map((p) => p.path)]));
+        const usedBy = new Set(A.games.flatMap((g) => [g.icon_url, g.banner_url, g.capsule_url, ...(g.screenshots || []), ...(g.videos || []).flatMap((v) => (v.parts || []).map((p) => p.path)), ...((g.download?.parts) || []).map((p) => p.path), ...((g.play?.zip_parts) || []).map((p) => p.path)]));
+        // devlog covers + content images (testimonial avatars, before/after pairs) count as in use too
+        (A.settings.before_after || []).forEach((b) => { usedBy.add(b.before); usedBy.add(b.after); });
+        (A.settings.testimonials || []).forEach((t) => usedBy.add(t.avatar));
+        try { const { data: posts } = await sb.from('portfolio_devlog').select('cover_url'); (posts || []).forEach((p) => usedBy.add(p.cover_url)); } catch { /* table missing */ }
         const pct = Math.min(100, (used / STORAGE_QUOTA) * 100);
         box.innerHTML = `
             <div class="space-y-6">
@@ -748,6 +758,268 @@
             if (!confirm(usedBy.has(p) ? `${p} is used by a game. Delete anyway?` : `Delete ${p}?`)) return;
             await removePaths([p]); renderMedia();
         }));
+    }
+
+
+    // =====================================================================
+    // Analytics · Leads · Devlog · Community · Content tabs
+    // =====================================================================
+    const loadingHtml = (msg = 'Loading…') => `<p class="text-gray-400"><i class="fas fa-spinner fa-spin mr-2"></i>${esc(msg)}</p>`;
+    const when = (d) => new Date(d).toLocaleString('en', { dateStyle: 'medium', timeStyle: 'short' });
+    const nfmt = (n) => Number(n || 0).toLocaleString('en');
+
+    // ---------- Analytics ----------
+    function niceMax(v) { if (v <= 5) return 5; const p = Math.pow(10, Math.floor(Math.log10(v))); const m = v / p; return (m <= 1 ? 1 : m <= 2 ? 2 : m <= 5 ? 5 : 10) * p; }
+    function dayChart(rows, days) {
+        const map = Object.fromEntries((rows || []).map((r) => [r.day, r]));
+        const list = [];
+        for (let i = days - 1; i >= 0; i--) { const d = new Date(Date.now() - i * 86400000).toISOString().slice(0, 10); list.push({ day: d, views: map[d]?.views || 0, sessions: map[d]?.sessions || 0 }); }
+        const max = niceMax(Math.max(1, ...list.map((x) => x.views)));
+        const W = 720, H = 200, padL = 36, padB = 22, padT = 14, cw = (W - padL) / list.length, bw = Math.min(24, Math.max(2, cw - 2));
+        const y = (v) => padT + (H - padT - padB) * (1 - v / max);
+        const ticks = [0, max / 2, max];
+        const peak = list.reduce((a, b) => (b.views > a.views ? b : a), list[0]);
+        const bars = list.map((x, i) => {
+            const bx = padL + i * cw + (cw - bw) / 2, by = y(x.views), bh = H - padB - by, r = Math.min(4, bw / 2, bh);
+            const path = bh > 0 ? `M${bx},${H - padB} V${by + r} Q${bx},${by} ${bx + r},${by} H${bx + bw - r} Q${bx + bw},${by} ${bx + bw},${by + r} V${H - padB} Z` : '';
+            return `<g class="an-bar"><rect x="${padL + i * cw}" y="${padT}" width="${cw}" height="${H - padT - padB}" fill="transparent"><title>${x.day}: ${nfmt(x.views)} views · ${nfmt(x.sessions)} sessions</title></rect>${path ? `<path d="${path}" fill="#C63AEB" pointer-events="none"/>` : ''}</g>`;
+        }).join('');
+        const grid = ticks.map((t) => `<line x1="${padL}" x2="${W}" y1="${y(t)}" y2="${y(t)}" stroke="rgba(255,255,255,.08)" stroke-width="1"/><text x="${padL - 6}" y="${y(t) + 4}" text-anchor="end" font-size="10" fill="#9ca3af">${nfmt(t)}</text>`).join('');
+        const lbl = (i) => list[i].day.slice(5);
+        const xl = [0, Math.floor(list.length / 2), list.length - 1].map((i) => `<text x="${padL + i * cw + cw / 2}" y="${H - 6}" text-anchor="middle" font-size="10" fill="#9ca3af">${lbl(i)}</text>`).join('');
+        const pi = list.indexOf(peak);
+        const peakLbl = peak.views ? `<text x="${padL + pi * cw + cw / 2}" y="${y(peak.views) - 5}" text-anchor="middle" font-size="10" font-weight="700" fill="#e5e7eb">${nfmt(peak.views)}</text>` : '';
+        return { svg: `<svg viewBox="0 0 ${W} ${H}" class="w-full h-auto" role="img" aria-label="Page views per day, last ${days} days">${grid}${bars}${peakLbl}${xl}</svg>`, list };
+    }
+    const barList = (obj, label) => {
+        const e = Object.entries(obj || {}).sort((a, b) => b[1] - a[1]);
+        if (!e.length) return '<p class="text-sm text-gray-500">No data yet.</p>';
+        const max = e[0][1];
+        return `<div class="space-y-2">${e.slice(0, 12).map(([k, v]) => `<div><div class="flex justify-between text-xs mb-1"><span class="truncate">${esc(label ? label(k) : k)}</span><span class="font-mono text-gray-300">${nfmt(v)}</span></div><div class="h-1.5 rounded bg-white/5"><div class="h-full rounded bg-brand-purple" style="width:${(v / max) * 100}%"></div></div></div>`).join('')}</div>`;
+    };
+    async function renderAnalytics() {
+        const box = $('tab-analytics');
+        A.days = A.days || 30;
+        box.innerHTML = loadingHtml('Loading analytics…');
+        const { data, error } = await sb.rpc('portfolio_stats', { p_days: A.days });
+        if (error) { box.innerHTML = `<p class="text-red-400">${esc(error.message)}</p>`; return; }
+        const s = data || {};
+        const plays = Object.values(s.plays || {}).reduce((a, b) => a + b, 0);
+        const ch = dayChart(s.by_day, A.days);
+        const titleOf = (slug) => A.games.find((g) => g.slug === slug)?.title || slug;
+        let noTrack = false; try { noTrack = JSON.parse(localStorage.getItem('pf_notrack') || 'false'); } catch { /* */ }
+        box.innerHTML = `
+            <div class="space-y-6">
+                <div class="flex flex-wrap items-center gap-3"><h2 class="text-2xl font-black mr-auto">Analytics</h2>
+                    <div class="flex gap-1 text-xs">${[7, 30, 90].map((d) => `<button class="tab px-3 py-1.5 rounded-lg ${A.days === d ? 'on' : 'text-gray-300'}" data-days="${d}">${d} days</button>`).join('')}</div></div>
+                <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                    ${[['Page views', s.views, 'fa-eye'], ['Visitors (sessions)', s.sessions, 'fa-user'], ['Game plays + downloads', plays, 'fa-gamepad'], ['New leads', s.leads_new, 'fa-handshake']].map(([l, v, i]) => `<div class="glass rounded-2xl p-5"><i class="fas ${i} text-brand-purple mb-2"></i><p class="text-3xl font-black">${nfmt(v)}</p><p class="text-xs text-gray-400 mt-1">${l}</p></div>`).join('')}
+                </div>
+                <div class="glass rounded-2xl p-5">
+                    <div class="flex items-center justify-between mb-3"><h3 class="font-bold">Page views per day</h3><button class="btn-ghost rounded-lg px-3 py-1 text-xs" id="an-table-btn">Table</button></div>
+                    ${ch.svg}
+                    <div id="an-table" class="hidden mt-4 max-h-64 overflow-auto"><table class="w-full text-xs"><thead class="text-gray-400 text-left"><tr><th class="p-1.5">Day</th><th class="p-1.5 text-right">Views</th><th class="p-1.5 text-right">Sessions</th></tr></thead><tbody>${ch.list.slice().reverse().map((x) => `<tr class="border-t border-white/5"><td class="p-1.5 font-mono">${x.day}</td><td class="p-1.5 text-right">${nfmt(x.views)}</td><td class="p-1.5 text-right">${nfmt(x.sessions)}</td></tr>`).join('')}</tbody></table></div>
+                </div>
+                <div class="grid md:grid-cols-3 gap-4">
+                    <div class="glass rounded-2xl p-5"><h3 class="font-bold mb-4">Sections seen</h3>${barList(s.sections)}</div>
+                    <div class="glass rounded-2xl p-5"><h3 class="font-bold mb-4">Game plays &amp; downloads</h3>${barList(s.plays, titleOf)}</div>
+                    <div class="glass rounded-2xl p-5"><h3 class="font-bold mb-4">Top referrers</h3>${(s.refs || []).length ? `<div class="space-y-2 text-sm">${s.refs.map((r) => `<div class="flex justify-between gap-2"><span class="truncate">${esc(r.ref)}</span><span class="font-mono text-gray-300">${nfmt(r.n)}</span></div>`).join('')}</div>` : '<p class="text-sm text-gray-500">No referrers yet.</p>'}</div>
+                </div>
+                <div class="glass rounded-2xl p-5"><h3 class="font-bold mb-4">All events</h3>${barList(s.by_name)}</div>
+                <div class="glass rounded-2xl p-5 text-sm text-gray-400 space-y-3">
+                    <label class="flex items-center gap-2 text-white"><input type="checkbox" id="an-notrack" class="accent-brand-purple w-4 h-4" ${noTrack ? 'checked' : ''}> Don't count my own visits on this browser</label>
+                    <p>Privacy: no cookies, no IP address, no fingerprinting. Each browser tab gets a random session id. Visitors with Do Not Track or Global Privacy Control are never counted. Events are stored in <code>portfolio_events</code>, which only the admin can read.</p>
+                    <button class="btn-ghost rounded-lg px-3 py-1.5 text-xs" id="an-purge"><i class="fas fa-broom mr-1"></i>Delete events older than 180 days</button>
+                </div>
+            </div>`;
+        box.querySelectorAll('[data-days]').forEach((b) => b.addEventListener('click', () => { A.days = +b.dataset.days; renderAnalytics(); }));
+        $('an-table-btn').addEventListener('click', () => $('an-table').classList.toggle('hidden'));
+        $('an-notrack').addEventListener('change', (e) => { try { localStorage.setItem('pf_notrack', JSON.stringify(e.target.checked)); } catch { /* */ } toast(e.target.checked ? 'Your visits on this browser won’t be counted' : 'Your visits will be counted'); });
+        $('an-purge').addEventListener('click', async () => {
+            if (!confirm('Delete analytics events older than 180 days?')) return;
+            const { error: e2 } = await sb.from('portfolio_events').delete().lt('created_at', new Date(Date.now() - 180 * 86400000).toISOString());
+            toast(e2 ? e2.message : 'Old events deleted', !!e2);
+        });
+    }
+
+    // ---------- Leads ----------
+    async function renderLeads() {
+        const box = $('tab-leads');
+        A.leadFilter = A.leadFilter || 'new';
+        box.innerHTML = loadingHtml('Loading leads…');
+        let q = sb.from('portfolio_leads').select('*').order('created_at', { ascending: false }).limit(200);
+        if (A.leadFilter !== 'all') q = q.eq('status', A.leadFilter);
+        const { data, error } = await q;
+        if (error) { box.innerHTML = `<p class="text-red-400">${esc(error.message)}</p>`; return; }
+        box.innerHTML = `
+            <div class="space-y-5">
+                <div class="flex flex-wrap items-center gap-3"><h2 class="text-2xl font-black mr-auto">Leads</h2>
+                    <div class="flex gap-1 text-xs">${['new', 'replied', 'archived', 'all'].map((f) => `<button class="tab px-3 py-1.5 rounded-lg capitalize ${A.leadFilter === f ? 'on' : 'text-gray-300'}" data-lf="${f}">${f}</button>`).join('')}</div></div>
+                <p class="text-sm text-gray-400">Requests from the “Start a project” form on the portfolio.</p>
+                ${data.length ? data.map((l) => `
+                    <article class="glass rounded-2xl p-5">
+                        <div class="flex flex-wrap items-start gap-3">
+                            <div class="flex-1 min-w-0"><h3 class="font-bold">${esc(l.name)} <span class="text-gray-400 font-normal text-sm">· ${esc(l.email)}</span></h3>
+                                <p class="text-xs text-gray-400 mt-1">${esc(when(l.created_at))}${l.lang ? ` · ${esc(l.lang)}` : ''}</p></div>
+                            <select class="inp !w-auto !py-1.5 text-xs" data-ls="${l.id}">${['new', 'replied', 'archived'].map((s) => `<option value="${s}" ${l.status === s ? 'selected' : ''}>${s}</option>`).join('')}</select>
+                            <a class="btn-main rounded-lg px-3 py-1.5 text-xs font-bold" href="mailto:${esc(l.email)}?subject=${encodeURIComponent(`Re: your ${l.project_type} project`)}"><i class="fas fa-reply mr-1"></i>Reply</a>
+                            <button class="w-8 h-8 rounded bg-red-500/30 text-xs" data-ld="${l.id}" aria-label="Delete lead"><i class="fas fa-trash"></i></button>
+                        </div>
+                        <div class="flex flex-wrap gap-2 mt-3 text-xs">${[l.project_type, l.budget, l.timeline].filter(Boolean).map((x) => `<span class="px-2 py-1 rounded-full bg-white/5 border border-white/10">${esc(x)}</span>`).join('')}</div>
+                        ${l.message ? `<p class="text-sm text-gray-200 mt-3 whitespace-pre-wrap">${esc(l.message)}</p>` : ''}
+                    </article>`).join('') : '<p class="text-gray-500">No leads here.</p>'}
+            </div>`;
+        box.querySelectorAll('[data-lf]').forEach((b) => b.addEventListener('click', () => { A.leadFilter = b.dataset.lf; renderLeads(); }));
+        box.querySelectorAll('[data-ls]').forEach((s) => s.addEventListener('change', async () => {
+            const { error: e2 } = await sb.from('portfolio_leads').update({ status: s.value }).eq('id', s.dataset.ls);
+            toast(e2 ? e2.message : `Marked ${s.value}`, !!e2); updateLeadBadge();
+        }));
+        box.querySelectorAll('[data-ld]').forEach((b) => b.addEventListener('click', async () => {
+            if (!confirm('Delete this lead?')) return;
+            const { error: e2 } = await sb.from('portfolio_leads').delete().eq('id', b.dataset.ld);
+            if (e2) return toast(e2.message, true);
+            toast('Lead deleted'); renderLeads(); updateLeadBadge();
+        }));
+    }
+    async function updateLeadBadge() {
+        const { count } = await sb.from('portfolio_leads').select('id', { count: 'exact', head: true }).eq('status', 'new');
+        const b = $('leads-badge'); if (!b) return;
+        b.textContent = count || ''; b.classList.toggle('hidden', !count);
+    }
+
+    // ---------- Devlog ----------
+    async function renderDevlog() {
+        const box = $('tab-devlog');
+        box.innerHTML = loadingHtml('Loading posts…');
+        const { data, error } = await sb.from('portfolio_devlog').select('*').order('created_at', { ascending: false });
+        if (error) { box.innerHTML = `<p class="text-red-400">${esc(error.message)}</p>`; return; }
+        A.posts = data;
+        const ed = A.post;
+        const games = A.games.filter((g) => g.kind === 'game');
+        box.innerHTML = `
+            <div class="grid lg:grid-cols-[300px_1fr] gap-6">
+                <div class="space-y-3">
+                    <div class="flex items-center justify-between"><h2 class="text-2xl font-black">Devlog</h2><button class="btn-main rounded-lg px-3 py-2 text-xs font-bold" id="dv-new"><i class="fas fa-plus mr-1"></i>New post</button></div>
+                    ${data.length ? data.map((p) => `<button class="w-full text-left glass rounded-xl p-3 ${ed?.id === p.id ? 'ring-2 ring-brand-purple' : ''}" data-pe="${p.id}"><b class="block text-sm truncate">${esc(p.title)}</b><span class="text-[11px] ${p.published ? 'text-green-400' : 'text-yellow-400'}">${p.published ? 'Published' : 'Draft'}</span><span class="text-[11px] text-gray-500"> · ${esc(new Date(p.created_at).toLocaleDateString())}${p.game_slug ? ` · ${esc(p.game_slug)}` : ''}</span></button>`).join('') : '<p class="text-sm text-gray-500">No posts yet. Posts appear in the Games section and on each game’s store page.</p>'}
+                </div>
+                <div>${ed ? `
+                    <div class="glass rounded-2xl p-5 space-y-4">
+                        ${field('dv-title', 'Title', ed.title)}
+                        <div class="grid sm:grid-cols-2 gap-4">
+                            <div><label class="lbl" for="dv-game">Game</label><select id="dv-game" class="inp"><option value="">Studio (no game)</option>${games.map((g) => `<option value="${esc(g.slug)}" ${ed.game_slug === g.slug ? 'selected' : ''}>${esc(g.title)}</option>`).join('')}</select></div>
+                            <div><label class="lbl" for="dv-cover">Cover image</label><div class="flex gap-2"><input id="dv-cover" class="inp" value="${esc(ed.cover_url || '')}" placeholder="URL or upload"><label class="btn-ghost rounded-lg px-3 flex items-center cursor-pointer text-xs"><i class="fas fa-upload"></i><input type="file" accept="image/*" id="dv-up" class="hidden"></label></div></div>
+                        </div>
+                        <div><label class="lbl" for="dv-body">Post (Markdown: # heading, **bold**, _italic_, - list, [link](url), ![image](url))</label><textarea id="dv-body" rows="14" class="inp font-mono text-xs">${esc(ed.body || '')}</textarea></div>
+                        <label class="flex items-center gap-2 text-sm"><input id="dv-pub" type="checkbox" class="accent-brand-purple w-4 h-4" ${ed.published ? 'checked' : ''}> Published</label>
+                        <div class="flex flex-wrap gap-2"><button class="btn-main rounded-xl px-5 py-2.5 font-bold text-sm" id="dv-save"><i class="fas fa-floppy-disk mr-2"></i>Save</button>${ed.id ? `<a class="btn-ghost rounded-xl px-4 py-2.5 text-sm" target="_blank" href="index.html#devlog/${esc(ed.id)}"><i class="fas fa-eye mr-1"></i>View</a><button class="rounded-xl px-4 py-2.5 text-sm bg-red-500/20 text-red-300 ml-auto" id="dv-del"><i class="fas fa-trash mr-1"></i>Delete</button>` : ''}</div>
+                    </div>` : '<div class="glass rounded-2xl p-8 text-center text-gray-400">Pick a post or create a new one.</div>'}</div>
+            </div>`;
+        $('dv-new').addEventListener('click', () => { A.post = { title: '', body: '', game_slug: '', cover_url: '', published: false }; renderDevlog(); });
+        box.querySelectorAll('[data-pe]').forEach((b) => b.addEventListener('click', () => { A.post = { ...A.posts.find((p) => p.id === b.dataset.pe) }; renderDevlog(); }));
+        if (!ed) return;
+        $('dv-up').addEventListener('change', async (e) => {
+            const f = e.target.files[0]; if (!f) return;
+            try { const img = await optimizeImage(f, 1600); const path = await uploadBlob(`devlog/${Date.now()}-${safeName(img.name)}`, img); $('dv-cover').value = path; toast('Cover uploaded'); } catch (err) { toast(err.message, true); }
+        });
+        $('dv-save').addEventListener('click', async () => {
+            const row = { title: $('dv-title').value.trim(), game_slug: $('dv-game').value || null, cover_url: $('dv-cover').value.trim() || null, body: $('dv-body').value, published: $('dv-pub').checked };
+            if (!row.title) return toast('Add a title', true);
+            const q = ed.id ? sb.from('portfolio_devlog').update(row).eq('id', ed.id).select().single() : sb.from('portfolio_devlog').insert(row).select().single();
+            const { data: saved, error: e2 } = await q;
+            if (e2) return toast(e2.message, true);
+            A.post = saved; toast('Post saved'); renderDevlog();
+        });
+        $('dv-del')?.addEventListener('click', async () => {
+            if (!confirm('Delete this post?')) return;
+            const { error: e2 } = await sb.from('portfolio_devlog').delete().eq('id', ed.id);
+            if (e2) return toast(e2.message, true);
+            A.post = null; toast('Post deleted'); renderDevlog();
+        });
+    }
+
+    // ---------- Community (beats wall + leaderboard) ----------
+    async function renderCommunity() {
+        const box = $('tab-community');
+        box.innerHTML = loadingHtml('Loading community…');
+        const [beats, scores] = await Promise.all([
+            sb.from('portfolio_beats').select('id,title,author,code,bpm,style,likes,hidden,created_at').order('created_at', { ascending: false }).limit(200),
+            sb.from('portfolio_scores').select('id,game,name,score,created_at').order('score', { ascending: false }).limit(100),
+        ]);
+        if (beats.error || scores.error) { box.innerHTML = `<p class="text-red-400">${esc((beats.error || scores.error).message)}</p>`; return; }
+        box.innerHTML = `
+            <div class="grid lg:grid-cols-2 gap-6">
+                <div class="glass rounded-2xl p-5"><h2 class="text-xl font-black mb-4">Beat Lab wall <span class="text-sm text-gray-400 font-normal">${beats.data.length}</span></h2>
+                    ${beats.data.length ? `<div class="space-y-2">${beats.data.map((b) => `<div class="flex items-center gap-3 p-2 rounded-lg ${b.hidden ? 'opacity-50' : ''} bg-white/5"><div class="flex-1 min-w-0"><b class="block text-sm truncate">${esc(b.title)}</b><span class="text-[11px] text-gray-400">${esc(b.author)} · ${b.bpm || '?'} BPM · ♥ ${b.likes} · ${esc(new Date(b.created_at).toLocaleDateString())}</span></div>
+                        <a class="w-8 h-8 rounded bg-white/10 text-xs flex items-center justify-center" target="_blank" href="index.html?beat=${encodeURIComponent(b.code)}#playground" aria-label="Open"><i class="fas fa-play"></i></a>
+                        <button class="w-8 h-8 rounded bg-white/10 text-xs" data-bh="${b.id}" data-v="${b.hidden ? 0 : 1}" aria-label="${b.hidden ? 'Show' : 'Hide'}"><i class="fas ${b.hidden ? 'fa-eye' : 'fa-eye-slash'}"></i></button>
+                        <button class="w-8 h-8 rounded bg-red-500/30 text-xs" data-bd="${b.id}" aria-label="Delete"><i class="fas fa-trash"></i></button></div>`).join('')}</div>` : '<p class="text-sm text-gray-500">No beats posted yet.</p>'}
+                </div>
+                <div class="glass rounded-2xl p-5"><h2 class="text-xl font-black mb-4">Comet Dash scores</h2>
+                    ${scores.data.length ? `<div class="space-y-1">${scores.data.map((s, i) => `<div class="flex items-center gap-3 p-2 rounded-lg bg-white/5 text-sm"><span class="w-6 text-gray-500 font-mono">${i + 1}</span><span class="flex-1 truncate">${esc(s.name)}</span><b class="font-mono">${nfmt(s.score)}</b><button class="w-7 h-7 rounded bg-red-500/30 text-xs" data-sd="${s.id}" aria-label="Delete score"><i class="fas fa-trash"></i></button></div>`).join('')}</div>` : '<p class="text-sm text-gray-500">No scores yet.</p>'}
+                </div>
+            </div>`;
+        box.querySelectorAll('[data-bh]').forEach((b) => b.addEventListener('click', async () => { const { error } = await sb.from('portfolio_beats').update({ hidden: b.dataset.v === '1' }).eq('id', b.dataset.bh); toast(error ? error.message : 'Updated', !!error); renderCommunity(); }));
+        box.querySelectorAll('[data-bd]').forEach((b) => b.addEventListener('click', async () => { if (!confirm('Delete this beat?')) return; const { error } = await sb.from('portfolio_beats').delete().eq('id', b.dataset.bd); toast(error ? error.message : 'Beat deleted', !!error); renderCommunity(); }));
+        box.querySelectorAll('[data-sd]').forEach((b) => b.addEventListener('click', async () => { if (!confirm('Delete this score?')) return; const { error } = await sb.from('portfolio_scores').delete().eq('id', b.dataset.sd); toast(error ? error.message : 'Score deleted', !!error); renderCommunity(); }));
+    }
+
+    // ---------- Content (testimonials, availability, metrics, Figma, before/after) ----------
+    function renderContent() {
+        const s = A.settings;
+        const T = Array.isArray(s.testimonials) ? s.testimonials : [];
+        const M = Array.isArray(s.metrics) ? s.metrics : [];
+        const BA = Array.isArray(s.before_after) ? s.before_after : [];
+        const months = s.availability?.months || {};
+        const next = Array.from({ length: 6 }, (_, i) => { const d = new Date(); d.setDate(1); d.setMonth(d.getMonth() + i); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`; });
+        const rowT = (t = {}) => `<div class="ct-t grid sm:grid-cols-2 gap-2 p-3 rounded-xl bg-white/5"><textarea class="inp sm:col-span-2" rows="2" placeholder="Quote (their real words)" data-k="quote">${esc(t.quote || '')}</textarea><input class="inp" placeholder="Name" data-k="name" value="${esc(t.name || '')}"><input class="inp" placeholder="Role" data-k="role" value="${esc(t.role || '')}"><input class="inp" placeholder="Company" data-k="company" value="${esc(t.company || '')}"><input class="inp" placeholder="Link (LinkedIn, site)" data-k="link" value="${esc(t.link || '')}"><input class="inp sm:col-span-2" placeholder="Avatar URL (optional)" data-k="avatar" value="${esc(t.avatar || '')}"><button class="text-xs text-red-300 text-left" data-rm-row>Remove</button></div>`;
+        const rowM = (m = {}) => `<div class="ct-m grid grid-cols-[90px_1fr_120px_auto] gap-2 items-center"><input class="inp" placeholder="13" data-k="value" value="${esc(m.value || '')}"><input class="inp" placeholder="people led on Project-K" data-k="label" value="${esc(m.label || '')}"><input class="inp" placeholder="fa-star" data-k="icon" value="${esc(m.icon || '')}"><button class="text-xs text-red-300" data-rm-row aria-label="Remove"><i class="fas fa-xmark"></i></button></div>`;
+        const rowB = (b = {}) => `<div class="ct-b grid sm:grid-cols-2 gap-2 p-3 rounded-xl bg-white/5"><input class="inp" placeholder="Title" data-k="title" value="${esc(b.title || '')}"><input class="inp" placeholder="Note" data-k="note" value="${esc(b.note || '')}"><input class="inp" placeholder="Before image URL or path" data-k="before" value="${esc(b.before || '')}"><input class="inp" placeholder="After image URL or path" data-k="after" value="${esc(b.after || '')}"><label class="text-xs text-gray-400 flex items-center gap-2 cursor-pointer"><i class="fas fa-upload"></i>Upload before<input type="file" accept="image/*" class="hidden" data-up="before"></label><label class="text-xs text-gray-400 flex items-center gap-2 cursor-pointer"><i class="fas fa-upload"></i>Upload after<input type="file" accept="image/*" class="hidden" data-up="after"></label><button class="text-xs text-red-300 text-left" data-rm-row>Remove</button></div>`;
+        $('tab-content').innerHTML = `
+            <div class="max-w-3xl space-y-6">
+                <h2 class="text-2xl font-black">Portfolio content</h2>
+                <p class="text-sm text-gray-400">Things visitors read as claims live here, so they stay true. Empty sections show a friendly empty state (or the built-in defaults from <code>assets/js/site-data.js</code>).</p>
+                <div class="glass rounded-2xl p-5 space-y-3"><h3 class="font-bold">Testimonials</h3><p class="text-xs text-gray-400">Only add real quotes from people you worked with, with their permission.</p><div id="ct-tl" class="space-y-3">${T.map(rowT).join('')}</div><button class="btn-ghost rounded-lg px-3 py-1.5 text-xs" id="ct-ta"><i class="fas fa-plus mr-1"></i>Add testimonial</button></div>
+                <div class="glass rounded-2xl p-5 space-y-3"><h3 class="font-bold">Availability</h3>
+                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">${next.map((k) => `<div><label class="lbl" for="av-${k}">${k}</label><select id="av-${k}" class="inp" data-month="${k}"><option value="">Auto (${s.available === false ? 'limited' : 'open'})</option>${['open', 'limited', 'booked'].map((v) => `<option value="${v}" ${months[k] === v ? 'selected' : ''}>${v}</option>`).join('')}</select></div>`).join('')}</div>
+                    ${field('ct-avnote', 'Note under the calendar (optional)', s.availability?.note || '')}</div>
+                <div class="glass rounded-2xl p-5 space-y-3"><h3 class="font-bold">Metrics cards</h3><p class="text-xs text-gray-400">Leave empty to use the defaults (facts from the site). Icons are Font Awesome names, e.g. fa-users.</p><div id="ct-ml" class="space-y-2">${M.map(rowM).join('')}</div><button class="btn-ghost rounded-lg px-3 py-1.5 text-xs" id="ct-ma"><i class="fas fa-plus mr-1"></i>Add metric</button></div>
+                <div class="glass rounded-2xl p-5 space-y-3"><h3 class="font-bold">Figma prototypes in case studies</h3><p class="text-xs text-gray-400">Paste a Figma prototype or file link (Share → Copy link). It appears as an embedded prototype in that case study.</p>
+                    ${['game', 'store', 'mobile'].map((k) => field(`ct-fig-${k}`, `Case study: ${k}`, s.figma?.[k] || '', 'url', 'placeholder="https://www.figma.com/proto/…"')).join('')}</div>
+                <div class="glass rounded-2xl p-5 space-y-3"><h3 class="font-bold">Before / after pairs</h3><p class="text-xs text-gray-400">Leave empty to use the built-in pairs (HUD v1 → v3, portfolio v1 → v2).</p><div id="ct-bl" class="space-y-3">${BA.map(rowB).join('')}</div><button class="btn-ghost rounded-lg px-3 py-1.5 text-xs" id="ct-ba"><i class="fas fa-plus mr-1"></i>Add pair</button></div>
+                <button id="ct-save" class="btn-main rounded-xl px-6 py-3 font-bold"><i class="fas fa-floppy-disk mr-2"></i>Save content</button>
+            </div>`;
+        const box = $('tab-content');
+        $('ct-ta').addEventListener('click', () => $('ct-tl').insertAdjacentHTML('beforeend', rowT()));
+        $('ct-ma').addEventListener('click', () => $('ct-ml').insertAdjacentHTML('beforeend', rowM()));
+        $('ct-ba').addEventListener('click', () => $('ct-bl').insertAdjacentHTML('beforeend', rowB()));
+        if (!box.dataset.bound) {
+            box.dataset.bound = '1';
+            box.addEventListener('click', (e) => { const r = e.target.closest('[data-rm-row]'); if (r && r.parentElement) r.parentElement.remove(); });
+            box.addEventListener('change', onContentUpload);
+        }
+        async function onContentUpload(e) {
+            const up = e.target.closest('[data-up]'); if (!up || !up.files[0]) return;
+            try {
+                const img = await optimizeImage(up.files[0], 1600);
+                const path = await uploadBlob(`content/${Date.now()}-${safeName(img.name)}`, img);
+                up.closest('.ct-b').querySelector(`[data-k="${up.dataset.up}"]`).value = path; toast('Image uploaded');
+            } catch (err) { toast(err.message, true); }
+        }
+        const rows = (sel) => [...box.querySelectorAll(sel)].map((r) => Object.fromEntries([...r.querySelectorAll('[data-k]')].map((i) => [i.dataset.k, i.value.trim()])));
+        $('ct-save').addEventListener('click', async () => {
+            const am = {}; box.querySelectorAll('[data-month]').forEach((sel) => { if (sel.value) am[sel.dataset.month] = sel.value; });
+            const value = {
+                ...A.settings,
+                testimonials: rows('.ct-t').filter((t) => t.quote && t.name),
+                metrics: rows('.ct-m').filter((m) => m.value && m.label),
+                before_after: rows('.ct-b').filter((b) => b.before && b.after),
+                availability: { months: am, note: $('ct-avnote').value.trim() },
+                figma: Object.fromEntries(['game', 'store', 'mobile'].map((k) => [k, $(`ct-fig-${k}`).value.trim()]).filter(([, v]) => v)),
+            };
+            const { error } = await sb.from('portfolio_settings').upsert({ key: 'site', value });
+            if (error) return toast(error.message, true);
+            A.settings = value; toast('Content saved');
+        });
     }
 
     boot();

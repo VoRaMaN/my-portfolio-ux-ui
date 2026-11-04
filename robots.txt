@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+Disallow: /admin.html
+
+Sitemap: https://voraman.github.io/my-portfolio-ux-ui/sitemap.xml

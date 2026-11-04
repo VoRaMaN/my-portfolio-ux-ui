@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Accessibility · Voraman Vuth</title>
+    <meta name="description" content="How Voraman Vuth's portfolio supports keyboard, screen reader, reduced-motion and low-vision visitors, its known limits, and how to report a problem.">
+    <meta name="theme-color" content="#060606">
+    <link rel="canonical" href="https://voraman.github.io/my-portfolio-ux-ui/accessibility.html">
+    <link rel="icon" href="assets/img/gojo-logo.webp" type="image/webp">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,700&family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="assets/css/tailwind.css">
+    <link rel="stylesheet" href="assets/css/site-base.css">
+    <link rel="stylesheet" href="assets/css/features.css">
+</head>
+<body class="font-sans antialiased">
+    <a href="#main" class="pf-skip">Skip to content</a>
+    <nav class="page-nav">
+        <div class="max-w-4xl mx-auto px-4 py-3 flex items-center gap-3">
+            <a href="index.html" class="font-black text-xl tracking-tighter">VV</a>
+            <span class="text-xs font-bold tracking-widest text-gray-400">ACCESSIBILITY</span>
+            <a href="index.html" class="ml-auto btn-glass rounded-full px-4 py-2 text-xs font-bold"><i class="fas fa-arrow-left mr-1"></i>Portfolio</a>
+        </div>
+    </nav>
+
+    <main id="main" class="max-w-4xl mx-auto px-4 py-12 space-y-12">
+        <header>
+            <p class="pf-kicker mb-3">Accessibility statement</p>
+            <h1 class="text-4xl md:text-5xl font-serif font-bold">A playful site everyone can use</h1>
+            <p class="text-gray-300 mt-5 leading-relaxed">This portfolio is full of motion, sound and games, and it should still work for keyboard users, screen reader users and anyone who prefers a calmer page. I aim for <b>WCAG 2.2 level AA</b> on the core pages: the home page, case studies, the store, the CV and this page. Interactive experiments and games are extras, and their limits are listed below.</p>
+        </header>
+
+        <section>
+            <h2 class="text-2xl font-bold mb-5">Settings you can change</h2>
+            <div class="grid sm:grid-cols-2 gap-4">
+                <div class="glass rounded-2xl p-5"><i class="fas fa-person-walking text-[#C63AEB] mb-3"></i><h3 class="font-bold">Reduce motion</h3><p class="text-sm text-gray-400 mt-1">Your system’s reduced-motion setting is respected automatically. You can also switch it on in <b>Settings</b> (the <i class="fas fa-sliders"></i> button in the top bar).</p></div>
+                <div class="glass rounded-2xl p-5"><i class="fas fa-volume-xmark text-[#C63AEB] mb-3"></i><h3 class="font-bold">Mute sounds</h3><p class="text-sm text-gray-400 mt-1">Interface clicks only play after you interact. Mute them with the speaker icon in the top bar, sidebar or footer. Nothing autoplays.</p></div>
+                <div class="glass rounded-2xl p-5"><i class="fas fa-circle-half-stroke text-[#C63AEB] mb-3"></i><h3 class="font-bold">Minimal theme</h3><p class="text-sm text-gray-400 mt-1">The Minimal theme removes the animated background, glows and gradients for a flat, high-contrast page.</p></div>
+                <div class="glass rounded-2xl p-5"><i class="fas fa-language text-[#C63AEB] mb-3"></i><h3 class="font-bold">Khmer / English</h3><p class="text-sm text-gray-400 mt-1">Main headings and navigation are available in Khmer. The page language is set so screen readers switch voice.</p></div>
+            </div>
+        </section>
+
+        <section>
+            <h2 class="text-2xl font-bold mb-5">What’s in place</h2>
+            <ul class="space-y-3 text-gray-300">
+                <li class="flex gap-3"><i class="fas fa-check text-green-400 mt-1"></i><span>A “Skip to content” link, landmark regions and a clear heading structure.</span></li>
+                <li class="flex gap-3"><i class="fas fa-check text-green-400 mt-1"></i><span>Every button and link works with the keyboard and has a visible focus ring. <kbd class="px-1 rounded bg-white/10">Esc</kbd> closes overlays, case studies and the store.</span></li>
+                <li class="flex gap-3"><i class="fas fa-check text-green-400 mt-1"></i><span>Icon-only buttons have text labels; images have alt text, and decorative images are hidden from screen readers.</span></li>
+                <li class="flex gap-3"><i class="fas fa-check text-green-400 mt-1"></i><span>Toasts, achievements and the download manager announce changes with live regions.</span></li>
+                <li class="flex gap-3"><i class="fas fa-check text-green-400 mt-1"></i><span>Forms have labels, clear error messages, and never rely on colour alone.</span></li>
+                <li class="flex gap-3"><i class="fas fa-check text-green-400 mt-1"></i><span>Before/after and blueprint sliders are real range inputs, so arrow keys move them.</span></li>
+                <li class="flex gap-3"><i class="fas fa-check text-green-400 mt-1"></i><span>Beat Lab 808 is fully playable from the keyboard: <kbd class="px-1 rounded bg-white/10">Space</kbd> plays, arrow keys move around the grid, letters play pads.</span></li>
+                <li class="flex gap-3"><i class="fas fa-check text-green-400 mt-1"></i><span>The 3D room has a plain list of every destination under the scene.</span></li>
+                <li class="flex gap-3"><i class="fas fa-check text-green-400 mt-1"></i><span>Body text sits on near-black backgrounds, with contrast above 4.5:1 for normal text.</span></li>
+                <li class="flex gap-3"><i class="fas fa-check text-green-400 mt-1"></i><span>Analytics are cookie-free, store no IP address and switch off when your browser sends Do Not Track or Global Privacy Control.</span></li>
+            </ul>
+        </section>
+
+        <section>
+            <h2 class="text-2xl font-bold mb-5">Known limitations</h2>
+            <ul class="space-y-3 text-gray-300">
+                <li class="flex gap-3"><i class="fas fa-triangle-exclamation text-yellow-400 mt-1"></i><span>Some UI Lab experiments (particles, shaders, physics) are visual by nature. Each has a text description, but the effect itself is not available to screen readers.</span></li>
+                <li class="flex gap-3"><i class="fas fa-triangle-exclamation text-yellow-400 mt-1"></i><span>The Comet Dash mini-game needs quick pointer or arrow-key input. It is optional and nothing else depends on it.</span></li>
+                <li class="flex gap-3"><i class="fas fa-triangle-exclamation text-yellow-400 mt-1"></i><span>Games that run in the browser (web builds, itch.io embeds and Python games) come from their own engines and may not support assistive technology.</span></li>
+                <li class="flex gap-3"><i class="fas fa-triangle-exclamation text-yellow-400 mt-1"></i><span>Trailers may not have captions yet.</span></li>
+                <li class="flex gap-3"><i class="fas fa-triangle-exclamation text-yellow-400 mt-1"></i><span>Khmer covers the main page structure; long descriptions are still in English.</span></li>
+            </ul>
+        </section>
+
+        <section class="glass rounded-3xl p-6 md:p-8">
+            <h2 class="text-2xl font-bold mb-3">Found a problem?</h2>
+            <p class="text-gray-300">Tell me what you were trying to do, the page, and the browser or assistive technology you use. I’ll reply and fix it.</p>
+            <div class="flex flex-wrap gap-3 mt-5">
+                <a class="btn-main rounded-full px-6 py-3 text-xs font-bold tracking-widest uppercase" href="mailto:voramanvuth@gmail.com?subject=Accessibility%20feedback"><i class="fas fa-envelope mr-2"></i>Email me</a>
+                <a class="btn-glass rounded-full px-6 py-3 text-xs font-bold tracking-widest uppercase" href="https://t.me/voraman9966" target="_blank" rel="noopener"><i class="fab fa-telegram mr-2"></i>Telegram</a>
+            </div>
+            <p class="text-xs text-gray-500 mt-6">Last reviewed: November 2026.</p>
+        </section>
+    </main>
+</body>
+</html>
