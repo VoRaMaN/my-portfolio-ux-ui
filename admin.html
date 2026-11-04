@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portfolio Admin</title>
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="theme-color" content="#060606">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="assets/css/tailwind.css">
+    <style>
+        html { background: #060606; }
+        body { background: radial-gradient(ellipse at top, #1a0a20 0%, #060606 60%) fixed; color: #fff; min-height: 100vh; }
+        .glass { background: linear-gradient(135deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02)); -webkit-backdrop-filter: blur(18px); backdrop-filter: blur(18px); border: 1px solid rgba(255,255,255,0.1); }
+        .glass-dark { background: rgba(12,12,16,0.7); -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.08); }
+        .btn-main { background: linear-gradient(135deg, #C63AEB, #7c3aed); color: #fff; transition: filter .2s, transform .2s; }
+        .btn-main:hover { filter: brightness(1.1); }
+        .btn-main:disabled { opacity: .4; pointer-events: none; }
+        .btn-ghost { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); transition: background .2s; }
+        .btn-ghost:hover { background: rgba(255,255,255,0.14); }
+        .inp { width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: .6rem; padding: .55rem .8rem; font-size: .875rem; color: #fff; outline: none; transition: border-color .2s; }
+        .inp:focus { border-color: #C63AEB; }
+        select.inp option { background: #111; }
+        .lbl { display: block; font-size: .65rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: #9ca3af; margin-bottom: .35rem; }
+        .drop { border: 2px dashed rgba(255,255,255,0.15); transition: border-color .2s, background .2s; }
+        .drop.over { border-color: #C63AEB; background: rgba(198,58,235,0.08); }
+        .tab.on { background: rgba(255,255,255,0.12); color: #fff; }
+        .stripes { background-image: linear-gradient(45deg, rgba(255,255,255,.18) 25%, transparent 25%, transparent 50%, rgba(255,255,255,.18) 50%, rgba(255,255,255,.18) 75%, transparent 75%, transparent); background-size: 20px 20px; animation: st 1s linear infinite; }
+        @keyframes st { to { background-position: 20px 0; } }
+        :focus-visible { outline: 2px solid #C63AEB; outline-offset: 2px; }
+    </style>
+</head>
+<body class="font-sans antialiased">
+
+    <!-- LOGIN -->
+    <section id="view-login" class="min-h-screen flex items-center justify-center p-4 hidden">
+        <div class="glass-dark rounded-3xl p-8 w-full max-w-sm">
+            <a href="index.html" class="text-xs text-gray-400 hover:text-white"><i class="fas fa-arrow-left mr-1"></i> Back to portfolio</a>
+            <div class="w-14 h-14 rounded-2xl bg-brand-purple/20 text-brand-purple flex items-center justify-center text-2xl mt-6 mb-4"><i class="fas fa-lock"></i></div>
+            <h1 class="text-2xl font-black">Admin sign in</h1>
+            <p class="text-sm text-gray-400 mt-1 mb-6">Only the portfolio owner can manage the store.</p>
+            <form id="login-form" class="space-y-4">
+                <div><label class="lbl" for="login-email">Email</label><input id="login-email" type="email" autocomplete="username" required class="inp"></div>
+                <div><label class="lbl" for="login-pass">Password</label><input id="login-pass" type="password" autocomplete="current-password" required class="inp"></div>
+                <p id="login-error" class="text-xs text-red-400 hidden"></p>
+                <button class="btn-main w-full rounded-xl py-3 font-bold" id="login-btn">Sign in</button>
+            </form>
+            <button id="forgot-btn" class="text-xs text-gray-400 hover:text-white mt-4">Forgot password?</button>
+        </div>
+    </section>
+
+    <!-- SET NEW PASSWORD (after reset link) -->
+    <section id="view-recovery" class="min-h-screen flex items-center justify-center p-4 hidden">
+        <div class="glass-dark rounded-3xl p-8 w-full max-w-sm">
+            <h1 class="text-2xl font-black mb-4">Set a new password</h1>
+            <form id="recovery-form" class="space-y-4">
+                <div><label class="lbl" for="new-pass">New password</label><input id="new-pass" type="password" minlength="8" autocomplete="new-password" required class="inp"></div>
+                <button class="btn-main w-full rounded-xl py-3 font-bold">Save password</button>
+            </form>
+        </div>
+    </section>
+
+    <!-- NOT AUTHORIZED -->
+    <section id="view-denied" class="min-h-screen flex items-center justify-center p-4 hidden">
+        <div class="glass-dark rounded-3xl p-8 w-full max-w-sm text-center">
+            <i class="fas fa-ban text-4xl text-red-400 mb-4"></i>
+            <h1 class="text-xl font-bold mb-2">Not authorized</h1>
+            <p class="text-sm text-gray-400 mb-6">This account isn't the portfolio admin.</p>
+            <button class="btn-ghost rounded-xl px-6 py-2.5 font-bold" data-signout>Sign out</button>
+        </div>
+    </section>
+
+    <!-- APP -->
+    <section id="view-app" class="hidden">
+        <header class="sticky top-0 z-40 glass-dark border-x-0 border-t-0">
+            <div class="max-w-7xl mx-auto px-4 py-3 flex items-center gap-4">
+                <a href="index.html" class="font-black text-xl tracking-tighter">VV</a>
+                <span class="text-xs font-bold tracking-widest text-gray-400 hidden sm:inline">ADMIN</span>
+                <nav class="flex gap-1 ml-2 text-sm">
+                    <button class="tab px-3 py-1.5 rounded-lg text-gray-300" data-tab="games"><i class="fas fa-gamepad mr-1.5"></i>Games</button>
+                    <button class="tab px-3 py-1.5 rounded-lg text-gray-300" data-tab="settings"><i class="fas fa-sliders mr-1.5"></i>Settings</button>
+                    <button class="tab px-3 py-1.5 rounded-lg text-gray-300" data-tab="media"><i class="fas fa-photo-film mr-1.5"></i>Media</button>
+                </nav>
+                <div class="ml-auto flex items-center gap-3 text-xs">
+                    <span id="who" class="text-gray-400 hidden md:inline"></span>
+                    <a href="index.html#store" target="_blank" class="btn-ghost rounded-lg px-3 py-1.5"><i class="fas fa-up-right-from-square mr-1"></i><span class="hidden sm:inline">View store</span></a>
+                    <button class="btn-ghost rounded-lg px-3 py-1.5" data-signout><i class="fas fa-right-from-bracket"></i></button>
+                </div>
+            </div>
+        </header>
+
+        <main class="max-w-7xl mx-auto px-4 py-8">
+            <div id="tab-games"></div>
+            <div id="tab-settings" class="hidden"></div>
+            <div id="tab-media" class="hidden"></div>
+        </main>
+    </section>
+
+    <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 glass rounded-full px-5 py-2.5 text-sm opacity-0 translate-y-4 pointer-events-none transition-all duration-300"></div>
+
+    <script src="assets/vendor/supabase-2.45.4.js"></script>
+    <script src="assets/js/config.js"></script>
+    <script src="assets/js/admin.js"></script>
+</body>
+</html>

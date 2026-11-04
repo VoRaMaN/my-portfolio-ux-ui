@@ -1,0 +1,5 @@
+-- Applied to Supabase project "VoRaMaN's Project" (pcidpbykoylqbyxgwmyx) on 2026-11-04 (migration "portfolio_store_admin").
+-- Tables: portfolio_admins (email allow-list), portfolio_settings (key/value), portfolio_games
+-- Functions: portfolio_is_admin() (confirmed admin email), portfolio_track_download(text)
+-- Storage: public bucket "portfolio-media" (50 MB/object; bigger files are uploaded in parts)
+-- RLS: anyone can read published games and settings; only confirmed admin emails can write.
