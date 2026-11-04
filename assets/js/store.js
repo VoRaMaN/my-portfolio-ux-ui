@@ -26,6 +26,18 @@
             sys_req: { minimum: { os: 'Windows 10 64-bit', cpu: 'Quad-core 2.5 GHz', memory: '8 GB RAM', graphics: 'GTX 960 / RX 470 (2 GB)', storage: '1 GB available space' } },
             rating: null, download_count: 0, sort: 0,
         },
+        {
+            slug: 'stick-empire-conquest-3d', kind: 'game', title: 'Stick Empire Conquest 3D', subtitle: 'Real-time strategy', tagline: 'ORDER · CHAOS · WILDLANDS',
+            short_description: 'A 3D real-time strategy battle game inspired by classic stick-figure warfare. Pick the Order or the Chaos Empire, build an army, manage resources and unlock upgrades — then battle the AI or real players online, right in your browser.',
+            description: 'Stick Empire Conquest 3D is a real-time strategy and battle game inspired by classic stick-figure warfare and large-scale strategy games. Pick your side — the Order Empire or the Chaos Empire — build an army, manage resources and unlock upgrades.\n\nOnline multiplayer (1v1 and 2v2), a 49-region campaign on a candle-lit war table, a five-mission story, and every unit animated with procedural IK. Plays on phones and desktops, and installs as an app from the browser.',
+            developer: 'Gojo Studio', publisher: 'Gojo Studio', release_date: null, price: 0,
+            genres: ['Strategy', 'Action'], tags: ['Playable', 'Play in browser', 'Multiplayer', 'Singleplayer', '3D', 'Low-poly', 'Stickman', 'RTS'], platforms: ['Web browser', 'Mobile (installable app)'],
+            playable: true, icon_url: 'assets/img/stickempire-icon-256.webp', banner_url: 'assets/img/stickempire-banner-1600.webp', capsule_url: 'assets/img/stickempire-banner-800.webp',
+            screenshots: ['assets/img/stickempire-banner-1600.webp', 'assets/img/stickempire-emblems.webp'], videos: [], download: { mode: 'none' },
+            play: { url: 'https://voraman.github.io/Stick-Empire-Conquest-3D/', itch_url: 'https://gojo-studio.itch.io/stick-empire-conquest-3d' },
+            sys_req: { minimum: { os: 'Any modern browser (Chrome, Edge, Firefox, Safari) on desktop or phone', graphics: 'WebGL-capable GPU' } },
+            rating: null, download_count: 0, sort: 1,
+        },
         { slug: 'spider-man-ui', kind: 'concept', title: 'Spider-Man: Remastered', subtitle: 'UI concept', tagline: 'Dashboard UI concept', short_description: 'A game-launcher dashboard concept: most played, quick-launch apps and a store rail.', description: 'UI/UX concept by Voraman Vuth — a launcher dashboard exploring quick access to recently played games, social apps and a storefront rail.', developer: 'Voraman Vuth (UI concept)', price: 39.99, genres: ['Action', 'Adventure'], tags: ['UI Concept'], platforms: ['Windows'], banner_url: 'assets/img/desk-dashboard-1600.webp', capsule_url: 'assets/img/desk-dashboard-800.webp', screenshots: ['assets/img/desk-dashboard-1600.webp'], videos: [], download: { mode: 'none' }, sys_req: {}, rating: 4.8, sort: 10 },
         { slug: 'god-of-war-ui', kind: 'concept', title: 'God of War', subtitle: 'UI concept', tagline: 'Main menu UI concept', short_description: 'A cinematic main-menu concept with a store, profile and quick-play layout.', description: 'UI/UX concept by Voraman Vuth — a game main menu combining profile, shop and quick-play entry points.', developer: 'Voraman Vuth (UI concept)', price: 49.99, genres: ['Action', 'Fighting'], tags: ['UI Concept'], platforms: ['Windows'], banner_url: 'assets/img/desk-mainmenu-1600.webp', capsule_url: 'assets/img/desk-mainmenu-800.webp', screenshots: ['assets/img/desk-mainmenu-1600.webp'], videos: [], download: { mode: 'none' }, sys_req: {}, rating: 4.7, sort: 11 },
         { slug: 'need-for-speed-ui', kind: 'concept', title: 'Need For Speed', subtitle: 'UI concept', tagline: 'Studio website concept', short_description: 'A studio landing-page concept with trailer hero and bold call to action.', description: 'UI/UX concept by Voraman Vuth — a game studio website with a trailer hero, studio pitch and navigation.', developer: 'Voraman Vuth (UI concept)', price: 29.99, genres: ['Racing'], tags: ['UI Concept'], platforms: ['Windows'], banner_url: 'assets/img/desk-iggsite-1600.webp', capsule_url: 'assets/img/desk-iggsite-800.webp', screenshots: ['assets/img/desk-iggsite-1600.webp', 'assets/img/desk-iggsite2-1600.webp'], videos: [], download: { mode: 'none' }, sys_req: {}, rating: 4.5, sort: 12 },
@@ -38,12 +50,27 @@
         games: FALLBACK_GAMES, settings: FALLBACK_SETTINGS, online: false,
         genre: 'All', q: '', sort: 'featured', tab: 'store',
         cart: load('pf_cart', []), wish: load('pf_wish', []), library: load('pf_library', []),
-        current: null, mediaIndex: 0, dl: null,
+        current: null, mediaIndex: 0, dl: null, animateGrid: true, heroIndex: 0, heroRaf: 0, playing: null,
     };
     const $ = (id) => document.getElementById(id);
     const bySlug = (slug) => S.games.find((g) => g.slug === slug);
     const visibleGames = () => S.games.filter((g) => S.settings.show_concepts !== false || g.kind !== 'concept');
     const priceLabel = (g) => (Number(g.price) > 0 ? `$${Number(g.price).toFixed(2)}` : 'Free');
+    const hasPlay = (g) => !!(g && g.play && g.play.url);
+    const platIcon = (p) => {
+        const s = String(p).toLowerCase();
+        if (s.includes('win')) return 'fab fa-windows';
+        if (s.includes('mac') || s.includes('ios')) return 'fab fa-apple';
+        if (s.includes('linux')) return 'fab fa-linux';
+        if (s.includes('android')) return 'fab fa-android';
+        if (s.includes('mobile')) return 'fas fa-mobile-screen';
+        return 'fas fa-globe';
+    };
+    const primaryLabel = (g) => {
+        if (hasPlay(g)) return '<i class="fas fa-play mr-2"></i>Play free';
+        if (g.kind === 'game' && Number(g.price) === 0) return hasBuild(g) ? '<i class="fas fa-download mr-2"></i>Download free' : 'View game';
+        return 'View details';
+    };
     const hasBuild = (g) => g.download && ((g.download.mode === 'parts' && g.download.parts?.length) || (g.download.mode === 'url' && g.download.url));
 
     function toast(msg, icon = 'fa-check') {
@@ -143,6 +170,32 @@
         <!-- Downloads dock (Epic-style) -->
         <div id="dl-dock" class="fixed bottom-6 right-6 z-[110] w-[320px] max-w-[calc(100vw-3rem)] glass-dark rounded-2xl p-4 hidden"></div>
 
+        <!-- In-browser game player -->
+        <div id="game-player" class="fixed inset-0 z-[160] hidden flex-col bg-black/95" role="dialog" aria-modal="true" aria-label="Game player">
+            <div class="relative z-10 flex items-center gap-3 px-3 sm:px-4 py-2.5 glass-dark border-x-0 border-t-0">
+                <img id="gp-icon" alt="" class="w-9 h-9 rounded-lg object-cover">
+                <div class="min-w-0"><p id="gp-title" class="font-bold text-sm truncate"></p><p class="text-[10px] text-green-400 tracking-widest uppercase"><span class="inline-block w-1.5 h-1.5 rounded-full bg-green-400 mr-1 align-middle"></span>Playing in your browser</p></div>
+                <div class="ml-auto flex items-center gap-2">
+                    <a id="gp-itch" target="_blank" rel="noopener" class="btn-glass rounded-lg px-3 py-1.5 text-xs !hidden sm:!inline-flex items-center gap-1.5"><i class="fab fa-itch-io"></i>itch.io</a>
+                    <a id="gp-newtab" target="_blank" rel="noopener" class="btn-glass rounded-lg px-3 py-1.5 text-xs inline-flex items-center gap-1.5" aria-label="Open in new tab"><i class="fas fa-up-right-from-square"></i><span class="hidden sm:inline">New tab</span></a>
+                    <button id="gp-full" class="btn-glass rounded-lg px-3 py-1.5 text-xs inline-flex items-center gap-1.5" aria-label="Fullscreen"><i class="fas fa-expand"></i><span class="hidden sm:inline">Fullscreen</span></button>
+                    <button id="gp-close" class="btn-glass rounded-lg px-3 py-1.5 text-xs" aria-label="Close game"><i class="fas fa-xmark"></i></button>
+                </div>
+            </div>
+            <div id="gp-stage" class="relative flex-1 bg-black">
+                <iframe id="gp-frame" title="Game" class="absolute inset-0 w-full h-full border-0" allow="autoplay; fullscreen; gamepad; accelerometer; gyroscope; xr-spatial-tracking" allowfullscreen></iframe>
+                <div id="gp-loader" class="absolute inset-0 flex flex-col items-center justify-center gap-6 bg-[radial-gradient(ellipse_at_center,#1b0b22_0%,#050505_70%)] transition-opacity duration-700">
+                    <div class="relative w-28 h-28">
+                        <span class="gp-ring absolute -inset-4 rounded-full"></span>
+                        <img id="gp-loader-icon" alt="" class="gp-pulse relative w-28 h-28 rounded-[28px] object-cover">
+                    </div>
+                    <p id="gp-loader-title" class="font-black text-2xl tracking-tight text-center px-4"></p>
+                    <div class="w-64 max-w-[70vw] h-1.5 bg-white/10 rounded-full overflow-hidden"><div class="gp-indeterminate h-full w-1/3 rounded-full bg-gradient-to-r from-brand-purple to-blue-400"></div></div>
+                    <p id="gp-tip" class="text-xs text-gray-400 max-w-xs text-center px-4 transition-opacity duration-300"></p>
+                </div>
+            </div>
+        </div>
+
         <!-- Toast -->
         <div id="store-toast" class="fixed top-6 left-1/2 -translate-x-1/2 z-[150] glass rounded-full px-5 py-2.5 text-sm flex items-center gap-3 opacity-0 translate-y-4 pointer-events-none transition-all duration-300"></div>`;
 
@@ -151,6 +204,12 @@
         $('cart-close').addEventListener('click', closeCart);
         $('cart-overlay').addEventListener('click', closeCart);
         $('cart-checkout').addEventListener('click', checkout);
+        $('gp-close').addEventListener('click', closePlayer);
+        $('gp-full').addEventListener('click', () => {
+            const P = $('game-player');
+            if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
+            else (P.requestFullscreen || P.webkitRequestFullscreen)?.call(P);
+        });
     }
 
     function setTab(tab) {
@@ -199,37 +258,101 @@
         return `<span class="text-[10px] font-semibold text-gray-300 bg-white/5 border border-white/10 rounded px-2 py-0.5">${esc(t)}</span>`;
     }
 
+    function heroGames() {
+        const games = visibleGames().filter((g) => g.kind === 'game');
+        const featured = bySlug(S.settings.featured_game);
+        const list = featured ? [featured, ...games.filter((g) => g !== featured)] : games;
+        return list.length ? list : visibleGames().slice(0, 1);
+    }
+
     function renderHero() {
-        const g = bySlug(S.settings.featured_game) || visibleGames()[0];
-        if (!g || S.tab !== 'store' || S.q || S.genre !== 'All') return '';
+        if (S.tab !== 'store' || S.q || S.genre !== 'All') return '';
+        const list = heroGames();
+        if (!list.length) return '';
+        S.heroIndex = Math.min(S.heroIndex, list.length - 1);
         return `
-        <div class="relative rounded-3xl overflow-hidden mb-8 aspect-[16/9] md:aspect-[21/9] border border-white/10 group cursor-pointer" data-open="${esc(g.slug)}">
-            <img src="${esc(mediaUrl(g.banner_url))}" alt="" class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-[1.5s]">
-            <div class="absolute inset-0 bg-gradient-to-r from-black/90 via-black/50 to-transparent"></div>
-            <div class="absolute inset-y-0 left-0 p-6 md:p-10 flex flex-col justify-end max-w-xl">
-                <span class="text-[10px] font-bold tracking-[0.3em] text-brand-purple mb-2">FEATURED</span>
-                <h2 class="text-3xl md:text-5xl font-black tracking-tight">${esc(g.title)}</h2>
-                ${g.tagline ? `<p class="text-xs md:text-sm tracking-[0.3em] text-gray-300 mt-2">${esc(g.tagline)}</p>` : ''}
-                <p class="text-sm text-gray-300 mt-3 line-clamp-2 hidden md:block">${esc(g.short_description || '')}</p>
-                <div class="flex flex-wrap gap-2 mt-4">${(g.tags || []).slice(0, 4).map(tagChip).join('')}</div>
-                <div class="flex items-center gap-3 mt-5">
-                    <span class="btn-main rounded-xl px-6 py-3 text-sm font-bold">${g.kind === 'game' && Number(g.price) === 0 ? (hasBuild(g) ? '<i class="fas fa-download mr-2"></i>Download free' : 'View game') : 'View details'}</span>
-                    <span class="text-sm font-bold">${priceLabel(g)}</span>
-                </div>
+        <div id="store-hero" class="grid grid-cols-1 xl:grid-cols-[1fr_250px] gap-4 mb-8">
+            <div class="relative rounded-3xl overflow-hidden aspect-[16/10] md:aspect-[21/9] border border-white/10 bg-black">
+                ${list.map((g, i) => `
+                <div class="hero-slide absolute inset-0 ${i === S.heroIndex ? 'is-on' : ''}" data-slide="${i}">
+                    <img src="${esc(mediaUrl(g.banner_url))}" alt="" class="hero-kb absolute inset-0 w-full h-full object-cover">
+                    <div class="absolute inset-0 bg-gradient-to-r from-black/90 via-black/45 to-transparent"></div>
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent"></div>
+                    <div class="hero-copy absolute inset-y-0 left-0 p-5 md:p-10 flex flex-col justify-end max-w-xl">
+                        <span class="text-[10px] font-bold tracking-[0.3em] text-brand-purple mb-2">${i === 0 ? 'FEATURED' : 'ALSO BY GOJO STUDIO'} · ${i + 1}/${list.length}</span>
+                        <h2 class="text-3xl md:text-5xl font-black tracking-tight">${esc(g.title)}</h2>
+                        ${g.tagline ? `<p class="text-[11px] md:text-sm tracking-[0.3em] text-gray-300 mt-2">${esc(g.tagline)}</p>` : ''}
+                        <p class="text-sm text-gray-300 mt-3 line-clamp-2 hidden md:block">${esc(g.short_description || '')}</p>
+                        <div class="flex flex-wrap gap-2 mt-4">${(g.tags || []).slice(0, 4).map(tagChip).join('')}</div>
+                        <div class="flex items-center gap-3 mt-5">
+                            <button data-open="${esc(g.slug)}" data-autoplay="${hasPlay(g) ? '1' : ''}" class="btn-main rounded-xl px-6 py-3 text-sm font-bold">${primaryLabel(g)}</button>
+                            <button data-wish="${esc(g.slug)}" class="btn-glass rounded-xl w-11 h-11 ${S.wish.includes(g.slug) ? '!text-pink-400' : ''}" aria-label="Toggle wishlist"><i class="${S.wish.includes(g.slug) ? 'fas' : 'far'} fa-heart"></i></button>
+                            <span class="text-sm font-bold">${priceLabel(g)}</span>
+                        </div>
+                    </div>
+                </div>`).join('')}
+                ${list.length > 1 ? `<div class="absolute bottom-0 inset-x-0 h-1 bg-white/10 z-20"><div id="hero-progress" class="h-full w-full bg-gradient-to-r from-brand-purple to-blue-400 origin-left" style="transform:scaleX(0)"></div></div>` : ''}
             </div>
+            ${list.length > 1 ? `<div class="hidden xl:flex flex-col gap-2">
+                ${list.map((g, i) => `<button data-hero="${i}" class="hero-thumb relative flex items-center gap-3 p-2.5 rounded-xl text-left overflow-hidden transition-colors ${i === S.heroIndex ? 'bg-white/10' : 'hover:bg-white/5'}">
+                    <span class="hero-thumb-fill absolute inset-0 bg-white/10 origin-left" style="transform:scaleX(0)"></span>
+                    <img src="${esc(mediaUrl(g.icon_url || g.capsule_url || g.banner_url))}" alt="" class="relative w-12 h-12 rounded-lg object-cover">
+                    <span class="relative text-sm font-bold leading-tight">${esc(g.title)}</span>
+                </button>`).join('')}
+            </div>` : ''}
         </div>`;
     }
 
-    function cardHtml(g) {
+    function setHero(i) {
+        const slides = document.querySelectorAll('#store-hero .hero-slide');
+        if (!slides.length) return;
+        S.heroIndex = (i + slides.length) % slides.length;
+        slides.forEach((el, idx) => el.classList.toggle('is-on', idx === S.heroIndex));
+        document.querySelectorAll('#store-hero .hero-thumb').forEach((el, idx) => {
+            el.classList.toggle('bg-white/10', idx === S.heroIndex);
+            el.querySelector('.hero-thumb-fill').style.transform = 'scaleX(0)';
+        });
+        S.heroElapsed = 0;
+    }
+
+    function startHero() {
+        cancelAnimationFrame(S.heroRaf);
+        const hero = $('store-hero');
+        const count = document.querySelectorAll('#store-hero .hero-slide').length;
+        if (!hero || count < 2) return;
+        const DUR = 7000;
+        let last = performance.now(), paused = false;
+        S.heroElapsed = 0;
+        hero.addEventListener('pointerenter', () => { paused = true; });
+        hero.addEventListener('pointerleave', () => { paused = false; });
+        hero.querySelectorAll('[data-hero]').forEach((b) => b.addEventListener('click', () => setHero(+b.dataset.hero)));
+        const step = (now) => {
+            if (!document.body.contains(hero) || !$('desktop-detail')?.classList.contains('active')) { S.heroRaf = 0; return; }
+            const dt = Math.min(100, now - last); last = now;
+            if (!paused && !document.hidden) S.heroElapsed += dt;
+            const p = Math.min(1, S.heroElapsed / DUR);
+            const bar = $('hero-progress'); if (bar) bar.style.transform = `scaleX(${p})`;
+            const fill = hero.querySelectorAll('.hero-thumb-fill')[S.heroIndex]; if (fill) fill.style.transform = `scaleX(${p})`;
+            if (p >= 1) setHero(S.heroIndex + 1);
+            S.heroRaf = requestAnimationFrame(step);
+        };
+        S.heroRaf = requestAnimationFrame(step);
+    }
+
+    function cardHtml(g, i = 0) {
         const inWish = S.wish.includes(g.slug);
         const img = g.capsule_url || g.banner_url || g.screenshots?.[0];
         const square = g.capsule_url && g.capsule_url === g.icon_url;
+        const alt = (g.screenshots || []).find((x) => x !== img) || (g.banner_url !== img ? g.banner_url : null);
         return `
-        <div class="store-card bg-white/[0.04] rounded-2xl overflow-hidden cursor-pointer group border border-white/10 flex flex-col" data-open="${esc(g.slug)}" tabindex="0" role="button" aria-label="${esc(g.title)}">
+        <div class="store-card ${S.animateGrid ? 'card-in' : ''} bg-white/[0.04] rounded-2xl overflow-hidden cursor-pointer group border border-white/10 flex flex-col" style="--i:${i}" data-open="${esc(g.slug)}" tabindex="0" role="button" aria-label="${esc(g.title)}">
             <div class="h-56 overflow-hidden relative bg-black">
-                <img src="${esc(mediaUrl(img))}" alt="" loading="lazy" decoding="async" class="w-full h-full ${square ? 'object-cover object-top' : 'object-cover'} group-hover:scale-105 transition-transform duration-500">
+                <img src="${esc(mediaUrl(img))}" alt="" loading="lazy" decoding="async" class="absolute inset-0 w-full h-full ${square ? 'object-cover object-top' : 'object-cover'} transition duration-700 group-hover:scale-105 ${alt ? 'group-hover:opacity-0' : ''}">
+                ${alt ? `<img src="${esc(mediaUrl(alt))}" alt="" loading="lazy" decoding="async" class="absolute inset-0 w-full h-full object-cover opacity-0 scale-110 transition duration-700 group-hover:opacity-100 group-hover:scale-100">` : ''}
+                <span class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></span>
                 <button data-wish="${esc(g.slug)}" class="absolute top-3 right-3 w-9 h-9 rounded-full bg-black/60 backdrop-blur flex items-center justify-center hover:scale-110 transition-transform ${inWish ? 'text-pink-500' : 'text-white'}" aria-label="Toggle wishlist"><i class="${inWish ? 'fas' : 'far'} fa-heart"></i></button>
                 <div class="absolute bottom-2 left-2 flex gap-1">${(g.tags || []).filter((t) => t === 'Playable' || t === 'UI Concept').map(tagChip).join('')}</div>
+                ${hasPlay(g) ? '<span class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition duration-500"><span class="w-14 h-14 rounded-full bg-green-500/90 flex items-center justify-center text-lg shadow-[0_0_30px_rgba(34,197,94,.6)] scale-75 group-hover:scale-100 transition duration-500"><i class="fas fa-play ml-0.5"></i></span></span>' : ''}
             </div>
             <div class="p-4 flex flex-col flex-1">
                 <p class="text-[10px] uppercase tracking-widest text-gray-500">${esc((g.genres || []).join(' · '))}</p>
@@ -238,13 +361,14 @@
                     <span class="${Number(g.price) > 0 ? 'text-brand-purple' : 'text-green-400'} font-bold">${priceLabel(g)}</span>
                     ${Number(g.price) > 0
                         ? `<button data-cart="${esc(g.slug)}" class="w-9 h-9 rounded-full ${S.cart.includes(g.slug) ? 'bg-brand-purple text-white' : 'bg-white/10 text-gray-300 hover:bg-white hover:text-black'} transition-colors" aria-label="Add to cart"><i class="fas ${S.cart.includes(g.slug) ? 'fa-check' : 'fa-cart-plus'}"></i></button>`
-                        : `<span class="text-xs text-gray-400">${hasBuild(g) ? '<i class="fas fa-download mr-1"></i>Download' : g.kind === 'game' ? 'Coming soon' : ''}</span>`}
+                        : `<span class="text-xs ${hasPlay(g) ? 'text-green-400 font-bold' : 'text-gray-400'}">${hasPlay(g) ? '<i class="fas fa-play mr-1"></i>Play in browser' : hasBuild(g) ? '<i class="fas fa-download mr-1"></i>Download' : g.kind === 'game' ? 'Coming soon' : ''}</span>`}
                 </div>
             </div>
         </div>`;
     }
 
-    function showGrid() {
+    function showGrid(animate = true) {
+        S.animateGrid = animate;
         S.current = null;
         $('store-product-view').classList.add('hidden');
         const view = $('store-grid-view');
@@ -271,21 +395,22 @@
                 ${['store', 'wishlist', 'library'].map((t) => `<button data-tab-m="${t}" class="shrink-0 px-4 py-1.5 rounded-full text-xs font-bold border ${S.tab === t ? 'bg-white text-black border-white' : 'border-white/15 text-gray-300'}">${t[0].toUpperCase() + t.slice(1)}</button>`).join('')}
                 ${['All', ...new Set(visibleGames().flatMap((g) => g.genres || []))].map((g) => `<button data-genre-m="${esc(g)}" class="shrink-0 px-4 py-1.5 rounded-full text-xs border ${S.genre === g ? 'bg-brand-purple border-brand-purple' : 'border-white/15 text-gray-300'}">${esc(g)}</button>`).join('')}
             </div>
-            ${list.length ? `<div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6 pb-28">${list.map(cardHtml).join('')}</div>`
+            ${list.length ? `<div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6 pb-28">${list.map((g, i) => cardHtml(g, i)).join('')}</div>`
                 : `<div class="text-center py-24 text-gray-500"><i class="fas ${S.tab === 'wishlist' ? 'fa-heart' : S.tab === 'library' ? 'fa-download' : 'fa-search'} text-4xl mb-4"></i><p>${S.tab === 'wishlist' ? 'Your wishlist is empty.' : S.tab === 'library' ? 'Games you download appear here.' : 'No games match your search.'}</p></div>`}`;
 
         const search = $('store-search');
-        search.addEventListener('input', (e) => { S.q = e.target.value; const pos = e.target.selectionStart; showGrid(); const s2 = $('store-search'); s2.focus(); s2.setSelectionRange(pos, pos); });
+        search.addEventListener('input', (e) => { S.q = e.target.value; const pos = e.target.selectionStart; showGrid(false); const s2 = $('store-search'); s2.focus(); s2.setSelectionRange(pos, pos); });
         $('store-sort').addEventListener('change', (e) => { S.sort = e.target.value; showGrid(); });
         view.querySelectorAll('[data-tab-m]').forEach((b) => b.addEventListener('click', () => setTab(b.dataset.tabM)));
         view.querySelectorAll('[data-genre-m]').forEach((b) => b.addEventListener('click', () => { S.genre = b.dataset.genreM; showGrid(); }));
         bindCardActions(view);
         renderSidebar();
+        startHero();
     }
 
     function bindCardActions(scope) {
         scope.querySelectorAll('[data-open]').forEach((el) => {
-            el.addEventListener('click', () => { location.hash = `#store/${el.dataset.open}`; });
+            el.addEventListener('click', (e) => { e.stopPropagation(); location.hash = `#store/${el.dataset.open}${el.dataset.autoplay ? '/play' : ''}`; });
             el.addEventListener('keydown', (e) => { if (e.key === 'Enter') location.hash = `#store/${el.dataset.open}`; });
         });
         scope.querySelectorAll('[data-wish]').forEach((b) => b.addEventListener('click', (e) => { e.stopPropagation(); toggleWish(b.dataset.wish); }));
@@ -308,7 +433,7 @@
         renderCart();
         refreshView();
     }
-    function refreshView() { if (S.current) renderProduct(S.current.slug, true); else showGrid(); }
+    function refreshView() { if (S.current) renderProduct(S.current.slug, true); else showGrid(false); }
 
     function renderCart() {
         const items = S.cart.map(bySlug).filter(Boolean);
@@ -370,7 +495,7 @@
     function mediaItems(g) {
         const vids = (g.videos || []).map((v) => ({ type: 'video', ...v }));
         const shots = (g.screenshots || []).map((src) => ({ type: 'image', src }));
-        const items = [...vids, ...shots];
+        const items = [...(hasPlay(g) ? [{ type: 'play', src: g.banner_url }] : []), ...vids, ...shots];
         if (!items.length && g.banner_url) items.push({ type: 'image', src: g.banner_url });
         return items;
     }
@@ -383,6 +508,7 @@
         $('store-grid-view').classList.add('hidden');
         const view = $('store-product-view');
         view.classList.remove('hidden');
+        view.classList.toggle('sp-in', !keepMedia);
         const items = mediaItems(g);
         const inWish = S.wish.includes(g.slug);
         const owned = S.library.includes(g.slug);
@@ -423,8 +549,8 @@
                         <dt class="text-gray-500 uppercase tracking-wider">Release</dt><dd>${esc(date)}</dd>
                         ${g.developer ? `<dt class="text-gray-500 uppercase tracking-wider">Developer</dt><dd class="text-brand-purple">${esc(g.developer)}</dd>` : ''}
                         ${g.publisher ? `<dt class="text-gray-500 uppercase tracking-wider">Publisher</dt><dd class="text-brand-purple">${esc(g.publisher)}</dd>` : ''}
-                        ${(g.platforms || []).length ? `<dt class="text-gray-500 uppercase tracking-wider">Platform</dt><dd>${(g.platforms || []).map((p) => `<i class="fab fa-${p.toLowerCase().includes('win') ? 'windows' : p.toLowerCase().includes('mac') ? 'apple' : p.toLowerCase().includes('linux') ? 'linux' : 'chrome'} mr-1"></i>${esc(p)}`).join(' ')}</dd>` : ''}
-                        ${g.kind === 'game' ? `<dt class="text-gray-500 uppercase tracking-wider">Downloads</dt><dd>${Number(g.download_count || 0).toLocaleString()}</dd>` : ''}
+                        ${(g.platforms || []).length ? `<dt class="text-gray-500 uppercase tracking-wider">Platform</dt><dd>${(g.platforms || []).map((p) => `<span class="whitespace-nowrap"><i class="${platIcon(p)} mr-1"></i>${esc(p)}</span>`).join('<br>')}</dd>` : ''}
+                        ${g.kind === 'game' ? `<dt class="text-gray-500 uppercase tracking-wider">${hasPlay(g) && !hasBuild(g) ? 'Plays' : 'Downloads'}</dt><dd>${Number(g.download_count || 0).toLocaleString()}</dd>` : ''}
                     </dl>
                     <div class="flex flex-wrap gap-1.5">${(g.tags || []).map(tagChip).join('')}${(g.genres || []).map((x) => `<span class="text-[10px] text-gray-400 bg-white/5 rounded px-2 py-0.5">${esc(x)}</span>`).join('')}</div>
                 </aside>
@@ -435,7 +561,7 @@
                     <!-- Buy / download box -->
                     <div class="relative glass rounded-2xl p-5 md:p-6">
                         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                            <h3 class="text-lg md:text-xl font-bold">${g.kind === 'concept' ? 'Buy' : Number(g.price) > 0 ? 'Buy' : 'Download'} ${esc(g.title)}</h3>
+                            <h3 class="text-lg md:text-xl font-bold">${g.kind === 'concept' || Number(g.price) > 0 ? 'Buy' : hasPlay(g) ? 'Play' : 'Download'} ${esc(g.title)}</h3>
                             <div class="flex items-stretch rounded-xl overflow-hidden border border-white/10 bg-black/40 self-start sm:self-auto" id="sp-action"></div>
                         </div>
                         <div id="sp-dl" class="mt-5 hidden"></div>
@@ -456,6 +582,8 @@
                 </div>
                 <aside class="space-y-4">
                     <div class="glass rounded-2xl p-5 space-y-3 text-sm">
+                        ${hasPlay(g) ? '<p class="flex items-center gap-3"><i class="fas fa-globe w-5 text-green-400"></i> Plays in your browser — no install</p>' : ''}
+                        ${(g.tags || []).includes('Multiplayer') ? '<p class="flex items-center gap-3"><i class="fas fa-users w-5 text-blue-300"></i> Online multiplayer</p>' : ''}
                         ${g.playable ? '<p class="flex items-center gap-3"><i class="fas fa-gamepad w-5 text-green-400"></i> Playable build</p>' : ''}
                         ${(g.tags || []).includes('Singleplayer') ? '<p class="flex items-center gap-3"><i class="fas fa-user w-5 text-blue-300"></i> Single-player</p>' : ''}
                         ${Number(g.price) === 0 && g.kind === 'game' ? '<p class="flex items-center gap-3"><i class="fas fa-gift w-5 text-pink-400"></i> Free to play</p>' : ''}
@@ -463,7 +591,7 @@
                         ${g.download?.version ? `<p class="flex items-center gap-3"><i class="fas fa-code-branch w-5 text-gray-400"></i> Version ${esc(g.download.version)}</p>` : ''}
                         ${owned ? '<p class="flex items-center gap-3 text-green-400"><i class="fas fa-circle-check w-5"></i> In your library</p>' : ''}
                     </div>
-                    ${g.kind === 'game' ? `<a data-itch href="${esc(S.settings.itch_url || 'https://gojo-studio.itch.io/')}" target="_blank" rel="noopener" class="glass rounded-2xl p-4 flex items-center gap-3 text-sm hover:bg-white/10 transition-colors"><i class="fab fa-itch-io text-[#fa5c5c] text-xl"></i><span class="flex-1">More from Gojo Studio on itch.io</span><i class="fas fa-up-right-from-square text-xs text-gray-500"></i></a>` : ''}
+                    ${g.kind === 'game' ? `<a ${g.play?.itch_url ? '' : 'data-itch'} href="${esc(g.play?.itch_url || S.settings.itch_url || 'https://gojo-studio.itch.io/')}" target="_blank" rel="noopener" class="glass rounded-2xl p-4 flex items-center gap-3 text-sm hover:bg-white/10 transition-colors"><i class="fab fa-itch-io text-[#fa5c5c] text-xl"></i><span class="flex-1">${g.play?.itch_url ? `${esc(g.title)} on itch.io` : 'More from Gojo Studio on itch.io'}</span><i class="fas fa-up-right-from-square text-xs text-gray-500"></i></a>` : ''}
                 </aside>
             </div>`;
 
@@ -478,7 +606,8 @@
 
         $('sp-thumbs').innerHTML = items.map((m, i) => `
             <button data-media="${i}" class="relative shrink-0 w-28 h-16 rounded-lg overflow-hidden border-2 border-transparent opacity-60 hover:opacity-100 transition-all bg-black" aria-label="Media ${i + 1}">
-                ${m.type === 'image' ? `<img src="${esc(mediaUrl(m.src))}" alt="" loading="lazy" class="w-full h-full object-cover">`
+                ${m.type === 'play' ? `<img src="${esc(mediaUrl(m.src))}" alt="" class="w-full h-full object-cover"><span class="absolute inset-0 bg-green-600/50 flex items-center justify-center gap-1.5 text-[10px] font-black tracking-widest"><i class="fas fa-play"></i>PLAY</span>`
+                    : m.type === 'image' ? `<img src="${esc(mediaUrl(m.src))}" alt="" loading="lazy" class="w-full h-full object-cover">`
                     : `${m.poster ? `<img src="${esc(mediaUrl(m.poster))}" alt="" class="w-full h-full object-cover">` : `<span class="absolute inset-0 bg-gradient-to-br from-brand-purple/40 to-blue-500/30"></span>`}<span class="absolute inset-0 flex items-center justify-center"><i class="fas fa-play text-white drop-shadow"></i></span>`}
             </button>`).join('');
         $('sp-thumbs').querySelectorAll('[data-media]').forEach((b) => b.addEventListener('click', () => selectMedia(+b.dataset.media)));
@@ -502,6 +631,19 @@
             b.classList.toggle('border-brand-purple', on); b.classList.toggle('opacity-100', on); b.classList.toggle('opacity-60', !on);
             if (on) b.scrollIntoView({ block: 'nearest', inline: 'nearest' });
         });
+        if (m.type === 'play') {
+            stage.innerHTML = `
+                <button id="sp-play-tile" class="absolute inset-0 group" aria-label="Play ${esc(g.title)} in your browser">
+                    <img src="${esc(mediaUrl(m.src))}" alt="" class="absolute inset-0 w-full h-full object-cover transition duration-[1.5s] group-hover:scale-105">
+                    <span class="absolute inset-0 bg-black/45 group-hover:bg-black/25 transition duration-500"></span>
+                    <span class="absolute inset-0 flex flex-col items-center justify-center gap-4">
+                        <span class="play-orb w-20 h-20 md:w-24 md:h-24 rounded-full bg-green-500 flex items-center justify-center text-2xl md:text-3xl shadow-[0_0_50px_rgba(34,197,94,.65)] group-hover:scale-110 transition duration-500"><i class="fas fa-play ml-1"></i></span>
+                        <span class="font-black tracking-[0.3em] text-xs md:text-sm">PLAY IN BROWSER</span>
+                    </span>
+                </button>`;
+            $('sp-play-tile').addEventListener('click', () => openPlayer(g));
+            return;
+        }
         if (m.type === 'image') {
             stage.innerHTML = `<img src="${esc(mediaUrl(m.src))}" alt="${esc(g.title)} screenshot" class="w-full h-full object-cover animate-fade-in">`;
             return;
@@ -559,6 +701,15 @@
             return;
         }
         const enabled = S.settings.downloads_enabled !== false;
+        if (hasPlay(g)) {
+            box.innerHTML = `<span class="px-4 flex items-center font-bold text-green-400">Free</span>
+                <button id="sp-play-btn" class="bg-green-600 hover:bg-green-500 px-5 py-3 font-bold text-sm transition"><i class="fas fa-play mr-2"></i>Play now</button>
+                ${hasBuild(g) && enabled ? '<button id="sp-dl-btn" class="bg-white/10 hover:bg-white/20 px-4 py-3 text-sm transition" aria-label="Download"><i class="fas fa-download"></i></button>' : ''}`;
+            $('sp-play-btn').addEventListener('click', () => openPlayer(g));
+            $('sp-dl-btn')?.addEventListener('click', () => startDownload(g));
+            renderDlPanel();
+            return;
+        }
         if (!hasBuild(g) || !enabled) {
             box.innerHTML = `<span class="px-4 flex items-center font-bold text-green-400">Free</span>
                 <a data-itch href="${esc(S.settings.itch_url || '#')}" target="_blank" rel="noopener" class="bg-white/10 hover:bg-white/20 px-5 py-3 font-bold text-sm transition flex items-center gap-2">${enabled ? '<i class="fas fa-clock"></i> Build coming soon · itch.io' : '<i class="fas fa-pause"></i> Downloads paused'}</a>`;
@@ -578,6 +729,52 @@
         });
         renderDlPanel();
     }
+
+    // ---------- In-browser game player ----------
+    function openPlayer(g) {
+        if (!hasPlay(g)) return;
+        const P = $('game-player');
+        const icon = mediaUrl(g.icon_url || g.capsule_url);
+        $('gp-icon').src = icon; $('gp-loader-icon').src = icon;
+        $('gp-title').textContent = g.title; $('gp-loader-title').textContent = g.title;
+        $('gp-newtab').href = g.play.url;
+        const itch = $('gp-itch');
+        if (g.play.itch_url) { itch.href = g.play.itch_url; itch.classList.remove('!hidden'); } else itch.classList.add('!hidden');
+        const loader = $('gp-loader');
+        loader.classList.remove('opacity-0', 'pointer-events-none');
+        const tips = (g.play.tips && g.play.tips.length) ? g.play.tips : ['Fullscreen gives the best experience.', 'Press Esc or ✕ to leave the game.', 'Progress is saved in this browser.'];
+        let t = 0; $('gp-tip').textContent = tips[0];
+        clearInterval(S.tipTimer);
+        S.tipTimer = setInterval(() => { t = (t + 1) % tips.length; const el = $('gp-tip'); el.classList.add('opacity-0'); setTimeout(() => { el.textContent = tips[t]; el.classList.remove('opacity-0'); }, 250); }, 2800);
+        const frame = $('gp-frame'); const t0 = performance.now();
+        frame.onload = () => {
+            if (!S.playing) return;
+            setTimeout(() => { loader.classList.add('opacity-0', 'pointer-events-none'); clearInterval(S.tipTimer); }, Math.max(0, 1600 - (performance.now() - t0)));
+        };
+        S.playing = g;
+        frame.src = g.play.url;
+        P.classList.remove('hidden'); P.classList.add('flex');
+        requestAnimationFrame(() => P.classList.add('gp-open'));
+        window.SFX?.play('whoosh');
+        addToLibrary(g.slug);
+        rest('rpc/portfolio_track_download', { method: 'POST', body: JSON.stringify({ p_slug: g.slug }) })
+            .then((n) => { if (typeof n === 'number') g.download_count = n; }).catch(() => {});
+        if (!location.hash.endsWith('/play')) history.replaceState(null, '', `#store/${g.slug}/play`);
+    }
+    function closePlayer() {
+        const P = $('game-player');
+        if (!S.playing) return;
+        if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
+        const slug = S.playing.slug;
+        S.playing = null; clearInterval(S.tipTimer);
+        P.classList.remove('gp-open');
+        setTimeout(() => { P.classList.add('hidden'); P.classList.remove('flex'); $('gp-frame').src = 'about:blank'; }, 350);
+        if (location.hash.endsWith('/play')) history.replaceState(null, '', `#store/${slug}`);
+    }
+    // Esc closes the player before anything else (capture phase runs before the page's handler)
+    window.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && S.playing && !document.fullscreenElement) { e.stopImmediatePropagation(); e.preventDefault(); closePlayer(); }
+    }, true);
 
     // ---------- Download manager ----------
     class Download {
@@ -736,11 +933,15 @@
 
     // ---------- Routing ----------
     function route() {
-        const m = location.hash.match(/^#store(?:\/([a-z0-9-]+))?$/);
+        const m = location.hash.match(/^#store(?:\/([a-z0-9-]+))?(\/play)?$/);
         if (!m) return;
         const detail = $('desktop-detail');
         if (detail && !detail.classList.contains('active') && typeof window.openDetail === 'function') window.openDetail('desktop', true);
-        if (m[1]) renderProduct(m[1]); else showGrid();
+        if (m[1]) {
+            if (S.current?.slug !== m[1]) renderProduct(m[1]);
+            if (m[2] && !S.playing) { const g = bySlug(m[1]); if (hasPlay(g)) openPlayer(g); }
+            else if (!m[2] && S.playing) closePlayer();
+        } else showGrid();
     }
     window.addEventListener('hashchange', route);
 
@@ -759,6 +960,8 @@
     window.Store = {
         showGrid: () => { renderShell(); if (!location.hash.startsWith('#store/')) showGrid(); },
         closeCart,
+        closePlayer,
+        isPlaying: () => !!S.playing,
         open: (slug) => { location.hash = slug ? `#store/${slug}` : '#store'; },
     };
 
