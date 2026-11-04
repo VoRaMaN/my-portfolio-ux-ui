@@ -6,10 +6,43 @@
     <title>Voraman Vuth - UX/UI Designer &amp; Game Developer</title>
     <meta name="description" content="Voraman Vuth — UX/UI designer and indie game developer (Gojo Studio). Interactive portfolio with game UI, desktop, and mobile prototypes.">
     <meta name="theme-color" content="#060606">
+    <link rel="canonical" href="https://voraman.github.io/my-portfolio-ux-ui/">
+    <link rel="icon" href="assets/img/gojo-logo.webp" type="image/webp">
+    <link rel="apple-touch-icon" href="assets/img/gojo-logo.webp">
+    <meta property="og:site_name" content="Voraman Vuth">
     <meta property="og:title" content="Voraman Vuth - UX/UI Designer & Game Developer">
     <meta property="og:description" content="Interactive portfolio: game UI, web storefronts, mobile prototypes and indie games on itch.io.">
-    <meta property="og:image" content="assets/img/game-main-menu-1600.webp">
+    <meta property="og:url" content="https://voraman.github.io/my-portfolio-ux-ui/">
+    <meta property="og:image" content="https://voraman.github.io/my-portfolio-ux-ui/assets/img/og-card.jpg">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="Voraman Vuth, UX/UI Designer and Game Developer, with screenshots of a fighting game HUD, a game store and EARTHFALL">
     <meta property="og:type" content="website">
+    <meta property="og:locale" content="en_US">
+    <meta property="og:locale:alternate" content="km_KH">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Voraman Vuth - UX/UI Designer & Game Developer">
+    <meta name="twitter:description" content="Interactive case studies, playable games and a UI Lab of 20 live experiments.">
+    <meta name="twitter:image" content="https://voraman.github.io/my-portfolio-ux-ui/assets/img/og-card.jpg">
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "Person", "@id": "https://voraman.github.io/my-portfolio-ux-ui/#me", "name": "Voraman Vuth", "jobTitle": "UX/UI Designer & Game Developer",
+          "url": "https://voraman.github.io/my-portfolio-ux-ui/", "image": "https://voraman.github.io/my-portfolio-ux-ui/assets/img/og-card.jpg", "email": "mailto:voramanvuth@gmail.com",
+          "address": { "@type": "PostalAddress", "addressLocality": "Phnom Penh", "addressCountry": "KH" },
+          "alumniOf": { "@type": "CollegeOrUniversity", "name": "Norton University" },
+          "worksFor": { "@type": "Organization", "name": "Gojo Studio", "url": "https://gojo-studio.itch.io/" },
+          "sameAs": ["https://github.com/VoRaMaN", "https://gojo-studio.itch.io/", "https://t.me/voraman9966"],
+          "knowsAbout": ["UX design", "UI design", "Game UI", "Prototyping", "Design systems", "Figma", "Game development", "Three.js", "Unity", "JavaScript"]
+        },
+        { "@type": "WebSite", "@id": "https://voraman.github.io/my-portfolio-ux-ui/#site", "url": "https://voraman.github.io/my-portfolio-ux-ui/", "name": "Voraman Vuth — Portfolio", "author": { "@id": "https://voraman.github.io/my-portfolio-ux-ui/#me" }, "inLanguage": ["en", "km"] },
+        { "@type": "VideoGame", "name": "EARTHFALL", "url": "https://voraman.github.io/my-portfolio-ux-ui/#store/earthfall", "author": { "@id": "https://voraman.github.io/my-portfolio-ux-ui/#me" }, "publisher": "Gojo Studio", "genre": ["Action", "Strategy"], "gamePlatform": "Windows", "image": "https://voraman.github.io/my-portfolio-ux-ui/assets/img/earthfall-banner-1600.webp", "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" } },
+        { "@type": "VideoGame", "name": "Stick Empire Conquest 3D", "url": "https://voraman.github.io/my-portfolio-ux-ui/#store/stick-empire-conquest-3d", "author": { "@id": "https://voraman.github.io/my-portfolio-ux-ui/#me" }, "publisher": "Gojo Studio", "genre": ["Strategy", "Action"], "gamePlatform": ["Web browser", "Mobile"], "playMode": ["SinglePlayer", "MultiPlayer"], "image": "https://voraman.github.io/my-portfolio-ux-ui/assets/img/stickempire-banner-1600.webp", "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" } }
+      ]
+    }
+    </script>
 
     <!-- Fonts & icons: preconnect so the handshakes start early -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -22,6 +55,7 @@
 
     <!-- Pre-compiled Tailwind (run `npm run build:css` after changing classes) -->
     <link rel="stylesheet" href="assets/css/tailwind.css">
+    <link rel="stylesheet" href="assets/css/features.css">
 
     <style>
         :root {
@@ -365,6 +399,7 @@
         <span class="a1"></span><span class="a2"></span><span class="a3"></span>
         <div class="grid-lines"></div>
     </div>
+    <a href="#main-content" class="pf-skip">Skip to content</a>
     <div class="cursor-glow" id="cursor-glow" aria-hidden="true"></div>
     <div id="scroll-progress" aria-hidden="true"></div>
 
@@ -375,11 +410,11 @@
 
             <div id="nav-container" class="relative flex items-center text-[10px] sm:text-xs font-semibold tracking-wider">
                 <div id="nav-marker"></div>
-                <a href="#projects" class="nav-link px-1.5 sm:px-4 py-2 text-gray-300 hover:text-white transition-colors uppercase"><span>Work</span></a>
-                <a href="#skills" class="nav-link px-1.5 sm:px-4 py-2 text-gray-300 hover:text-white transition-colors uppercase"><span>Skills</span></a>
-                <a href="#games" class="nav-link px-1.5 sm:px-4 py-2 text-gray-300 hover:text-white transition-colors uppercase"><span>Games</span></a>
-                <a href="#playground" class="nav-link px-1.5 sm:px-4 py-2 text-gray-300 hover:text-white transition-colors uppercase"><span>Lab</span></a>
-                <a href="#contact" class="nav-link px-1.5 sm:px-4 py-2 text-gray-300 hover:text-white transition-colors uppercase"><span>Contact</span></a>
+                <a href="#projects" class="nav-link px-1.5 sm:px-4 py-2 text-gray-300 hover:text-white transition-colors uppercase"><span data-i18n="nav.work">Work</span></a>
+                <a href="#skills" class="nav-link px-1.5 sm:px-4 py-2 text-gray-300 hover:text-white transition-colors uppercase"><span data-i18n="nav.skills">Skills</span></a>
+                <a href="#games" class="nav-link px-1.5 sm:px-4 py-2 text-gray-300 hover:text-white transition-colors uppercase"><span data-i18n="nav.games">Games</span></a>
+                <a href="#playground" class="nav-link px-1.5 sm:px-4 py-2 text-gray-300 hover:text-white transition-colors uppercase"><span data-i18n="nav.lab">Lab</span></a>
+                <a href="#contact" class="nav-link px-1.5 sm:px-4 py-2 text-gray-300 hover:text-white transition-colors uppercase"><span data-i18n="nav.contact">Contact</span></a>
             </div>
 
             <div class="flex items-center gap-1.5">
@@ -410,23 +445,24 @@
                 <span id="hero-badge-dot" class="pulse-dot w-2 h-2 rounded-full bg-green-400"></span> <span id="hero-badge-text">OPEN TO UX/UI ROLES &amp; COLLABS</span>
             </div>
 
-            <p class="fade-up text-xs md:text-sm tracking-[0.3em] text-gray-400 mb-4 font-bold" style="--d:.2s">I AM</p>
+            <p class="fade-up text-xs md:text-sm tracking-[0.3em] text-gray-400 mb-4 font-bold" style="--d:.2s" data-i18n="hero.iam">I AM</p>
             <h1 class="hero-title text-6xl sm:text-7xl md:text-8xl lg:text-9xl font-serif font-bold tracking-tight mb-5 text-brand-white" aria-label="Voraman">
                 <span class="hero-letter" style="--i:0" aria-hidden="true">V</span><span class="hero-letter" style="--i:1" aria-hidden="true">O</span><span class="hero-letter" style="--i:2" aria-hidden="true">R</span><span class="hero-letter" style="--i:3" aria-hidden="true">A</span><span class="hero-letter" style="--i:4" aria-hidden="true">M</span><span class="hero-letter" style="--i:5" aria-hidden="true">A</span><span class="hero-letter" style="--i:6" aria-hidden="true">N</span>
             </h1>
             <p class="fade-up text-sm md:text-base tracking-[0.35em] text-gray-300 h-6" style="--d:.9s">
                 <span id="role-text">UX / UI DESIGNER</span><span class="type-caret" aria-hidden="true"></span>
             </p>
-            <p class="fade-up text-gray-400 max-w-md mt-6 text-sm leading-relaxed" style="--d:1.05s">
-                I design interfaces people enjoy using — and build games people enjoy playing.
-            </p>
+            <p class="fade-up text-gray-400 max-w-md mt-6 text-sm leading-relaxed" style="--d:1.05s" data-i18n="hero.lede">I design interfaces people enjoy using — and build games people enjoy playing.</p>
 
             <div class="fade-up flex flex-wrap justify-center gap-3 mt-10" style="--d:1.2s">
                 <a href="#projects" class="btn-main magnetic px-7 py-3 rounded-full text-xs font-bold tracking-widest uppercase inline-flex items-center gap-2">
-                    Explore Work <i class="fas fa-arrow-down text-[10px]"></i>
+                    <span data-i18n="hero.explore">Explore Work</span> <i class="fas fa-arrow-down text-[10px]"></i>
                 </a>
                 <a href="#games" class="btn-glass magnetic px-7 py-3 rounded-full text-xs font-bold tracking-widest uppercase inline-flex items-center gap-2">
-                    <i class="fas fa-gamepad"></i> My Games
+                    <i class="fas fa-gamepad"></i> <span data-i18n="hero.games">My Games</span>
+                </a>
+                <a href="#room" class="btn-glass magnetic px-7 py-3 rounded-full text-xs font-bold tracking-widest uppercase inline-flex items-center gap-2" data-sfx="whoosh">
+                    <i class="fas fa-cube"></i> <span data-i18n="hero.room">Enter my room</span>
                 </a>
             </div>
 
@@ -474,9 +510,9 @@
         <!-- PROJECTS SECTION -->
         <section id="projects" class="min-h-screen py-20 px-4 md:px-12 flex flex-col justify-center items-center">
             <div class="reveal text-center mb-14">
-                <p class="text-xs font-bold tracking-[0.3em] text-brand-purple mb-3 uppercase">Selected Works</p>
-                <h2 class="split-words text-4xl md:text-5xl font-serif font-bold">Interactive case studies</h2>
-                <p class="text-gray-400 mt-3 text-sm">Click a card to open a playable prototype.</p>
+                <p class="text-xs font-bold tracking-[0.3em] text-brand-purple mb-3 uppercase" data-i18n="work.kicker">Selected Works</p>
+                <h2 class="split-words text-4xl md:text-5xl font-serif font-bold" data-i18n="work.title">Interactive case studies</h2>
+                <p class="text-gray-400 mt-3 text-sm" data-i18n="work.sub">Click a card to open a playable prototype.</p>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-8 w-full max-w-6xl mb-10" data-stagger>
@@ -545,14 +581,36 @@
                 </div>
 
             </div>
+
+            <!-- Case-study write-ups (showcase.js) + metrics (features.js) -->
+            <div id="pf-case-links" class="grid grid-cols-1 md:grid-cols-3 gap-4 w-full max-w-6xl mb-10"></div>
+            <div id="pf-metrics" class="grid grid-cols-2 md:grid-cols-4 gap-4 w-full max-w-6xl" aria-label="Numbers"></div>
+        </section>
+
+        <!-- PROCESS + BEFORE/AFTER -->
+        <section id="process" class="py-24 px-4 md:px-12 flex flex-col items-center">
+            <div class="reveal text-center mb-14 max-w-2xl">
+                <p class="text-xs font-bold tracking-[0.3em] text-pink-400 mb-3 uppercase" data-i18n="process.kicker">Process</p>
+                <h2 class="split-words text-4xl md:text-6xl font-serif font-bold leading-tight" data-i18n="process.title">How I think</h2>
+                <p class="text-gray-400 mt-5 leading-relaxed">Six steps from a fuzzy problem to something shipped. Each one links to where you can see it on this site.</p>
+            </div>
+            <div id="pf-process" class="w-full"></div>
+
+            <div class="w-full max-w-6xl mt-24">
+                <div class="reveal flex flex-col md:flex-row md:items-end justify-between gap-3 mb-6">
+                    <div><p class="text-xs font-bold tracking-[0.3em] text-brand-purple mb-3 uppercase">Redesigns</p><h3 class="text-3xl md:text-4xl font-serif font-bold" data-i18n="ba.title">Before &amp; after</h3></div>
+                    <p class="text-sm text-gray-400 max-w-sm">Drag the handle (or use the arrow keys) to compare an earlier version with the current one.</p>
+                </div>
+                <div id="pf-ba" class="reveal"></div>
+            </div>
         </section>
 
         <!-- SKILLS SECTION -->
         <section id="skills" class="min-h-screen py-24 px-4 md:px-12 flex flex-col justify-center items-center">
             <div class="reveal text-center mb-12 max-w-2xl">
-                <p class="text-xs font-bold tracking-[0.3em] text-emerald-400 mb-3 uppercase">Toolkit</p>
-                <h2 class="split-words text-4xl md:text-6xl font-serif font-bold leading-tight">Skills &amp; tools</h2>
-                <p class="text-gray-400 mt-5 leading-relaxed">Design, code, games and AI — <span id="skill-total" class="text-white font-bold">70+</span> skills behind everything on this page. Spin the sphere or pick a category.</p>
+                <p class="text-xs font-bold tracking-[0.3em] text-emerald-400 mb-3 uppercase" data-i18n="skills.kicker">Toolkit</p>
+                <h2 class="split-words text-4xl md:text-6xl font-serif font-bold leading-tight" data-i18n="skills.title">Skills &amp; tools</h2>
+                <p class="text-gray-400 mt-5 leading-relaxed">Design, code, games and AI — <span id="skill-total" class="text-white font-bold">70+</span> skills behind everything on this page. Spin the sphere, pick a category, or click a skill to see where I used it.</p>
             </div>
             <div class="w-full max-w-7xl grid grid-cols-1 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] gap-10 items-center">
                 <div class="reveal relative">
@@ -594,7 +652,7 @@
         <!-- GAMES SECTION (Game Developer / itch.io) -->
         <section id="games" class="min-h-screen py-24 px-4 md:px-12 flex flex-col justify-center items-center">
             <div class="reveal text-center mb-14 max-w-2xl">
-                <p class="text-xs font-bold tracking-[0.3em] text-[#fa5c5c] mb-3 uppercase">Beyond UI / UX</p>
+                <p class="text-xs font-bold tracking-[0.3em] text-[#fa5c5c] mb-3 uppercase" data-i18n="games.kicker">Beyond UI / UX</p>
                 <h2 class="split-words text-4xl md:text-6xl font-serif font-bold leading-tight">I also <em class="text-transparent bg-clip-text bg-gradient-to-r from-brand-purple via-pink-400 to-blue-400">build games.</em></h2>
                 <p class="text-gray-400 mt-5 leading-relaxed">
                     Under <span class="text-white font-semibold">Gojo Studio</span> I design and develop indie games — the mechanics, the HUD, and every menu in between. Play them on itch.io.
@@ -668,8 +726,8 @@
             <!-- My games -->
             <div class="w-full max-w-6xl mt-14">
                 <div class="reveal flex items-end justify-between gap-4 mb-6">
-                    <h3 class="text-2xl md:text-3xl font-black">My games</h3>
-                    <button type="button" onclick="openStore()" class="text-xs font-bold tracking-widest uppercase text-gray-400 hover:text-white transition-colors">Open the store <i class="fas fa-arrow-right ml-1"></i></button>
+                    <h3 class="text-2xl md:text-3xl font-black" data-i18n="games.mine">My games</h3>
+                    <button type="button" onclick="openStore()" class="text-xs font-bold tracking-widest uppercase text-gray-400 hover:text-white transition-colors"><span data-i18n="games.store">Open the store</span> <i class="fas fa-arrow-right ml-1"></i></button>
                 </div>
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6" data-stagger>
                     <!-- EARTHFALL -->
@@ -694,6 +752,7 @@
                             <div class="flex flex-wrap gap-3 mt-auto pt-2">
                                 <button type="button" onclick="openStore('earthfall')" class="btn-main magnetic rounded-full px-6 py-3 text-xs font-bold tracking-widest uppercase inline-flex items-center gap-2"><i class="fas fa-download"></i> Get it free</button>
                                 <button type="button" onclick="openStore('earthfall')" class="btn-glass magnetic rounded-full px-6 py-3 text-xs font-bold tracking-widest uppercase inline-flex items-center gap-2"><i class="fas fa-store"></i> Store page</button>
+                                <a href="#press/earthfall" class="btn-glass rounded-full w-11 h-11 inline-flex items-center justify-center" aria-label="EARTHFALL press kit" title="Press kit"><i class="fas fa-newspaper"></i></a>
                             </div>
                         </div>
                     </article>
@@ -719,10 +778,47 @@
                                 <button type="button" onclick="openStore('stick-empire-conquest-3d', true)" class="btn-main magnetic rounded-full px-6 py-3 text-xs font-bold tracking-widest uppercase inline-flex items-center gap-2" style="background:linear-gradient(135deg,#16a34a,#22c55e)"><i class="fas fa-play"></i> Play now</button>
                                 <button type="button" onclick="openStore('stick-empire-conquest-3d')" class="btn-glass magnetic rounded-full px-6 py-3 text-xs font-bold tracking-widest uppercase inline-flex items-center gap-2"><i class="fas fa-store"></i> Store page</button>
                                 <a href="https://gojo-studio.itch.io/stick-empire-conquest-3d" target="_blank" rel="noopener" class="btn-glass rounded-full w-11 h-11 inline-flex items-center justify-center" aria-label="Stick Empire Conquest 3D on itch.io"><i class="fab fa-itch-io"></i></a>
+                                <a href="#press/stick-empire-conquest-3d" class="btn-glass rounded-full w-11 h-11 inline-flex items-center justify-center" aria-label="Stick Empire Conquest 3D press kit" title="Press kit"><i class="fas fa-newspaper"></i></a>
                             </div>
                         </div>
                     </article>
                 </div>
+            </div>
+
+            <!-- 30-second mini-game + leaderboard (arcade.js) -->
+            <div id="arcade" class="w-full max-w-6xl mt-16 scroll-mt-24">
+                <div class="reveal flex items-end justify-between gap-4 mb-6">
+                    <div><p class="text-xs font-bold tracking-[0.3em] text-yellow-300 mb-2 uppercase">Mini-game</p><h3 class="text-2xl md:text-3xl font-black" data-i18n="mini.title">30-second challenge</h3></div>
+                    <p class="text-sm text-gray-400 hidden md:block">Comet Dash · mouse, touch or arrow keys</p>
+                </div>
+                <div class="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_300px] gap-5">
+                    <div class="arc-wrap relative rounded-3xl overflow-hidden glass-dark" data-sfx="none"><canvas id="arcade-cv" tabindex="0" aria-label="Comet Dash mini-game. Press Space to start, then steer with the arrow keys or the mouse."></canvas><div id="arcade-ui" class="arc-ui"></div></div>
+                    <aside class="glass rounded-3xl p-5" aria-labelledby="arc-top"><h4 id="arc-top" class="text-xs font-bold tracking-[0.25em] uppercase text-gray-400 mb-3"><i class="fas fa-trophy text-yellow-400 mr-2"></i><span data-i18n="mini.top">Top 10</span></h4><ol id="arcade-board" class="space-y-1"><li class="text-sm text-gray-400">Loading…</li></ol></aside>
+                </div>
+            </div>
+
+            <!-- Game UI breakdown (showcase.js) -->
+            <div class="w-full max-w-6xl mt-16">
+                <div class="reveal flex items-end justify-between gap-4 mb-6">
+                    <div><p class="text-xs font-bold tracking-[0.3em] text-brand-purple mb-2 uppercase">Game UI breakdown</p><h3 class="text-2xl md:text-3xl font-black">Fighting HUD anatomy</h3></div>
+                    <a href="#case/game" class="text-xs font-bold tracking-widest uppercase text-gray-400 hover:text-white transition-colors">Full case study <i class="fas fa-arrow-right ml-1"></i></a>
+                </div>
+                <div id="pf-hud" class="reveal"></div>
+            </div>
+
+            <!-- Devlog (showcase.js, posts from the admin) -->
+            <div class="w-full max-w-6xl mt-16">
+                <div class="reveal flex items-end justify-between gap-4 mb-6">
+                    <div><p class="text-xs font-bold tracking-[0.3em] text-[#fa5c5c] mb-2 uppercase">Behind the scenes</p><h3 class="text-2xl md:text-3xl font-black" data-i18n="devlog.title">Devlog</h3></div>
+                    <a href="#devlog" class="text-xs font-bold tracking-widest uppercase text-gray-400 hover:text-white transition-colors">All posts <i class="fas fa-arrow-right ml-1"></i></a>
+                </div>
+                <div id="pf-devlog"><p class="text-sm text-gray-500">Loading…</p></div>
+            </div>
+
+            <!-- Live stats (features.js) -->
+            <div class="w-full max-w-6xl mt-16">
+                <h3 class="reveal text-xs font-bold tracking-[0.3em] text-gray-400 uppercase mb-5"><i class="fas fa-signal mr-2 text-green-400"></i><span data-i18n="stats.title">Live stats</span></h3>
+                <div id="pf-stats" class="grid grid-cols-1 md:grid-cols-2 gap-5"><div class="glass rounded-2xl p-5 h-40"></div><div class="glass rounded-2xl p-5 h-40"></div></div>
             </div>
 
             <!-- Optional: itch.io embed widgets (filled from ITCH_GAMES in the script below) -->
@@ -735,8 +831,8 @@
         <!-- PLAYGROUND SECTION -->
         <section id="playground" class="min-h-screen py-20 px-4 md:px-12 flex flex-col justify-center items-center relative">
             <div class="reveal text-center mb-12 w-full">
-                <p class="text-xs font-bold tracking-[0.3em] text-blue-400 mb-3 uppercase">Playground</p>
-                <h2 class="split-words text-4xl md:text-6xl font-serif font-bold mb-3">UI Lab</h2>
+                <p class="text-xs font-bold tracking-[0.3em] text-blue-400 mb-3 uppercase" data-i18n="lab.kicker">Playground</p>
+                <h2 class="split-words text-4xl md:text-6xl font-serif font-bold mb-3" data-i18n="lab.title">UI Lab</h2>
                 <p class="text-gray-400 max-w-xl mx-auto">20 live experiments — physics, shaders, sound and game UI — plus a button designer and an app simulator. Everything here is real, interactive code.</p>
             </div>
 
@@ -840,17 +936,28 @@
             </div>
         </section>
 
+        <!-- TESTIMONIALS (features.js; quotes come from the admin) -->
+        <section id="testimonials" class="py-20 px-4 md:px-12">
+            <div class="reveal text-center mb-10">
+                <p class="text-xs font-bold tracking-[0.3em] text-brand-purple mb-3 uppercase">Kind words</p>
+                <h2 class="split-words text-4xl md:text-5xl font-serif font-bold" data-i18n="testi.title">Testimonials</h2>
+            </div>
+            <div id="pf-testimonials" class="reveal"></div>
+        </section>
+
         <!-- CONTACT SECTION -->
         <section id="contact" class="min-h-screen flex items-center justify-center px-4 md:px-12 py-20">
             <div class="max-w-7xl w-full grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-start">
 
                 <div class="reveal space-y-10 pt-6">
                     <div class="text-center lg:text-left">
-                        <p class="text-xs font-bold tracking-[0.3em] text-brand-purple mb-3 uppercase">Say hello</p>
-                        <h2 class="split-words text-4xl md:text-5xl font-serif font-bold mb-6">Let's work together</h2>
-                        <p class="text-gray-400 leading-relaxed max-w-md mx-auto lg:mx-0">
-                            I'm open to UX/UI roles, freelance design, game UI and collaborations. Feel free to reach out via the platforms below.
-                        </p>
+                        <p class="text-xs font-bold tracking-[0.3em] text-brand-purple mb-3 uppercase" data-i18n="contact.kicker">Say hello</p>
+                        <h2 class="split-words text-4xl md:text-5xl font-serif font-bold mb-6" data-i18n="contact.title">Let's work together</h2>
+                        <p class="text-gray-400 leading-relaxed max-w-md mx-auto lg:mx-0" data-i18n="contact.lede">I'm open to UX/UI roles, freelance design, game UI and collaborations. Feel free to reach out via the platforms below.</p>
+                        <div class="flex flex-wrap gap-3 mt-6 justify-center lg:justify-start">
+                            <button type="button" data-hire class="btn-main rounded-full px-6 py-3 text-xs font-bold tracking-widest uppercase inline-flex items-center gap-2"><i class="fas fa-handshake"></i><span data-i18n="hire.start">Start a project</span></button>
+                            <a href="cv.html" class="btn-glass rounded-full px-6 py-3 text-xs font-bold tracking-widest uppercase inline-flex items-center gap-2"><i class="fas fa-file-arrow-down"></i><span data-i18n="cv.download">Download CV</span></a>
+                        </div>
                     </div>
 
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4" data-stagger>
@@ -876,16 +983,17 @@
                             <i class="fas fa-up-right-from-square text-xs text-gray-500 group-hover:text-white transition-colors"></i>
                         </a>
                     </div>
+                    <div id="pf-availability" class="reveal glass rounded-2xl p-5"></div>
                 </div>
 
                 <div class="reveal glass-dark rounded-3xl p-8 md:p-12">
-                    <h2 class="text-3xl md:text-4xl font-bold mb-10 text-center">Contact Form</h2>
+                    <h2 class="text-3xl md:text-4xl font-bold mb-10 text-center" data-i18n="contact.form">Contact Form</h2>
                     <form id="contact-form" class="space-y-9">
-                        <div class="field"><label for="form-name" class="sr-only">Your name</label><input type="text" id="form-name" placeholder="Your name" required class="input-underline w-full py-3 bg-transparent placeholder-gray-500"></div>
-                        <div class="field"><label for="form-email" class="sr-only">Your e-mail</label><input type="email" id="form-email" placeholder="Your e-mail" required class="input-underline w-full py-3 bg-transparent placeholder-gray-500"></div>
-                        <div class="field"><label for="form-message" class="sr-only">Message</label><textarea id="form-message" placeholder="Message" rows="3" required class="input-underline w-full py-3 bg-transparent placeholder-gray-500 resize-none"></textarea></div>
+                        <div class="field"><label for="form-name" class="sr-only">Your name</label><input type="text" id="form-name" placeholder="Your name" data-i18n-ph="contact.name" required class="input-underline w-full py-3 bg-transparent placeholder-gray-500"></div>
+                        <div class="field"><label for="form-email" class="sr-only">Your e-mail</label><input type="email" id="form-email" placeholder="Your e-mail" data-i18n-ph="contact.email" required class="input-underline w-full py-3 bg-transparent placeholder-gray-500"></div>
+                        <div class="field"><label for="form-message" class="sr-only">Message</label><textarea id="form-message" placeholder="Message" data-i18n-ph="contact.message" rows="3" required class="input-underline w-full py-3 bg-transparent placeholder-gray-500 resize-none"></textarea></div>
                         <div class="pt-6 text-center md:text-right">
-                            <button type="submit" class="btn-main px-8 py-3 rounded-full text-xs font-bold tracking-widest uppercase inline-flex items-center gap-2">Send Message <i class="fas fa-paper-plane text-[10px]"></i></button>
+                            <button type="submit" class="btn-main px-8 py-3 rounded-full text-xs font-bold tracking-widest uppercase inline-flex items-center gap-2"><span data-i18n="contact.send">Send Message</span> <i class="fas fa-paper-plane text-[10px]"></i></button>
                         </div>
                     </form>
                 </div>
@@ -894,7 +1002,10 @@
 
         <footer class="px-4 pb-10">
             <div class="glass max-w-5xl mx-auto rounded-2xl px-6 py-5 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-gray-400">
-                <p>&copy; <span id="year">2026</span> Voraman Vuth · UX/UI Designer &amp; Game Developer</p>
+                <div class="text-center sm:text-left">
+                    <p>&copy; <span id="year">2026</span> Voraman Vuth · UX/UI Designer &amp; Game Developer</p>
+                    <p class="mt-1 space-x-3"><a href="cv.html" class="hover:text-white">CV</a><a href="design-system.html" class="hover:text-white" data-i18n="footer.ds">Design system</a><a href="accessibility.html" class="hover:text-white" data-i18n="footer.a11y">Accessibility</a><button type="button" data-pf-trophies class="hover:text-white">Trophies</button><a href="#terminal" class="hover:text-white" title="Or press ~">Terminal</a></p>
+                </div>
                 <div class="flex items-center gap-5 text-base">
                     <a data-itch href="https://gojo-studio.itch.io/" target="_blank" rel="noopener" class="hover:text-[#fa5c5c] transition-colors" aria-label="itch.io"><i class="fab fa-itch-io"></i></a>
                     <a href="https://github.com/VoRaMaN" target="_blank" rel="noopener" class="hover:text-white transition-colors" aria-label="GitHub"><i class="fab fa-github"></i></a>
@@ -1885,7 +1996,7 @@
             entries.forEach(entry => {
                 if (!entry.isIntersecting) return;
                 const id = entry.target.id;
-                updateMarker(document.querySelector(`.nav-link[href="#${id}"]`));
+                updateMarker(document.querySelector(`.nav-link[href="#${({ process: 'projects', testimonials: 'contact' })[id] || id}"]`));
             });
         }, { rootMargin: '-45% 0px -50% 0px' });
         document.querySelectorAll('main section[id]').forEach(s => sectionObserver.observe(s));
@@ -1947,5 +2058,9 @@
     <script src="assets/js/config.js"></script>
     <script src="assets/js/store.js"></script>
     <script src="assets/js/skills.js"></script>
+    <script src="assets/js/site-data.js"></script>
+    <script src="assets/js/features.js"></script>
+    <script src="assets/js/showcase.js"></script>
+    <script src="assets/js/arcade.js"></script>
 </body>
 </html>

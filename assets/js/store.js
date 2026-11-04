@@ -596,6 +596,10 @@
                         ${owned ? '<p class="flex items-center gap-3 text-green-400"><i class="fas fa-circle-check w-5"></i> In your library</p>' : ''}
                     </div>
                     ${g.kind === 'game' ? `<a ${g.play?.itch_url ? '' : 'data-itch'} href="${esc(g.play?.itch_url || S.settings.itch_url || 'https://gojo-studio.itch.io/')}" target="_blank" rel="noopener" class="glass rounded-2xl p-4 flex items-center gap-3 text-sm hover:bg-white/10 transition-colors"><i class="fab fa-itch-io text-[#fa5c5c] text-xl"></i><span class="flex-1">${g.play?.itch_url ? `${esc(g.title)} on itch.io` : 'More from Gojo Studio on itch.io'}</span><i class="fas fa-up-right-from-square text-xs text-gray-500"></i></a>` : ''}
+                    ${g.kind === 'game' ? `<div class="grid grid-cols-2 gap-3">
+                        <a href="#devlog/game/${esc(g.slug)}" class="glass rounded-2xl p-4 flex items-center gap-3 text-sm hover:bg-white/10 transition-colors"><i class="fas fa-book-open text-brand-purple"></i><span class="flex-1">Devlog</span></a>
+                        <a href="#press/${esc(g.slug)}" class="glass rounded-2xl p-4 flex items-center gap-3 text-sm hover:bg-white/10 transition-colors"><i class="fas fa-newspaper text-brand-purple"></i><span class="flex-1">Press kit</span></a>
+                    </div>` : ''}
                 </aside>
             </div>`;
 
@@ -762,6 +766,7 @@
         requestAnimationFrame(() => P.classList.add('gp-open'));
         window.SFX?.play('whoosh');
         addToLibrary(g.slug);
+        window.Features?.track('download', { slug: g.slug });
         rest('rpc/portfolio_track_download', { method: 'POST', body: JSON.stringify({ p_slug: g.slug }) })
             .then((n) => { if (typeof n === 'number') g.download_count = n; }).catch(() => {});
         if (!location.hash.endsWith('/play')) history.replaceState(null, '', `#store/${g.slug}/play`);
@@ -849,6 +854,7 @@
         if (S.dl && (S.dl.state === 'downloading' || S.dl.state === 'paused') && S.dl.slug !== g.slug) {
             toast('Finish or cancel the current download first', 'fa-circle-exclamation'); return;
         }
+        window.Features?.track('download', { slug: g.slug });
         rest('rpc/portfolio_track_download', { method: 'POST', body: JSON.stringify({ p_slug: g.slug }) })
             .then((n) => { if (typeof n === 'number') g.download_count = n; }).catch(() => {});
         if (g.download.mode === 'url') {
@@ -961,16 +967,20 @@
     // Warn before leaving while a download is running
     window.addEventListener('beforeunload', (e) => { if (S.dl?.state === 'downloading') { e.preventDefault(); e.returnValue = ''; } });
 
-    // Public API used by index.html
+    // Public API used by index.html (and showcase.js for press kits)
+    let readyP = Promise.resolve();
     window.Store = {
         showGrid: () => { renderShell(); if (!location.hash.startsWith('#store/')) showGrid(); },
         closeCart,
         closePlayer,
         isPlaying: () => !!S.playing,
         open: (slug) => { location.hash = slug ? `#store/${slug}` : '#store'; },
+        game: (slug) => bySlug(slug),
+        games: () => S.games,
+        ready: () => readyP,
     };
 
     renderShell();
     renderAll();
-    loadData();
+    readyP = loadData();
 })();

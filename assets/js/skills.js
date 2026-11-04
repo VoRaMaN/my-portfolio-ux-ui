@@ -137,7 +137,7 @@
         tabs.querySelectorAll('.sk-tab').forEach((b) => b.classList.toggle('is-on', b.dataset.cat === cat));
         const list = cat === 'all' ? SKILLS : SKILLS.filter((s) => s.cats.includes(cat));
         grid.innerHTML = list.map((s, i) => `
-            <div class="sk-chip" style="--c:${s.c};--i:${i}" tabindex="0" data-name="${esc(s.n)}">
+            <div class="sk-chip" style="--c:${s.c};--i:${i}" tabindex="0" role="button" aria-label="${esc(s.n)}: show projects" data-name="${esc(s.n)}">
                 <span class="sk-chip-ic">${iconHtml(s, 26)}</span>
                 <span class="min-w-0">
                     <span class="block text-sm font-semibold leading-tight truncate">${esc(s.n)}</span>
@@ -151,6 +151,29 @@
     }
     tabs.addEventListener('click', (e) => { const b = e.target.closest('.sk-tab'); if (b) renderChips(b.dataset.cat); });
     renderChips('all');
+
+    // ---------- Skills with proof: click a chip to see the projects that use it ----------
+    const proofBox = document.createElement('div');
+    proofBox.id = 'skill-proof'; proofBox.setAttribute('aria-live', 'polite');
+    grid.after(proofBox);
+    function showProof(name) {
+        const s = SKILLS.find((x) => x.n === name); if (!s) return;
+        const projects = (window.SITE?.PROJECTS || []).filter((p) => p.skills.includes(s.n));
+        const t = (k, en) => window.Features?.t(k, en) || en;
+        grid.querySelectorAll('.sk-chip').forEach((c) => c.classList.toggle('is-proof', c.dataset.name === name));
+        const cat = CATS.find((c) => c.id === s.cats[0]);
+        proofBox.innerHTML = `<div class="pf-proof">
+            <div class="flex items-center gap-3 mb-3"><span class="sk-chip-ic" style="--c:${s.c}">${iconHtml(s, 24)}</span><span class="flex-1 min-w-0"><b class="block">${esc(s.n)}</b><span class="text-[11px] text-gray-400">${esc(cat ? cat.label : '')}${s.full ? ` · ${esc(s.full)}` : ''}</span></span><button class="pf-x !w-8 !h-8" data-proof-x aria-label="Close"><i class="fas fa-xmark text-xs"></i></button></div>
+            ${projects.length ? `<p class="text-[10px] font-bold tracking-[.2em] uppercase text-gray-400 mb-2">${esc(t('skills.proof', 'Used in'))} · ${projects.length}</p>
+                <div class="grid sm:grid-cols-2 gap-2">${projects.map((p) => `<a href="${esc(p.link)}"><span class="w-9 h-9 shrink-0 rounded-lg bg-white/5 flex items-center justify-center text-brand-purple"><i class="fas ${p.kind === 'Game' ? 'fa-gamepad' : p.kind === 'Case study' ? 'fa-book-open' : p.kind.startsWith('Experiment') ? 'fa-flask' : p.kind === 'Team' ? 'fa-people-group' : 'fa-code'}"></i></span><span class="min-w-0"><b class="block text-sm truncate">${esc(p.title)}</b><span class="block text-[11px] text-gray-400 truncate">${esc(p.kind)} · ${esc(p.blurb)}</span></span></a>`).join('')}</div>`
+                : `<p class="text-sm text-gray-300">${s.u ? esc(s.u) : 'Part of my everyday toolkit.'} <a href="#contact" class="underline text-brand-purple">Ask me about it</a>.</p>`}
+            ${projects.length && s.u ? `<p class="text-xs text-gray-400 mt-3"><i class="fas fa-circle-info mr-1"></i>${esc(s.u)}</p>` : ''}
+        </div>`;
+        proofBox.querySelector('[data-proof-x]').addEventListener('click', () => { proofBox.innerHTML = ''; grid.querySelectorAll('.sk-chip.is-proof').forEach((c) => c.classList.remove('is-proof')); });
+        window.Features?.track('skill', { n: s.n.slice(0, 40) });
+    }
+    grid.addEventListener('click', (e) => { const c = e.target.closest('.sk-chip'); if (c) showProof(c.dataset.name); });
+    grid.addEventListener('keydown', (e) => { const c = e.target.closest('.sk-chip'); if (c && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); showProof(c.dataset.name); } });
 
     // ---------- 3D sphere ----------
     const sphere = root.querySelector('#skill-sphere');

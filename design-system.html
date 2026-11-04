@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Design System · Voraman Vuth</title>
+    <meta name="description" content="The live design system behind Voraman Vuth's portfolio: colour tokens, type scale, spacing, radius, motion and copy-ready components.">
+    <meta name="theme-color" content="#060606">
+    <link rel="canonical" href="https://voraman.github.io/my-portfolio-ux-ui/design-system.html">
+    <link rel="icon" href="assets/img/gojo-logo.webp" type="image/webp">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..900;1,6..96,400..900&family=Inter:wght@300;400;600;700;900&family=Press+Start+2P&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="assets/css/tailwind.css">
+    <link rel="stylesheet" href="assets/css/site-base.css">
+    <link rel="stylesheet" href="assets/css/features.css">
+    <style>
+        .ds-sec { scroll-margin-top: 80px; }
+        .ds-sw { border-radius: 18px; overflow: hidden; border: 1px solid rgba(255,255,255,.1); text-align: left; transition: transform .3s var(--ease-out); }
+        .ds-sw:hover { transform: translateY(-3px); }
+        .ds-sw i { display: block; height: 84px; }
+        .ds-demo { border-radius: 20px; padding: 28px; background: rgba(255,255,255,.03); border: 1px solid rgba(255,255,255,.08); display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 14px; min-height: 140px; }
+        .ds-code { position: relative; }
+        .ds-code pre { margin: 0; padding: 14px 16px; border-radius: 0 0 18px 18px; background: #0a0a0f; border: 1px solid rgba(255,255,255,.08); border-top: 0; font: 12px/1.6 ui-monospace, Menlo, monospace; color: #c4b5fd; overflow-x: auto; white-space: pre; }
+        .ds-copy { position: absolute; top: 8px; right: 8px; font-size: 11px; font-weight: 700; padding: 5px 10px; border-radius: 8px; background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.12); }
+        .ds-copy:hover { background: rgba(255,255,255,.18); }
+        .ds-ease { width: 44px; height: 44px; border-radius: 12px; background: linear-gradient(135deg, #C63AEB, #60a5fa); transition: transform var(--d, .7s) var(--e, ease); }
+        .ds-track:hover .ds-ease { transform: translateX(calc(min(420px, 60vw))); }
+        .ds-toc a { display: block; padding: 6px 10px; border-radius: 10px; font-size: 13px; color: #9ca3af; }
+        .ds-toc a:hover { color: #fff; background: rgba(255,255,255,.06); }
+    </style>
+</head>
+<body class="font-sans antialiased">
+    <a href="#main" class="pf-skip">Skip to content</a>
+    <nav class="page-nav">
+        <div class="max-w-6xl mx-auto px-4 py-3 flex items-center gap-3">
+            <a href="index.html" class="font-black text-xl tracking-tighter">VV</a>
+            <span class="text-xs font-bold tracking-widest text-gray-400">DESIGN SYSTEM</span>
+            <div class="ml-auto flex items-center gap-2">
+                <button id="copy-vars" class="btn-glass rounded-full px-4 py-2 text-xs font-bold"><i class="fas fa-code mr-1"></i>Copy CSS tokens</button>
+                <button id="dl-json" class="btn-main rounded-full px-4 py-2 text-xs font-bold"><i class="fas fa-download mr-1"></i><span class="hidden sm:inline">tokens.json</span></button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-6xl mx-auto px-4 py-12 grid lg:grid-cols-[200px_1fr] gap-10">
+        <aside class="hidden lg:block"><nav class="ds-toc sticky top-24" aria-label="Sections">
+            <a href="#colour">Colour</a><a href="#type">Typography</a><a href="#space">Spacing &amp; radius</a><a href="#elevation">Elevation &amp; glow</a><a href="#motion">Motion</a><a href="#components">Components</a><a href="#principles">Principles</a>
+        </nav></aside>
+
+        <main id="main" class="min-w-0 space-y-20">
+            <header>
+                <p class="pf-kicker mb-3">Gojo / Voraman · v2</p>
+                <h1 class="text-5xl md:text-6xl font-serif font-bold">Design system</h1>
+                <p class="text-gray-400 mt-4 max-w-2xl leading-relaxed">The tokens and components behind this portfolio, the game store and the UI Lab. Everything on this page is live CSS: click a swatch to copy it, or copy a component’s HTML.</p>
+            </header>
+
+            <section id="colour" class="ds-sec">
+                <h2 class="text-2xl font-bold mb-2">Colour</h2>
+                <p class="text-sm text-gray-400 mb-6">A near-black canvas with one loud brand purple. Supporting hues come from the aurora background and game rarity tiers.</p>
+                <div id="swatches" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4"></div>
+                <h3 class="text-sm font-bold tracking-widest text-gray-400 uppercase mt-10 mb-4">Gradients</h3>
+                <div class="grid sm:grid-cols-3 gap-4">
+                    <div class="ds-sw"><i style="background:linear-gradient(135deg,#C63AEB,#7c3aed)"></i><div class="p-3 text-sm"><b>Primary</b><p class="text-xs text-gray-400 font-mono">135° #C63AEB → #7C3AED</p></div></div>
+                    <div class="ds-sw"><i style="background:linear-gradient(90deg,#C63AEB,#f472b6,#60a5fa)"></i><div class="p-3 text-sm"><b>Display text</b><p class="text-xs text-gray-400 font-mono">#C63AEB → #F472B6 → #60A5FA</p></div></div>
+                    <div class="ds-sw"><i style="background:linear-gradient(135deg,rgba(255,255,255,.09),rgba(255,255,255,.025));"></i><div class="p-3 text-sm"><b>Glass</b><p class="text-xs text-gray-400 font-mono">white 9% → 2.5%</p></div></div>
+                </div>
+            </section>
+
+            <section id="type" class="ds-sec">
+                <h2 class="text-2xl font-bold mb-2">Typography</h2>
+                <p class="text-sm text-gray-400 mb-6">Bodoni Moda for display, Inter for everything you read or tap, Press Start 2P for game moments.</p>
+                <div class="glass-dark rounded-3xl divide-y divide-white/5" id="type-scale"></div>
+            </section>
+
+            <section id="space" class="ds-sec">
+                <h2 class="text-2xl font-bold mb-2">Spacing &amp; radius</h2>
+                <p class="text-sm text-gray-400 mb-6">An 8-pt grid with a 4-pt half step. Radius grows with the size of the surface.</p>
+                <div id="spacing" class="space-y-3 mb-10"></div>
+                <div id="radius" class="grid grid-cols-3 sm:grid-cols-6 gap-4"></div>
+            </section>
+
+            <section id="elevation" class="ds-sec">
+                <h2 class="text-2xl font-bold mb-6">Elevation &amp; glow</h2>
+                <div class="grid sm:grid-cols-3 gap-5">
+                    <div class="glass rounded-3xl p-6 h-36 flex items-end"><span><b>Glass</b><span class="block text-xs text-gray-400">inset 1px highlight + 24/60 drop</span></span></div>
+                    <div class="glass-dark rounded-3xl p-6 h-36 flex items-end"><span><b>Glass dark</b><span class="block text-xs text-gray-400">panels over content</span></span></div>
+                    <div class="rounded-3xl p-6 h-36 flex items-end" style="background:#14141c;box-shadow:0 0 0 1px rgba(198,58,235,.4),0 20px 60px -15px rgba(198,58,235,.7)"><span><b>Brand glow</b><span class="block text-xs text-gray-400">hover / selected</span></span></div>
+                </div>
+            </section>
+
+            <section id="motion" class="ds-sec">
+                <h2 class="text-2xl font-bold mb-2">Motion</h2>
+                <p class="text-sm text-gray-400 mb-6">One house easing, three durations. Hover a track to compare. Everything respects <code>prefers-reduced-motion</code>.</p>
+                <div class="space-y-3" id="motion-list"></div>
+            </section>
+
+            <section id="components" class="ds-sec">
+                <h2 class="text-2xl font-bold mb-6">Components</h2>
+                <div class="space-y-10" id="comps"></div>
+            </section>
+
+            <section id="principles" class="ds-sec">
+                <h2 class="text-2xl font-bold mb-6">Principles</h2>
+                <div class="grid sm:grid-cols-2 gap-4">
+                    <div class="glass rounded-2xl p-5"><i class="fas fa-bolt text-[#C63AEB] mb-3"></i><h3 class="font-bold">Fun is a feature</h3><p class="text-sm text-gray-400 mt-1">Micro-interactions, sound and play make an interface memorable, but never block the task.</p></div>
+                    <div class="glass rounded-2xl p-5"><i class="fas fa-eye text-[#C63AEB] mb-3"></i><h3 class="font-bold">Readable at a glance</h3><p class="text-sm text-gray-400 mt-1">Like a game HUD: hierarchy first, high contrast, one primary action per view.</p></div>
+                    <div class="glass rounded-2xl p-5"><i class="fas fa-hand-pointer text-[#C63AEB] mb-3"></i><h3 class="font-bold">Everything is real</h3><p class="text-sm text-gray-400 mt-1">Prototypes are working code, so what you test is what ships.</p></div>
+                    <div class="glass rounded-2xl p-5"><i class="fas fa-universal-access text-[#C63AEB] mb-3"></i><h3 class="font-bold">Calm by request</h3><p class="text-sm text-gray-400 mt-1">Reduced motion, muted sound and a minimal theme are one tap away. <a class="underline" href="accessibility.html">Accessibility</a></p></div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <div id="ds-toast" class="pf-ach-toast" role="status" style="border-color:rgba(198,58,235,.5)"><span class="text-sm font-bold" id="ds-toast-t">Copied</span></div>
+
+    <script>
+    (() => {
+        const $ = (s) => document.querySelector(s);
+        const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+        const TOKENS = {
+            color: {
+                'brand-purple': '#C63AEB', 'brand-violet': '#7C3AED', 'ink': '#060606', 'surface': '#0C0C12', 'surface-2': '#14141C', 'grey': '#282828',
+                'text': '#FFFFFF', 'text-muted': '#9CA3AF', 'blue': '#60A5FA', 'pink': '#F472B6', 'gold': '#FACC15', 'green': '#4ADE80', 'red': '#F87171', 'itch': '#FA5C5C',
+            },
+            font: { display: '"Bodoni Moda", serif', ui: 'Inter, sans-serif', pixel: '"Press Start 2P", monospace' },
+            space: { 1: '4px', 2: '8px', 3: '12px', 4: '16px', 6: '24px', 8: '32px', 12: '48px', 16: '64px' },
+            radius: { sm: '8px', md: '12px', lg: '16px', xl: '24px', '2xl': '32px', pill: '999px' },
+            motion: { 'ease-out': 'cubic-bezier(0.22, 1, 0.36, 1)', fast: '200ms', base: '450ms', slow: '700ms' },
+        };
+        const toast = (msg) => { const t = $('#ds-toast'); $('#ds-toast-t').textContent = msg; t.classList.add('on'); clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove('on'), 1600); };
+        const copy = async (text, msg = 'Copied') => { try { await navigator.clipboard.writeText(text); toast(msg); } catch { prompt('Copy:', text); } };
+        const cssVars = () => `:root {\n${Object.entries(TOKENS).flatMap(([g, o]) => Object.entries(o).map(([k, v]) => `    --${g}-${k}: ${v};`)).join('\n')}\n}`;
+
+        // swatches
+        $('#swatches').innerHTML = Object.entries(TOKENS.color).map(([k, v]) => `<button class="ds-sw" data-copy="${v}" aria-label="Copy ${k} ${v}"><i style="background:${v}"></i><div class="p-3 text-sm"><b>${k}</b><p class="text-xs text-gray-400 font-mono">${v} · --color-${k}</p></div></button>`).join('');
+        // type
+        const T = [
+            ['Display', 'font-serif text-6xl md:text-8xl font-bold', 'Bodoni Moda 700 · 96/1', 'Voraman'],
+            ['H1', 'font-serif text-5xl font-bold', 'Bodoni Moda 700 · 48/1.1', 'Interactive case studies'],
+            ['H2', 'text-3xl font-black tracking-tight', 'Inter 900 · 30/1.2', 'My games'],
+            ['H3', 'text-xl font-bold', 'Inter 700 · 20/1.3', 'Game UI & HUD'],
+            ['Body', 'text-base text-gray-300', 'Inter 400 · 16/1.6', 'I design interfaces people enjoy using — and build games people enjoy playing.'],
+            ['Small', 'text-sm text-gray-400', 'Inter 400 · 14/1.5', 'Playable builds, devlogs and updates.'],
+            ['Kicker', 'text-xs font-bold tracking-[0.3em] uppercase text-[#C63AEB]', 'Inter 700 · 11 · +0.3em', 'Selected works'],
+            ['Pixel', 'font-pixel text-sm', 'Press Start 2P · 14', 'PLAYER 1 READY'],
+        ];
+        $('#type-scale').innerHTML = T.map(([n, c, spec, sample]) => `<div class="p-5 grid md:grid-cols-[140px_1fr] gap-3 items-baseline"><div><b class="text-sm">${n}</b><p class="text-[11px] text-gray-500 font-mono">${spec}</p></div><p class="${c} leading-tight break-words">${esc(sample)}</p></div>`).join('');
+        // spacing + radius
+        $('#spacing').innerHTML = Object.entries(TOKENS.space).map(([k, v]) => `<div class="flex items-center gap-4"><span class="w-16 text-xs font-mono text-gray-400">space-${k}</span><span class="h-4 rounded bg-gradient-to-r from-[#C63AEB] to-[#60a5fa]" style="width:${parseInt(v, 10) * 3}px"></span><span class="text-xs font-mono text-gray-500">${v}</span></div>`).join('');
+        $('#radius').innerHTML = Object.entries(TOKENS.radius).map(([k, v]) => `<div class="text-center"><div class="aspect-square bg-white/5 border border-white/15" style="border-radius:${v === '999px' ? '999px' : v}"></div><p class="text-xs mt-2"><b>${k}</b> <span class="text-gray-500 font-mono">${v}</span></p></div>`).join('');
+        // motion
+        const MO = [['Fast · 200ms', '.2s', 'cubic-bezier(.22,1,.36,1)'], ['Base · 450ms', '.45s', 'cubic-bezier(.22,1,.36,1)'], ['Slow · 700ms', '.7s', 'cubic-bezier(.22,1,.36,1)'], ['Spring (overshoot)', '.6s', 'cubic-bezier(.22,1.6,.36,1)'], ['Linear (avoid)', '.7s', 'linear']];
+        $('#motion-list').innerHTML = MO.map(([n, d, e]) => `<div class="ds-track glass-dark rounded-2xl p-4 overflow-hidden"><div class="flex justify-between text-xs mb-3"><b>${n}</b><span class="font-mono text-gray-500">${e}</span></div><div class="ds-ease" style="--d:${d};--e:${e}"></div></div>`).join('');
+        // components
+        const C = [
+            ['Primary button', '<a href="#" class="btn-main rounded-full px-7 py-3 text-xs font-bold tracking-widest uppercase inline-flex items-center gap-2">Explore work <i class="fas fa-arrow-down text-[10px]"></i></a>'],
+            ['Glass button', '<a href="#" class="btn-glass rounded-full px-7 py-3 text-xs font-bold tracking-widest uppercase inline-flex items-center gap-2"><i class="fas fa-gamepad"></i> My games</a>'],
+            ['Status badge', '<div class="glass rounded-full px-4 py-1.5 flex items-center gap-2 text-[11px] font-semibold tracking-widest text-gray-300"><span class="pulse-dot w-2 h-2 rounded-full bg-green-400"></span> OPEN TO UX/UI ROLES</div>'],
+            ['Glass card', '<div class="glass rounded-2xl p-5 flex gap-4 items-start max-w-sm"><div class="w-12 h-12 shrink-0 rounded-xl bg-[#C63AEB]/20 text-[#C63AEB] flex items-center justify-center text-lg"><i class="fas fa-chess-knight"></i></div><div><h4 class="font-bold">Game Design</h4><p class="text-sm text-gray-400 mt-1">Mechanics, level flow and player feedback loops.</p></div></div>'],
+            ['Chips', '<span class="pf-chip"><i class="fas fa-user"></i>UI/UX designer</span> <span class="pf-chip">Figma</span> <span class="pf-chip">Photoshop</span>'],
+            ['Underline input', '<div class="field w-72"><label for="ds-in" class="sr-only">Your name</label><input id="ds-in" placeholder="Your name" class="input-underline w-full py-3 bg-transparent placeholder-gray-500"></div>'],
+            ['Switch', '<button class="pf-switch" role="switch" aria-checked="true" aria-label="Example switch" onclick="this.setAttribute(\'aria-checked\', this.getAttribute(\'aria-checked\') !== \'true\')"></button>'],
+            ['Segmented control', '<span class="pf-seg"><button aria-pressed="true">EN</button><button aria-pressed="false">ខ្មែរ</button></span>'],
+            ['Progress', '<div class="pf-prog w-72"><i style="width:64%"></i></div>'],
+            ['Option card', '<button type="button" class="pf-opt w-56" aria-pressed="true"><i class="fas fa-gamepad"></i><b>Game UI / HUD</b><span>Menus, HUD, store</span></button>'],
+        ];
+        $('#comps').innerHTML = C.map(([n, html], i) => `<div><h3 class="text-sm font-bold tracking-widest text-gray-400 uppercase mb-3">${n}</h3><div class="ds-demo rounded-b-none">${html}</div><div class="ds-code"><pre>${esc(html)}</pre><button class="ds-copy" data-comp="${i}">Copy HTML</button></div></div>`).join('');
+        document.addEventListener('click', (e) => {
+            const s = e.target.closest('[data-copy]'); if (s) return copy(s.dataset.copy, `${s.dataset.copy} copied`);
+            const c = e.target.closest('[data-comp]'); if (c) return copy(C[+c.dataset.comp][1], 'HTML copied');
+            if (e.target.closest('.ds-demo a')) e.preventDefault();
+        });
+        $('#copy-vars').addEventListener('click', () => copy(cssVars(), 'CSS tokens copied'));
+        $('#dl-json').addEventListener('click', () => {
+            const url = URL.createObjectURL(new Blob([JSON.stringify(TOKENS, null, 2)], { type: 'application/json' }));
+            const a = document.createElement('a'); a.href = url; a.download = 'voraman-tokens.json'; document.body.appendChild(a); a.click(); a.remove();
+            setTimeout(() => URL.revokeObjectURL(url), 3000);
+        });
+    })();
+    </script>
+</body>
+</html>

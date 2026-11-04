@@ -79,10 +79,15 @@
             <div class="max-w-7xl mx-auto px-4 py-3 flex items-center gap-4">
                 <a href="index.html" class="font-black text-xl tracking-tighter">VV</a>
                 <span class="text-xs font-bold tracking-widest text-gray-400 hidden sm:inline">ADMIN</span>
-                <nav class="flex gap-1 ml-2 text-sm">
-                    <button class="tab px-3 py-1.5 rounded-lg text-gray-300" data-tab="games"><i class="fas fa-gamepad mr-1.5"></i>Games</button>
-                    <button class="tab px-3 py-1.5 rounded-lg text-gray-300" data-tab="settings"><i class="fas fa-sliders mr-1.5"></i>Settings</button>
-                    <button class="tab px-3 py-1.5 rounded-lg text-gray-300" data-tab="media"><i class="fas fa-photo-film mr-1.5"></i>Media</button>
+                <nav class="flex gap-1 ml-2 text-sm overflow-x-auto no-scrollbar min-w-0" aria-label="Admin sections">
+                    <button class="tab shrink-0 px-3 py-1.5 rounded-lg text-gray-300" data-tab="games"><i class="fas fa-gamepad mr-1.5"></i><span class="hidden md:inline">Games</span></button>
+                    <button class="tab shrink-0 px-3 py-1.5 rounded-lg text-gray-300" data-tab="analytics"><i class="fas fa-chart-column mr-1.5"></i><span class="hidden md:inline">Analytics</span></button>
+                    <button class="tab shrink-0 px-3 py-1.5 rounded-lg text-gray-300" data-tab="leads"><i class="fas fa-handshake mr-1.5"></i><span class="hidden md:inline">Leads</span> <span id="leads-badge" class="hidden ml-1 text-[10px] font-bold bg-brand-purple rounded-full px-1.5"></span></button>
+                    <button class="tab shrink-0 px-3 py-1.5 rounded-lg text-gray-300" data-tab="devlog"><i class="fas fa-book-open mr-1.5"></i><span class="hidden md:inline">Devlog</span></button>
+                    <button class="tab shrink-0 px-3 py-1.5 rounded-lg text-gray-300" data-tab="content"><i class="fas fa-quote-left mr-1.5"></i><span class="hidden md:inline">Content</span></button>
+                    <button class="tab shrink-0 px-3 py-1.5 rounded-lg text-gray-300" data-tab="community"><i class="fas fa-users mr-1.5"></i><span class="hidden md:inline">Community</span></button>
+                    <button class="tab shrink-0 px-3 py-1.5 rounded-lg text-gray-300" data-tab="settings"><i class="fas fa-sliders mr-1.5"></i><span class="hidden md:inline">Settings</span></button>
+                    <button class="tab shrink-0 px-3 py-1.5 rounded-lg text-gray-300" data-tab="media"><i class="fas fa-photo-film mr-1.5"></i><span class="hidden md:inline">Media</span></button>
                 </nav>
                 <div class="ml-auto flex items-center gap-3 text-xs">
                     <span id="who" class="text-gray-400 hidden md:inline"></span>
@@ -96,6 +101,11 @@
             <div id="tab-games"></div>
             <div id="tab-settings" class="hidden"></div>
             <div id="tab-media" class="hidden"></div>
+            <div id="tab-analytics" class="hidden"></div>
+            <div id="tab-leads" class="hidden"></div>
+            <div id="tab-devlog" class="hidden"></div>
+            <div id="tab-content" class="hidden"></div>
+            <div id="tab-community" class="hidden"></div>
         </main>
     </section>
 
