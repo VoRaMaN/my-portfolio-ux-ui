@@ -181,7 +181,7 @@
     const blankGame = () => ({
         slug: '', kind: 'game', title: '', subtitle: '', tagline: '', short_description: '', description: '', developer: 'Gojo Studio', publisher: 'Gojo Studio',
         release_date: null, price: 0, genres: [], tags: ['Playable'], platforms: ['Windows'], playable: true, icon_url: '', banner_url: '', capsule_url: '',
-        screenshots: [], videos: [], download: { mode: 'none' }, sys_req: { minimum: {} }, rating: null, sort: (A.games.at(-1)?.sort ?? 0) + 1, published: false,
+        screenshots: [], videos: [], download: { mode: 'none' }, play: {}, sys_req: { minimum: {} }, rating: null, sort: (A.games.at(-1)?.sort ?? 0) + 1, published: false,
     });
 
     function renderGames() {
@@ -408,6 +408,22 @@
                     ${field('dl-size', 'Size in MB (optional)', dl.size ? (dl.size / 1048576).toFixed(0) : '', 'number', 'min="0"')}
                 </div>
                 <button id="dl-save" class="btn-ghost rounded-lg px-4 py-2 text-sm"><i class="fas fa-floppy-disk mr-1"></i>Save download settings</button>
+            </div>
+
+            <!-- Play in browser -->
+            <div class="glass rounded-2xl p-5 space-y-4">
+                <h3 class="font-bold">Play in browser</h3>
+                <p class="text-xs text-gray-400">Paste the address of a web build (GitHub Pages, Vercel, an itch.io HTML5 embed link…). The store then shows <b>Play now</b> and runs the game in a full-screen player instead of a download.</p>
+                <div class="grid sm:grid-cols-2 gap-4">
+                    ${field('pl-url', 'Game URL (embeddable)', (g.play || {}).url || '', 'url', 'placeholder="https://voraman.github.io/My-Game/"')}
+                    ${field('pl-itch', 'itch.io page (optional)', (g.play || {}).itch_url || '', 'url', 'placeholder="https://gojo-studio.itch.io/my-game"')}
+                </div>
+                <div><label class="lbl" for="pl-tips">Loading-screen tips (one per line)</label><textarea id="pl-tips" rows="3" class="inp">${esc(((g.play || {}).tips || []).join('\n'))}</textarea></div>
+                <div class="flex flex-wrap gap-2">
+                    <button id="pl-save" class="btn-ghost rounded-lg px-4 py-2 text-sm"><i class="fas fa-floppy-disk mr-1"></i>Save play settings</button>
+                    ${(g.play || {}).url ? `<a href="${esc(g.play.url)}" target="_blank" rel="noopener" class="btn-ghost rounded-lg px-4 py-2 text-sm"><i class="fas fa-play mr-1"></i>Test URL</a>
+                    <button id="pl-clear" class="btn-ghost rounded-lg px-4 py-2 text-sm text-red-300"><i class="fas fa-xmark mr-1"></i>Remove</button>` : ''}
+                </div>
             </div>`;
     }
 
@@ -540,6 +556,17 @@
             if (mode === 'parts' && !cur.parts?.length) return toast('Upload a build file first', true);
             await persist({ download: next }); toast('Download settings saved'); renderEditor();
         });
+
+        // Play in browser
+        $('pl-save').addEventListener('click', async () => {
+            const url = $('pl-url').value.trim(); const itch = $('pl-itch').value.trim();
+            if (url && !/^https:\/\//.test(url)) return toast('The game URL must start with https://', true);
+            if (itch && !/^https:\/\//.test(itch)) return toast('The itch.io URL must start with https://', true);
+            const tips = $('pl-tips').value.split('\n').map((x) => x.trim()).filter(Boolean).slice(0, 12);
+            await persist({ play: url ? { url, itch_url: itch || null, tips } : {} });
+            toast(url ? 'Play settings saved' : 'Play removed'); renderEditor();
+        });
+        $('pl-clear')?.addEventListener('click', async () => { await persist({ play: {} }); toast('Play removed'); renderEditor(); });
     }
 
     // ---------- Settings tab ----------

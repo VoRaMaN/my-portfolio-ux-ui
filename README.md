@@ -33,6 +33,16 @@ From the admin you can:
 
 Start with the admin upload; if downloads grow, upgrade Supabase or switch the game to a GitHub Release link.
 
+## Skills, UI Lab and sounds
+
+- **Skills** (`assets/js/skills.js`): edit the `SKILLS` list to add or change a skill. Each entry has a name, a category and an icon. Logos come from `assets/img/skills-icons.svg`, a sprite built from devicon, simple-icons and LobeHub. Font Awesome or a local image can be used instead.
+- **UI Lab** (`assets/js/lab.js`): 20 interactive experiments. The file loads only when a visitor scrolls near the Lab. Each experiment runs only while it's on screen, and each can open full screen.
+- **Sounds** (`assets/js/sfx.js`): every button plays a click synthesized with Web Audio, so there are no audio files. Visitors can mute it with the speaker icon in the nav, the sidebar or the footer.
+
+## Play in browser
+
+A store game can run in a full-screen player instead of being downloaded. In the admin, open the game, go to **Play in browser** and paste an embeddable URL, such as GitHub Pages or an itch.io HTML5 embed link. Stick Empire Conquest 3D uses `https://voraman.github.io/Stick-Empire-Conquest-3D/`. Direct link: `index.html#store/stick-empire-conquest-3d/play`.
+
 ## Editing styles
 
 The page uses a **pre-built** Tailwind CSS file (`assets/css/tailwind.css`) instead of the Tailwind CDN script, which is much faster to load.

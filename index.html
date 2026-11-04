@@ -98,6 +98,13 @@
         @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
             .glass, .glass-dark { background: rgba(22,22,28,0.92); }
         }
+        /* Performance: over the smooth aurora background a backdrop blur is visually a no-op, but the animated
+           background forces every blurred panel to re-blur each frame. Panels that sit on the background keep the
+           glass look without the blur; panels over detailed content (nav, screenshots, overlays) keep the blur. */
+        main .glass, main .glass-dark, footer .glass { -webkit-backdrop-filter: none; backdrop-filter: none; }
+        main .glass-dark { background: rgba(14,14,20,0.72); }
+        main .project-card .glass { -webkit-backdrop-filter: blur(14px) saturate(160%); backdrop-filter: blur(14px) saturate(160%); }
+        body.lab-focus-open .aurora span, body.lab-focus-open .marquee-track { animation-play-state: paused; }
 
         /* Mouse-follow spotlight border on glass cards */
         .spot { position: relative; isolation: isolate; }
@@ -264,11 +271,88 @@
         .app-dark-mode .shadow-soft { box-shadow: 0 4px 6px -1px rgba(0,0,0,0.3) !important; }
         .app-dark-mode input { color: white !important; }
 
+        /* ---------- Split-word heading reveal ---------- */
+        .split-words .w-mask { display: inline-block; overflow: hidden; vertical-align: bottom; padding: 0 .06em .12em; margin: 0 -.06em -.12em; }
+        .split-words .w { display: inline-block; transform: translateY(110%) rotate(5deg); opacity: 0; transition: transform 1s var(--ease-out), opacity .8s ease; transition-delay: calc(var(--wi, 0) * 75ms + .1s); }
+        .reveal.active .split-words .w { transform: none; opacity: 1; }
+
+        /* ---------- Skills ---------- */
+        #skill-sphere { position: relative; aspect-ratio: 1; width: 100%; max-width: 520px; margin: 0 auto; touch-action: pan-y; cursor: grab; }
+        #skill-sphere.grabbing { cursor: grabbing; }
+        #skill-sphere::before { content: ''; position: absolute; inset: 18%; border-radius: 50%; background: radial-gradient(circle, rgba(198,58,235,0.3), rgba(96,165,250,0.08) 55%, transparent 70%); animation: skPulse 5s ease-in-out infinite; }
+        @keyframes skPulse { 50% { transform: scale(1.1); opacity: .7; } }
+        .sk-orbit { position: absolute; inset: 7%; border-radius: 50%; border: 1px dashed rgba(255,255,255,0.08); animation: skSpin 40s linear infinite; pointer-events: none; }
+        .sk-orbit.o2 { inset: 21%; animation-duration: 26s; animation-direction: reverse; border-color: rgba(198,58,235,0.18); }
+        @keyframes skSpin { to { transform: rotate(360deg); } }
+        .sk-node { position: absolute; left: 50%; top: 50%; width: 52px; height: 52px; margin: -26px; border-radius: 16px; display: flex; align-items: center; justify-content: center; background: rgba(16,16,24,0.75); border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 8px 24px -8px rgba(0,0,0,0.8); will-change: transform, opacity; transition: background .25s, border-color .25s, box-shadow .25s; }
+        .sk-node:hover, .sk-node:focus-visible { background: rgba(30,30,44,0.95); border-color: var(--c); box-shadow: 0 0 26px -4px var(--c); }
+        .sk-node .sk-ic { width: 30px; height: 30px; pointer-events: none; }
+        #sphere-label { position: absolute; left: 50%; bottom: 3%; transform: translate(-50%, 8px); padding: 6px 14px; border-radius: 999px; font-size: 12px; font-weight: 700; opacity: 0; transition: all .3s var(--ease-out); pointer-events: none; white-space: nowrap; z-index: 200; }
+        #sphere-label.on { opacity: 1; transform: translate(-50%, 0); }
+        .sk-tab { border-color: rgba(255,255,255,0.1); color: #a1a1aa; background: rgba(255,255,255,0.03); }
+        .sk-tab:hover { color: #fff; border-color: rgba(255,255,255,0.25); }
+        .sk-tab.is-on { background: #fff; color: #060606; border-color: #fff; box-shadow: 0 0 24px rgba(255,255,255,0.25); }
+        .sk-count { font-size: 10px; opacity: .6; }
+        #skill-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 10px; align-content: start; }
+        .sk-chip { position: relative; display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 14px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); overflow: hidden; animation: skIn .55s var(--ease-out) both; animation-delay: calc(var(--i) * 22ms); transition: transform .35s var(--ease-out), border-color .3s, box-shadow .3s; }
+        .sk-chip::after { content: ''; position: absolute; inset: 0; background: radial-gradient(140px circle at 0% 50%, color-mix(in srgb, var(--c) 24%, transparent), transparent 70%); opacity: 0; transition: opacity .3s; pointer-events: none; }
+        .sk-chip:hover, .sk-chip:focus-visible { transform: translateY(-3px); border-color: color-mix(in srgb, var(--c) 55%, transparent); box-shadow: 0 14px 30px -14px color-mix(in srgb, var(--c) 70%, transparent); }
+        .sk-chip:hover::after { opacity: 1; }
+        .sk-chip-ic { flex-shrink: 0; width: 38px; height: 38px; border-radius: 11px; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.35); border: 1px solid rgba(255,255,255,0.06); transition: transform .45s cubic-bezier(.34,1.56,.64,1); }
+        .sk-chip:hover .sk-chip-ic { transform: rotate(-8deg) scale(1.14); }
+        .sk-chip-ic .sk-ic { width: 24px; height: 24px; }
+        .sk-flash { animation: skIn .55s var(--ease-out) both, skFlash 1.4s ease 2; }
+        @keyframes skIn { from { opacity: 0; transform: translateY(14px) scale(.96); } to { opacity: 1; transform: none; } }
+        @keyframes skFlash { 40% { box-shadow: 0 0 0 3px var(--c), 0 0 30px var(--c); } }
+        .ai-card .ai-ic { transition: transform .6s cubic-bezier(.34,1.56,.64,1); }
+        .ai-card:hover .ai-ic { transform: rotate(-10deg) scale(1.12); }
+
+        /* ---------- Game cards (home) ---------- */
+        .gc-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; transform: scale(1.08); transition: opacity .9s ease, transform 4s ease; }
+        .gc-img.is-on { opacity: 1; transform: scale(1); }
+        .gc-dots i { width: 6px; height: 6px; border-radius: 3px; background: rgba(255,255,255,0.35); transition: all .35s var(--ease-out); }
+        .gc-dots i.on { width: 20px; background: #fff; }
+
+        /* ---------- Store extras ---------- */
+        .hero-slide { opacity: 0; transition: opacity .9s ease; pointer-events: none; }
+        .hero-slide.is-on { opacity: 1; pointer-events: auto; z-index: 10; }
+        .hero-slide.is-on .hero-kb { animation: heroKb 9s ease-out both; }
+        @keyframes heroKb { from { transform: scale(1.14); } to { transform: scale(1); } }
+        .hero-slide.is-on .hero-copy > * { animation: heroIn .8s var(--ease-out) both; }
+        .hero-slide.is-on .hero-copy > *:nth-child(2) { animation-delay: .08s; } .hero-slide.is-on .hero-copy > *:nth-child(3) { animation-delay: .16s; }
+        .hero-slide.is-on .hero-copy > *:nth-child(4) { animation-delay: .24s; } .hero-slide.is-on .hero-copy > *:nth-child(5) { animation-delay: .32s; }
+        .hero-slide.is-on .hero-copy > *:nth-child(6) { animation-delay: .4s; }
+        @keyframes heroIn { from { opacity: 0; transform: translateY(22px); } to { opacity: 1; transform: none; } }
+        .card-in { animation: heroIn .7s var(--ease-out) both; animation-delay: calc(var(--i) * 70ms); }
+        .sp-in > * { animation: heroIn .7s var(--ease-out) both; }
+        .sp-in > *:nth-child(2) { animation-delay: .06s; } .sp-in > *:nth-child(3) { animation-delay: .12s; } .sp-in > *:nth-child(4) { animation-delay: .18s; }
+        .play-orb { position: relative; }
+        .play-orb::before, .play-orb::after { content: ''; position: absolute; inset: 0; border-radius: 50%; border: 2px solid rgba(74,222,128,0.7); animation: orbPing 2s cubic-bezier(0,0,.2,1) infinite; }
+        .play-orb::after { animation-delay: 1s; }
+        @keyframes orbPing { from { transform: scale(1); opacity: 1; } to { transform: scale(1.9); opacity: 0; } }
+        #game-player { opacity: 0; transform: scale(.985); transition: opacity .35s ease, transform .45s var(--ease-out); }
+        #game-player.gp-open { opacity: 1; transform: none; }
+        .gp-ring { background: conic-gradient(from 0deg, #c63aeb, #60a5fa, #f472b6, #c63aeb); -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 3px), #000 calc(100% - 2px)); mask: radial-gradient(farthest-side, transparent calc(100% - 3px), #000 calc(100% - 2px)); animation: skSpin 1.4s linear infinite; }
+        .gp-pulse { animation: gpPulse 1.6s ease-in-out infinite; }
+        @keyframes gpPulse { 50% { transform: scale(.94); filter: brightness(1.25); } }
+        .gp-indeterminate { animation: gpSlide 1.2s ease-in-out infinite; }
+        @keyframes gpSlide { from { transform: translateX(-100%); } to { transform: translateX(300%); } }
+
+        /* ---------- Lab ---------- */
+        .lab-f { border-color: rgba(255,255,255,0.1); color: #a1a1aa; background: rgba(255,255,255,0.03); }
+        .lab-f:hover { color: #fff; border-color: rgba(255,255,255,0.25); }
+        .lab-f.is-on { background: linear-gradient(135deg, #c63aeb, #7c3aed); color: #fff; border-color: transparent; box-shadow: 0 0 24px rgba(198,58,235,0.45); }
+        .lab-skel { border-radius: 1.5rem; aspect-ratio: 4 / 4.3; background: linear-gradient(110deg, rgba(255,255,255,0.03) 30%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.03) 70%); background-size: 250% 100%; animation: skel 1.4s linear infinite; border: 1px solid rgba(255,255,255,0.06); }
+        @keyframes skel { from { background-position: 130% 0; } to { background-position: -130% 0; } }
+
+        /* ---------- Magnetic buttons ---------- */
+        .magnetic { transition: transform .5s var(--ease-out), box-shadow .35s ease, background-color .35s ease, color .35s ease; }
+
         /* ---------- Accessibility: respect reduced motion ---------- */
         @media (prefers-reduced-motion: reduce) {
             html { scroll-behavior: auto; }
             *, *::before, *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
-            .reveal, .hero-letter, .fade-up { opacity: 1 !important; transform: none !important; }
+            .reveal, .hero-letter, .fade-up, .split-words .w { opacity: 1 !important; transform: none !important; }
             .cursor-glow { display: none; }
         }
         :focus-visible { outline: 2px solid #C63AEB; outline-offset: 3px; }
@@ -291,15 +375,19 @@
 
             <div id="nav-container" class="relative flex items-center text-[10px] sm:text-xs font-semibold tracking-wider">
                 <div id="nav-marker"></div>
-                <a href="#projects" class="nav-link px-2.5 sm:px-4 py-2 text-gray-300 hover:text-white transition-colors uppercase"><span>Work</span></a>
-                <a href="#games" class="nav-link px-2.5 sm:px-4 py-2 text-gray-300 hover:text-white transition-colors uppercase"><span>Games</span></a>
-                <a href="#playground" class="nav-link px-2.5 sm:px-4 py-2 text-gray-300 hover:text-white transition-colors uppercase"><span>Lab</span></a>
-                <a href="#contact" class="nav-link px-2.5 sm:px-4 py-2 text-gray-300 hover:text-white transition-colors uppercase"><span>Contact</span></a>
+                <a href="#projects" class="nav-link px-1.5 sm:px-4 py-2 text-gray-300 hover:text-white transition-colors uppercase"><span>Work</span></a>
+                <a href="#skills" class="nav-link px-1.5 sm:px-4 py-2 text-gray-300 hover:text-white transition-colors uppercase"><span>Skills</span></a>
+                <a href="#games" class="nav-link px-1.5 sm:px-4 py-2 text-gray-300 hover:text-white transition-colors uppercase"><span>Games</span></a>
+                <a href="#playground" class="nav-link px-1.5 sm:px-4 py-2 text-gray-300 hover:text-white transition-colors uppercase"><span>Lab</span></a>
+                <a href="#contact" class="nav-link px-1.5 sm:px-4 py-2 text-gray-300 hover:text-white transition-colors uppercase"><span>Contact</span></a>
             </div>
 
+            <div class="flex items-center gap-1.5">
+            <button data-sound-toggle class="hidden sm:flex w-9 h-9 rounded-full items-center justify-center text-gray-300 hover:text-white hover:bg-white/10 transition-colors" aria-label="Mute interface sounds" aria-pressed="true"><i class="fas fa-volume-high"></i></button>
             <a data-itch href="https://gojo-studio.itch.io/" target="_blank" rel="noopener" class="btn-main rounded-full px-3 sm:px-4 py-2 text-xs font-bold flex items-center gap-2" aria-label="Gojo Studio on itch.io">
                 <i class="fab fa-itch-io"></i><span class="hidden sm:inline tracking-wider">ITCH.IO</span>
             </a>
+            </div>
         </div>
     </nav>
 
@@ -309,6 +397,8 @@
         <a href="https://github.com/VoRaMaN" target="_blank" rel="noopener" aria-label="GitHub" class="w-10 h-10 flex items-center justify-center rounded-full text-gray-300 hover:text-black hover:bg-white transition-all hover:-translate-y-0.5"><i class="fab fa-github"></i></a>
         <a href="https://t.me/voraman9966" target="_blank" rel="noopener" aria-label="Telegram" class="w-10 h-10 flex items-center justify-center rounded-full text-gray-300 hover:text-white hover:bg-[#229ED9] transition-all hover:-translate-y-0.5"><i class="fab fa-telegram"></i></a>
         <a href="mailto:voramanvuth@gmail.com" aria-label="Email" class="w-10 h-10 flex items-center justify-center rounded-full text-gray-300 hover:text-white hover:bg-brand-purple transition-all hover:-translate-y-0.5"><i class="fas fa-envelope"></i></a>
+        <span class="h-px mx-2 bg-white/10"></span>
+        <button data-sound-toggle aria-label="Mute interface sounds" aria-pressed="true" class="w-10 h-10 flex items-center justify-center rounded-full text-gray-300 hover:text-white hover:bg-white/10 transition-all"><i class="fas fa-volume-high"></i></button>
     </div>
 
     <!-- MAIN CONTENT WRAPPER -->
@@ -332,10 +422,10 @@
             </p>
 
             <div class="fade-up flex flex-wrap justify-center gap-3 mt-10" style="--d:1.2s">
-                <a href="#projects" class="btn-main px-7 py-3 rounded-full text-xs font-bold tracking-widest uppercase inline-flex items-center gap-2">
+                <a href="#projects" class="btn-main magnetic px-7 py-3 rounded-full text-xs font-bold tracking-widest uppercase inline-flex items-center gap-2">
                     Explore Work <i class="fas fa-arrow-down text-[10px]"></i>
                 </a>
-                <a href="#games" class="btn-glass px-7 py-3 rounded-full text-xs font-bold tracking-widest uppercase inline-flex items-center gap-2">
+                <a href="#games" class="btn-glass magnetic px-7 py-3 rounded-full text-xs font-bold tracking-widest uppercase inline-flex items-center gap-2">
                     <i class="fas fa-gamepad"></i> My Games
                 </a>
             </div>
@@ -355,6 +445,11 @@
                     <span class="flex items-center gap-3"><img src="assets/img/tool-illustrator.webp" alt="" width="24" height="24" class="w-6 h-6 object-contain" loading="lazy" decoding="async">Illustrator</span>
                     <span class="flex items-center gap-3"><img src="assets/img/tool-framer.webp" alt="" width="24" height="24" class="w-6 h-6 object-contain rounded" loading="lazy" decoding="async">Framer</span>
                     <span class="flex items-center gap-3"><img src="assets/img/tool-trello.webp" alt="" width="24" height="24" class="w-6 h-6 object-contain" loading="lazy" decoding="async">Trello</span>
+                    <span class="flex items-center gap-3"><svg class="w-6 h-6"><use href="#ic-claude"></use></svg>Claude</span>
+                    <span class="flex items-center gap-3"><svg class="w-6 h-6 text-white"><use href="#ic-unity"></use></svg>Unity</span>
+                    <span class="flex items-center gap-3"><svg class="w-6 h-6 text-white"><use href="#ic-threejs"></use></svg>Three.js</span>
+                    <span class="flex items-center gap-3"><svg class="w-6 h-6"><use href="#ic-blender"></use></svg>Blender</span>
+                    <span class="flex items-center gap-3"><svg class="w-6 h-6"><use href="#ic-supabase"></use></svg>Supabase</span>
                     <span class="flex items-center gap-3"><i class="fas fa-gamepad text-brand-purple text-lg"></i>Game UI</span>
                     <span class="flex items-center gap-3"><i class="fab fa-itch-io text-[#fa5c5c] text-lg"></i>Indie Games</span>
                     <span class="flex items-center gap-3 pr-12"><i class="fas fa-mobile-alt text-blue-400 text-lg"></i>Prototyping</span>
@@ -364,6 +459,11 @@
                     <span class="flex items-center gap-3" aria-hidden="true"><img src="assets/img/tool-illustrator.webp" alt="" width="24" height="24" class="w-6 h-6 object-contain" loading="lazy" decoding="async">Illustrator</span>
                     <span class="flex items-center gap-3" aria-hidden="true"><img src="assets/img/tool-framer.webp" alt="" width="24" height="24" class="w-6 h-6 object-contain rounded" loading="lazy" decoding="async">Framer</span>
                     <span class="flex items-center gap-3" aria-hidden="true"><img src="assets/img/tool-trello.webp" alt="" width="24" height="24" class="w-6 h-6 object-contain" loading="lazy" decoding="async">Trello</span>
+                    <span class="flex items-center gap-3" aria-hidden="true"><svg class="w-6 h-6"><use href="#ic-claude"></use></svg>Claude</span>
+                    <span class="flex items-center gap-3" aria-hidden="true"><svg class="w-6 h-6 text-white"><use href="#ic-unity"></use></svg>Unity</span>
+                    <span class="flex items-center gap-3" aria-hidden="true"><svg class="w-6 h-6 text-white"><use href="#ic-threejs"></use></svg>Three.js</span>
+                    <span class="flex items-center gap-3" aria-hidden="true"><svg class="w-6 h-6"><use href="#ic-blender"></use></svg>Blender</span>
+                    <span class="flex items-center gap-3" aria-hidden="true"><svg class="w-6 h-6"><use href="#ic-supabase"></use></svg>Supabase</span>
                     <span class="flex items-center gap-3" aria-hidden="true"><i class="fas fa-gamepad text-brand-purple text-lg"></i>Game UI</span>
                     <span class="flex items-center gap-3" aria-hidden="true"><i class="fab fa-itch-io text-[#fa5c5c] text-lg"></i>Indie Games</span>
                     <span class="flex items-center gap-3 pr-12" aria-hidden="true"><i class="fas fa-mobile-alt text-blue-400 text-lg"></i>Prototyping</span>
@@ -375,7 +475,7 @@
         <section id="projects" class="min-h-screen py-20 px-4 md:px-12 flex flex-col justify-center items-center">
             <div class="reveal text-center mb-14">
                 <p class="text-xs font-bold tracking-[0.3em] text-brand-purple mb-3 uppercase">Selected Works</p>
-                <h2 class="text-4xl md:text-5xl font-serif font-bold">Interactive case studies</h2>
+                <h2 class="split-words text-4xl md:text-5xl font-serif font-bold">Interactive case studies</h2>
                 <p class="text-gray-400 mt-3 text-sm">Click a card to open a playable prototype.</p>
             </div>
 
@@ -447,11 +547,55 @@
             </div>
         </section>
 
+        <!-- SKILLS SECTION -->
+        <section id="skills" class="min-h-screen py-24 px-4 md:px-12 flex flex-col justify-center items-center">
+            <div class="reveal text-center mb-12 max-w-2xl">
+                <p class="text-xs font-bold tracking-[0.3em] text-emerald-400 mb-3 uppercase">Toolkit</p>
+                <h2 class="split-words text-4xl md:text-6xl font-serif font-bold leading-tight">Skills &amp; tools</h2>
+                <p class="text-gray-400 mt-5 leading-relaxed">Design, code, games and AI — <span id="skill-total" class="text-white font-bold">70+</span> skills behind everything on this page. Spin the sphere or pick a category.</p>
+            </div>
+            <div class="w-full max-w-7xl grid grid-cols-1 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] gap-10 items-center">
+                <div class="reveal relative">
+                    <div id="skill-sphere" role="group" aria-label="3D sphere of tool logos. Drag to spin, click a logo to see its category.">
+                        <span class="sk-orbit"></span><span class="sk-orbit o2"></span>
+                        <span id="sphere-label" class="glass"></span>
+                    </div>
+                    <p class="text-center text-[10px] tracking-[0.3em] text-gray-500 mt-3 uppercase"><i class="fas fa-hand-pointer mr-1"></i> Drag to spin · click a logo</p>
+                </div>
+                <div class="reveal min-w-0">
+                    <div id="skill-tabs" class="flex gap-2 overflow-x-auto no-scrollbar pb-3 -mx-1 px-1 mb-3" aria-label="Skill categories"></div>
+                    <div id="skill-grid" class="max-h-[560px] overflow-y-auto no-scrollbar pr-1 pb-2"></div>
+                </div>
+            </div>
+
+            <!-- AI in my workflow -->
+            <div class="w-full max-w-7xl mt-16">
+                <h3 class="reveal text-sm font-bold tracking-[0.3em] text-gray-400 uppercase mb-5 text-center lg:text-left"><i class="fas fa-robot mr-2 text-brand-purple"></i>AI in my workflow</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-5" data-stagger>
+                    <div class="reveal ai-card glass spot rounded-2xl p-6">
+                        <div class="ai-ic w-12 h-12 rounded-xl bg-[#d97757]/15 flex items-center justify-center mb-4"><svg class="w-7 h-7"><use href="#ic-claude"></use></svg></div>
+                        <h4 class="font-bold text-lg">Claude Code + MCP</h4>
+                        <p class="text-sm text-gray-400 mt-2 leading-relaxed">I build, test and ship with Claude Code, and wire MCP tools like Playwright and Context7 into my game projects.</p>
+                    </div>
+                    <div class="reveal ai-card glass spot rounded-2xl p-6">
+                        <div class="ai-ic w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center mb-4"><svg class="w-6 h-6 text-white"><use href="#ic-elevenlabs"></use></svg></div>
+                        <h4 class="font-bold text-lg">ElevenLabs for game audio</h4>
+                        <p class="text-sm text-gray-400 mt-2 leading-relaxed">Stick Empire 3D catalogues 87 sound effects, generated through an ElevenLabs pipeline with fallbacks for any take not yet recorded.</p>
+                    </div>
+                    <div class="reveal ai-card glass spot rounded-2xl p-6">
+                        <div class="ai-ic w-12 h-12 rounded-xl bg-[#4f8ef7]/15 flex items-center justify-center mb-4"><svg class="w-7 h-7"><use href="#ic-gemini"></use></svg></div>
+                        <h4 class="font-bold text-lg">Gemini for document AI</h4>
+                        <p class="text-sm text-gray-400 mt-2 leading-relaxed">BookWave uses the Gemini API to recognise chapter structure in uploaded books, backed by OCR for scanned PDFs.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
         <!-- GAMES SECTION (Game Developer / itch.io) -->
         <section id="games" class="min-h-screen py-24 px-4 md:px-12 flex flex-col justify-center items-center">
             <div class="reveal text-center mb-14 max-w-2xl">
                 <p class="text-xs font-bold tracking-[0.3em] text-[#fa5c5c] mb-3 uppercase">Beyond UI / UX</p>
-                <h2 class="text-4xl md:text-6xl font-serif font-bold leading-tight">I also <em class="text-transparent bg-clip-text bg-gradient-to-r from-brand-purple via-pink-400 to-blue-400">build games.</em></h2>
+                <h2 class="split-words text-4xl md:text-6xl font-serif font-bold leading-tight">I also <em class="text-transparent bg-clip-text bg-gradient-to-r from-brand-purple via-pink-400 to-blue-400">build games.</em></h2>
                 <p class="text-gray-400 mt-5 leading-relaxed">
                     Under <span class="text-white font-semibold">Gojo Studio</span> I design and develop indie games — the mechanics, the HUD, and every menu in between. Play them on itch.io.
                 </p>
@@ -521,41 +665,63 @@
                 </div>
             </div>
 
-            <!-- EARTHFALL featured game -->
-            <div class="reveal w-full max-w-6xl mt-10">
-                <div class="glass-dark spot rounded-3xl overflow-hidden grid grid-cols-1 lg:grid-cols-5">
-                    <button type="button" onclick="openStore('earthfall')" class="relative lg:col-span-3 aspect-video lg:aspect-auto lg:min-h-[380px] group overflow-hidden text-left" aria-label="Open EARTHFALL in the store">
-                        <img src="assets/img/earthfall-banner-800.webp" srcset="assets/img/earthfall-banner-800.webp 800w, assets/img/earthfall-banner-1600.webp 1600w" sizes="(min-width:1024px) 60vw, 100vw" alt="EARTHFALL key art" width="1600" height="900" loading="lazy" decoding="async" class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-[1.5s]">
-                        <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
-                        <span class="absolute top-4 left-4 inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider bg-green-500/20 text-green-300 border border-green-500/40 rounded-full px-3 py-1 backdrop-blur"><i class="fas fa-gamepad"></i> Playable</span>
-                        <span class="absolute bottom-4 left-4 right-4 flex gap-2">
-                            <img src="assets/img/earthfall-shot-1-800.webp" alt="EARTHFALL gameplay — Leviathan over the city" width="800" height="390" loading="lazy" decoding="async" class="w-1/3 aspect-video object-cover rounded-lg border border-white/20">
-                            <img src="assets/img/earthfall-shot-2-800.webp" alt="EARTHFALL gameplay — Tripod destroying buildings" width="800" height="391" loading="lazy" decoding="async" class="w-1/3 aspect-video object-cover rounded-lg border border-white/20">
-                            <img src="assets/img/earthfall-shot-3-800.webp" alt="EARTHFALL city map" width="800" height="388" loading="lazy" decoding="async" class="w-1/3 aspect-video object-cover rounded-lg border border-white/20">
-                        </span>
-                    </button>
-                    <div class="lg:col-span-2 p-6 md:p-8 flex flex-col">
-                        <div class="flex items-center gap-4 mb-4">
-                            <img src="assets/img/earthfall-icon.webp" alt="EARTHFALL icon" width="64" height="64" loading="lazy" decoding="async" class="w-16 h-16 rounded-2xl object-cover border border-white/10">
-                            <div>
-                                <p class="text-[10px] font-bold tracking-[0.3em] text-brand-purple">MY GAME</p>
-                                <h3 class="text-3xl font-black tracking-tight">EARTHFALL</h3>
-                                <p class="text-[11px] tracking-[0.25em] text-gray-400">INVADE · DESTROY · CONQUER</p>
+            <!-- My games -->
+            <div class="w-full max-w-6xl mt-14">
+                <div class="reveal flex items-end justify-between gap-4 mb-6">
+                    <h3 class="text-2xl md:text-3xl font-black">My games</h3>
+                    <button type="button" onclick="openStore()" class="text-xs font-bold tracking-widest uppercase text-gray-400 hover:text-white transition-colors">Open the store <i class="fas fa-arrow-right ml-1"></i></button>
+                </div>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6" data-stagger>
+                    <!-- EARTHFALL -->
+                    <article class="reveal glass-dark spot rounded-3xl overflow-hidden flex flex-col">
+                        <button type="button" onclick="openStore('earthfall')" class="gc-media relative aspect-video overflow-hidden text-left group" aria-label="Open EARTHFALL in the store">
+                            <img class="gc-img is-on" src="assets/img/earthfall-banner-800.webp" alt="EARTHFALL key art" width="800" height="450" loading="lazy" decoding="async">
+                            <img class="gc-img" src="assets/img/earthfall-shot-1-800.webp" alt="EARTHFALL gameplay: a Leviathan over the city" width="800" height="390" loading="lazy" decoding="async">
+                            <img class="gc-img" src="assets/img/earthfall-shot-2-800.webp" alt="EARTHFALL gameplay: a Tripod destroying buildings" width="800" height="391" loading="lazy" decoding="async">
+                            <img class="gc-img" src="assets/img/earthfall-shot-3-800.webp" alt="EARTHFALL city map" width="800" height="388" loading="lazy" decoding="async">
+                            <span class="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent"></span>
+                            <span class="absolute top-4 left-4 inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider bg-green-500/20 text-green-300 border border-green-500/40 rounded-full px-3 py-1 backdrop-blur"><i class="fas fa-gamepad"></i> Playable</span>
+                            <span class="absolute top-4 right-4 text-[10px] font-bold uppercase tracking-wider bg-black/50 border border-white/15 rounded-full px-3 py-1 backdrop-blur"><i class="fas fa-download mr-1"></i>Download</span>
+                            <span class="gc-dots absolute bottom-3 right-4 flex gap-1.5"><i class="on"></i><i></i><i></i><i></i></span>
+                        </button>
+                        <div class="p-6 flex flex-col gap-4 flex-1">
+                            <div class="flex items-center gap-4">
+                                <img src="assets/img/earthfall-icon.webp" alt="EARTHFALL icon" width="56" height="56" loading="lazy" decoding="async" class="w-14 h-14 rounded-2xl object-cover border border-white/10">
+                                <div><h4 class="text-2xl font-black tracking-tight">EARTHFALL</h4><p class="text-[11px] tracking-[0.25em] text-gray-400">INVADE · DESTROY · CONQUER</p></div>
+                            </div>
+                            <p class="text-sm text-gray-300 leading-relaxed">You are the invader. Pilot alien Tripods and Leviathan artillery platforms, raze a fully destructible city and complete the 20-objective <em>Conquest of Earth</em> campaign.</p>
+                            <div class="flex flex-wrap gap-1.5"><span class="text-[10px] font-semibold text-gray-300 bg-white/5 border border-white/10 rounded px-2 py-0.5">Action</span><span class="text-[10px] font-semibold text-gray-300 bg-white/5 border border-white/10 rounded px-2 py-0.5">Strategy</span><span class="text-[10px] font-semibold text-gray-300 bg-white/5 border border-white/10 rounded px-2 py-0.5">Sci-fi</span><span class="text-[10px] font-semibold text-gray-300 bg-white/5 border border-white/10 rounded px-2 py-0.5">Destruction</span><span class="text-[10px] font-semibold text-gray-300 bg-white/5 border border-white/10 rounded px-2 py-0.5">Base Building</span></div>
+                            <div class="flex flex-wrap gap-3 mt-auto pt-2">
+                                <button type="button" onclick="openStore('earthfall')" class="btn-main magnetic rounded-full px-6 py-3 text-xs font-bold tracking-widest uppercase inline-flex items-center gap-2"><i class="fas fa-download"></i> Get it free</button>
+                                <button type="button" onclick="openStore('earthfall')" class="btn-glass magnetic rounded-full px-6 py-3 text-xs font-bold tracking-widest uppercase inline-flex items-center gap-2"><i class="fas fa-store"></i> Store page</button>
                             </div>
                         </div>
-                        <p class="text-sm text-gray-300 leading-relaxed">You are the invader. Pilot alien Tripods and Leviathan artillery platforms, raze a fully destructible city and complete the 20-objective <em>Conquest of Earth</em> campaign.</p>
-                        <div class="flex flex-wrap gap-1.5 mt-4">
-                            <span class="text-[10px] font-semibold text-gray-300 bg-white/5 border border-white/10 rounded px-2 py-0.5">Action</span>
-                            <span class="text-[10px] font-semibold text-gray-300 bg-white/5 border border-white/10 rounded px-2 py-0.5">Strategy</span>
-                            <span class="text-[10px] font-semibold text-gray-300 bg-white/5 border border-white/10 rounded px-2 py-0.5">Sci-fi</span>
-                            <span class="text-[10px] font-semibold text-gray-300 bg-white/5 border border-white/10 rounded px-2 py-0.5">Destruction</span>
-                            <span class="text-[10px] font-semibold text-gray-300 bg-white/5 border border-white/10 rounded px-2 py-0.5">Base Building</span>
+                    </article>
+                    <!-- Stick Empire Conquest 3D -->
+                    <article class="reveal glass-dark spot rounded-3xl overflow-hidden flex flex-col">
+                        <button type="button" onclick="openStore('stick-empire-conquest-3d', true)" class="gc-media relative aspect-video overflow-hidden text-left group" aria-label="Play Stick Empire Conquest 3D in your browser">
+                            <img class="gc-img is-on" src="assets/img/stickempire-banner-800.webp" alt="Stick Empire Conquest 3D key art" width="800" height="450" loading="lazy" decoding="async">
+                            <img class="gc-img" src="assets/img/stickempire-emblems.webp" alt="Stick Empire unit emblems" width="600" height="600" loading="lazy" decoding="async">
+                            <span class="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent"></span>
+                            <span class="absolute top-4 left-4 inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider bg-green-500/20 text-green-300 border border-green-500/40 rounded-full px-3 py-1 backdrop-blur"><i class="fas fa-gamepad"></i> Playable</span>
+                            <span class="absolute top-4 right-4 text-[10px] font-bold uppercase tracking-wider bg-black/50 border border-white/15 rounded-full px-3 py-1 backdrop-blur"><i class="fas fa-globe mr-1"></i>Play in browser</span>
+                            <span class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition duration-500"><span class="play-orb w-20 h-20 rounded-full bg-green-500 flex items-center justify-center text-2xl shadow-[0_0_50px_rgba(34,197,94,.6)] scale-75 group-hover:scale-100 transition duration-500"><i class="fas fa-play ml-1"></i></span></span>
+                            <span class="gc-dots absolute bottom-3 right-4 flex gap-1.5"><i class="on"></i><i></i></span>
+                        </button>
+                        <div class="p-6 flex flex-col gap-4 flex-1">
+                            <div class="flex items-center gap-4">
+                                <img src="assets/img/stickempire-icon-256.webp" alt="Stick Empire Conquest 3D icon" width="56" height="56" loading="lazy" decoding="async" class="w-14 h-14 rounded-2xl object-cover border border-white/10">
+                                <div><h4 class="text-2xl font-black tracking-tight">Stick Empire Conquest 3D</h4><p class="text-[11px] tracking-[0.25em] text-gray-400">ORDER · CHAOS · WILDLANDS</p></div>
+                            </div>
+                            <p class="text-sm text-gray-300 leading-relaxed">A 3D real-time strategy battle game inspired by classic stick-figure warfare. Pick the Order or the Chaos Empire, build an army and conquer — online 1v1 / 2v2 or against the AI.</p>
+                            <div class="flex flex-wrap gap-1.5"><span class="text-[10px] font-semibold text-gray-300 bg-white/5 border border-white/10 rounded px-2 py-0.5">Strategy</span><span class="text-[10px] font-semibold text-gray-300 bg-white/5 border border-white/10 rounded px-2 py-0.5">Multiplayer</span><span class="text-[10px] font-semibold text-gray-300 bg-white/5 border border-white/10 rounded px-2 py-0.5">3D</span><span class="text-[10px] font-semibold text-gray-300 bg-white/5 border border-white/10 rounded px-2 py-0.5">Low-poly</span><span class="text-[10px] font-semibold text-gray-300 bg-white/5 border border-white/10 rounded px-2 py-0.5">Three.js</span></div>
+                            <div class="flex flex-wrap gap-3 mt-auto pt-2">
+                                <button type="button" onclick="openStore('stick-empire-conquest-3d', true)" class="btn-main magnetic rounded-full px-6 py-3 text-xs font-bold tracking-widest uppercase inline-flex items-center gap-2" style="background:linear-gradient(135deg,#16a34a,#22c55e)"><i class="fas fa-play"></i> Play now</button>
+                                <button type="button" onclick="openStore('stick-empire-conquest-3d')" class="btn-glass magnetic rounded-full px-6 py-3 text-xs font-bold tracking-widest uppercase inline-flex items-center gap-2"><i class="fas fa-store"></i> Store page</button>
+                                <a href="https://gojo-studio.itch.io/stick-empire-conquest-3d" target="_blank" rel="noopener" class="btn-glass rounded-full w-11 h-11 inline-flex items-center justify-center" aria-label="Stick Empire Conquest 3D on itch.io"><i class="fab fa-itch-io"></i></a>
+                            </div>
                         </div>
-                        <div class="flex flex-wrap gap-3 mt-auto pt-6">
-                            <button type="button" onclick="openStore('earthfall')" class="btn-main rounded-full px-6 py-3 text-xs font-bold tracking-widest uppercase inline-flex items-center gap-2"><i class="fas fa-download"></i> Get it free</button>
-                            <button type="button" onclick="openStore('earthfall')" class="btn-glass rounded-full px-6 py-3 text-xs font-bold tracking-widest uppercase inline-flex items-center gap-2"><i class="fas fa-store"></i> Store page</button>
-                        </div>
-                    </div>
+                    </article>
                 </div>
             </div>
 
@@ -570,8 +736,8 @@
         <section id="playground" class="min-h-screen py-20 px-4 md:px-12 flex flex-col justify-center items-center relative">
             <div class="reveal text-center mb-12 w-full">
                 <p class="text-xs font-bold tracking-[0.3em] text-blue-400 mb-3 uppercase">Playground</p>
-                <h2 class="text-4xl md:text-5xl font-serif font-bold mb-3">UI Lab</h2>
-                <p class="text-gray-400">Interactive UI Lab &amp; Component Testing</p>
+                <h2 class="split-words text-4xl md:text-6xl font-serif font-bold mb-3">UI Lab</h2>
+                <p class="text-gray-400 max-w-xl mx-auto">20 live experiments — physics, shaders, sound and game UI — plus a button designer and an app simulator. Everything here is real, interactive code.</p>
             </div>
 
             <div class="w-full max-w-7xl grid grid-cols-1 lg:grid-cols-2 gap-8" data-stagger>
@@ -658,6 +824,20 @@
                 </div>
 
             </div>
+
+            <!-- 20 experiments (assets/js/lab.js loads when you get close) -->
+            <div class="w-full max-w-7xl mt-16">
+                <div class="reveal flex flex-col md:flex-row md:items-end justify-between gap-4 mb-6">
+                    <div>
+                        <h3 class="text-2xl md:text-3xl font-black">Experiments <span class="text-brand-purple">20</span></h3>
+                        <p class="text-sm text-gray-400 mt-1">Hover, drag, click — or open any one full screen.</p>
+                    </div>
+                    <div id="lab-filters" class="flex gap-2 overflow-x-auto no-scrollbar -mx-1 px-1 pb-1"></div>
+                </div>
+                <div id="lab-grid" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
+                    <div class="lab-skel"></div><div class="lab-skel"></div><div class="lab-skel"></div><div class="lab-skel"></div><div class="lab-skel"></div><div class="lab-skel"></div>
+                </div>
+            </div>
         </section>
 
         <!-- CONTACT SECTION -->
@@ -667,7 +847,7 @@
                 <div class="reveal space-y-10 pt-6">
                     <div class="text-center lg:text-left">
                         <p class="text-xs font-bold tracking-[0.3em] text-brand-purple mb-3 uppercase">Say hello</p>
-                        <h2 class="text-4xl md:text-5xl font-serif font-bold mb-6">Let's work together</h2>
+                        <h2 class="split-words text-4xl md:text-5xl font-serif font-bold mb-6">Let's work together</h2>
                         <p class="text-gray-400 leading-relaxed max-w-md mx-auto lg:mx-0">
                             I'm open to UX/UI roles, freelance design, game UI and collaborations. Feel free to reach out via the platforms below.
                         </p>
@@ -719,12 +899,27 @@
                     <a data-itch href="https://gojo-studio.itch.io/" target="_blank" rel="noopener" class="hover:text-[#fa5c5c] transition-colors" aria-label="itch.io"><i class="fab fa-itch-io"></i></a>
                     <a href="https://github.com/VoRaMaN" target="_blank" rel="noopener" class="hover:text-white transition-colors" aria-label="GitHub"><i class="fab fa-github"></i></a>
                     <a href="https://t.me/voraman9966" target="_blank" rel="noopener" class="hover:text-[#229ED9] transition-colors" aria-label="Telegram"><i class="fab fa-telegram"></i></a>
+                    <button data-sound-toggle class="hover:text-white transition-colors" aria-label="Mute interface sounds" aria-pressed="true"><i class="fas fa-volume-high"></i></button>
                     <a href="admin.html" class="hover:text-white transition-colors" aria-label="Admin"><i class="fas fa-lock text-sm"></i></a>
                     <a href="#home" class="hover:text-white transition-colors text-xs tracking-widest" aria-label="Back to top">TOP <i class="fas fa-arrow-up ml-1"></i></a>
                 </div>
             </div>
         </footer>
     </main>
+
+    <!-- LAB FOCUS (full-screen experiment) -->
+    <div id="lab-focus" class="fixed inset-0 z-[150] hidden items-center justify-center p-3 md:p-8 bg-black/90" role="dialog" aria-modal="true" aria-labelledby="lf-title">
+        <div class="lab-focus-box rounded-3xl w-full max-w-6xl h-[86vh] flex flex-col overflow-hidden bg-[#0c0c12] border border-white/10 shadow-[0_40px_120px_-30px_rgba(198,58,235,0.45)]">
+            <div class="flex items-center gap-3 px-4 md:px-5 py-3 border-b border-white/10">
+                <span id="lf-num" class="lab-num"></span>
+                <div class="min-w-0 flex-1"><h3 id="lf-title" class="font-bold truncate"></h3><p id="lf-desc" class="hidden md:block text-xs text-gray-400 truncate"></p></div>
+                <button id="lf-prev" class="lab-expand" aria-label="Previous experiment"><i class="fas fa-chevron-left"></i></button>
+                <button id="lf-next" class="lab-expand" aria-label="Next experiment"><i class="fas fa-chevron-right"></i></button>
+                <button id="lf-close" class="lab-expand" aria-label="Close"><i class="fas fa-xmark"></i></button>
+            </div>
+            <div id="lf-slot" class="relative flex-1 min-h-0"></div>
+        </div>
+    </div>
 
     <!-- PLAY MODAL (itch.io in-browser game embed) -->
     <div id="play-modal" class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/70" role="dialog" aria-modal="true" aria-labelledby="play-modal-title" onclick="if(event.target===this)closePlayModal()">
@@ -1332,6 +1527,25 @@
         const observeReveals = (root = document) => root.querySelectorAll('.reveal:not(.active)').forEach(el => revealObserver.observe(el));
         observeReveals();
 
+        // --- Headings reveal word by word ---
+        document.querySelectorAll('.split-words').forEach((el) => {
+            let wi = 0;
+            const unit = (node) => { const m = document.createElement('span'); m.className = 'w-mask'; const w = document.createElement('span'); w.className = 'w'; w.style.setProperty('--wi', wi++); m.appendChild(w); return [m, w]; };
+            [...el.childNodes].forEach((node) => {
+                if (node.nodeType === 3) {
+                    const frag = document.createDocumentFragment();
+                    node.textContent.split(/(\s+)/).forEach((part) => {
+                        if (!part) return;
+                        if (/^\s+$/.test(part)) { frag.appendChild(document.createTextNode(part)); return; }
+                        const [m, w] = unit(); w.textContent = part; frag.appendChild(m);
+                    });
+                    node.replaceWith(frag);
+                } else if (node.nodeType === 1) {
+                    const [m, w] = unit(); node.replaceWith(m); w.appendChild(node);
+                }
+            });
+        });
+
         // --- Hero role typing loop ---
         (() => {
             const el = document.getElementById('role-text');
@@ -1392,6 +1606,37 @@
             document.addEventListener('pointerleave', () => glow.classList.remove('on'));
         }
 
+        // --- Magnetic buttons ---
+        if (finePointer && !prefersReducedMotion) {
+            document.querySelectorAll('.magnetic').forEach((el) => {
+                el.addEventListener('pointermove', (e) => {
+                    const r = el.getBoundingClientRect();
+                    el.style.transform = `translate(${((e.clientX - r.left - r.width / 2) * 0.22).toFixed(1)}px, ${((e.clientY - r.top - r.height / 2) * 0.32).toFixed(1)}px)`;
+                });
+                el.addEventListener('pointerleave', () => { el.style.transform = ''; });
+            });
+        }
+
+        // --- Game cards: cycle screenshots (faster on hover) ---
+        document.querySelectorAll('.gc-media').forEach((m) => {
+            const imgs = [...m.querySelectorAll('.gc-img')], dots = [...m.querySelectorAll('.gc-dots i')];
+            if (imgs.length < 2) return;
+            let i = 0, timer = 0;
+            const show = (k) => { i = (k + imgs.length) % imgs.length; imgs.forEach((im, j) => im.classList.toggle('is-on', j === i)); dots.forEach((d, j) => d.classList.toggle('on', j === i)); };
+            const loop = (ms) => { clearInterval(timer); if (!prefersReducedMotion) timer = setInterval(() => show(i + 1), ms); };
+            new IntersectionObserver((es) => es.forEach((e) => (e.isIntersecting ? loop(3200) : clearInterval(timer)))).observe(m);
+            m.addEventListener('pointerenter', () => { show(i + 1); loop(1500); });
+            m.addEventListener('pointerleave', () => loop(3200));
+        });
+
+        // --- UI Lab: load the 20 experiments when the visitor gets close ---
+        (() => {
+            const pg = document.getElementById('playground');
+            let loaded = false;
+            const load = () => { if (loaded) return; loaded = true; const sc = document.createElement('script'); sc.src = 'assets/js/lab.js'; document.body.appendChild(sc); };
+            new IntersectionObserver((es, o) => { if (es.some((e) => e.isIntersecting)) { load(); o.disconnect(); } }, { rootMargin: '900px 0px' }).observe(pg);
+        })();
+
         // --- Scroll progress + nav state (rAF-throttled, passive) ---
         (() => {
             const bar = document.getElementById('scroll-progress');
@@ -1407,8 +1652,8 @@
             update();
         })();
 
-        // Opens the game store (optionally straight to a game's page)
-        function openStore(slug) { location.hash = slug ? `#store/${slug}` : '#store'; }
+        // Opens the game store (optionally straight to a game's page, or straight into the game)
+        function openStore(slug, play) { location.hash = slug ? `#store/${slug}${play ? '/play' : ''}` : '#store'; }
 
         // --- Detail Page Logic ---
         let lastFocus = null;
@@ -1697,7 +1942,9 @@
 
         document.getElementById('year').textContent = new Date().getFullYear();
     </script>
+    <script src="assets/js/sfx.js"></script>
     <script src="assets/js/config.js"></script>
     <script src="assets/js/store.js"></script>
+    <script src="assets/js/skills.js"></script>
 </body>
 </html>
