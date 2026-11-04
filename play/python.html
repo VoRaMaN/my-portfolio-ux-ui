@@ -91,8 +91,9 @@
     <!-- ended -->
     <section id="ended" class="card hidden">
         <div class="icon-wrap"><span class="ph" style="background:linear-gradient(135deg,#c63aeb,#3b82f6)">🎮</span></div>
-        <h1>Thanks for playing!</h1>
-        <p class="sub">The game has closed</p>
+        <h1 id="endedTitle">Thanks for playing!</h1>
+        <p class="sub" id="endedSub">The game has closed</p>
+        <p class="hint hidden" id="endedHelp" style="margin-top:0"></p>
         <div class="row"><button class="btn" id="restart2">PLAY AGAIN</button></div>
     </section>
 
@@ -108,7 +109,7 @@
         const qs = new URLSearchParams(location.search);
         const canvas = $('canvas');
         const out = $('console');
-        let pyodide = null, info = null, lastError = '';
+        let pyodide = null, info = null, lastError = '', startFile = '';
 
         // ---------- helpers ----------
         const fmt = (n) => (n >= 1048576 ? `${(n / 1048576).toFixed(1)} MB` : `${Math.max(1, Math.round(n / 1024))} KB`);
@@ -131,6 +132,8 @@
         $('copyErr').onclick = async () => { try { await navigator.clipboard.writeText(lastError); $('copyErr').textContent = 'COPIED'; } catch { /* ignore */ } };
 
         function explain(msg) {
+            const start = msg.match(/FileNotFoundError: (The start file "[^"\n]*" is not in the \.zip\.[^\n]*)/);
+            if (start) return start[1];
             if (/ModuleNotFoundError: No module named '([^']+)'/.test(msg)) {
                 const m = RegExp.$1;
                 return `The game imports "${m}", which isn't available in the browser. pygame-ce and Python's standard library are included; other packages (and native code) are not.`;
@@ -166,7 +169,7 @@
         async function resolveGame() {
             const slug = qs.get('game');
             if (qs.get('src')) {
-                return { title: qs.get('title') || 'Python game', icon: qs.get('icon') || '', entry: qs.get('entry') || '', urls: qs.get('src').split(',').filter(Boolean) };
+                return { title: qs.get('title') || 'Python game', icon: qs.get('icon') || '', entry: qs.get('entry') || '', filename: qs.get('file') || '', urls: qs.get('src').split(',').filter(Boolean) };
             }
             if (!slug) throw new Error('No game selected. Open this page from the store, or add ?game=<slug>.');
             const rows = await window.PF.rest(`portfolio_games?select=title,icon_url,play&slug=eq.${encodeURIComponent(slug)}`);
@@ -174,7 +177,7 @@
             const parts = g?.play?.zip_parts || [];
             if (!g || g.play?.kind !== 'python' || !parts.length) throw new Error(`"${slug}" has no Python build uploaded yet.`);
             const site = (v) => (v && v.startsWith('assets/') ? `../${v}` : window.PF.mediaUrl(v));
-            return { title: g.title, icon: site(g.icon_url), entry: g.play.entry || '', urls: parts.map((p) => window.PF.mediaUrl(p.path || p)), size: g.play.size };
+            return { title: g.title, icon: site(g.icon_url), entry: g.play.entry || '', filename: g.play.filename || '', urls: parts.map((p) => window.PF.mediaUrl(p.path || p)), size: g.play.size };
         }
 
         async function download(urls, knownSize) {
@@ -235,9 +238,11 @@
 import sys
 sys.path.insert(0, '/home/pyodide')
 import __pyrun__
-__pyrun__.prepare('/home/pyodide/game', ${JSON.stringify(game.entry)})`));
-                step('prepare', 'done', info.converted.length ? `${info.converted.length} loop${info.converted.length > 1 ? 's' : ''} converted` : 'ready');
-                log(`[pyrun] entry: ${info.entry} · ${info.files} Python file(s)`, 'i');
+__pyrun__.prepare('/home/pyodide/game', ${JSON.stringify(game.entry)}, ${JSON.stringify([game.title, game.filename])})`));
+                startFile = info.entry.split('/').pop();
+                step('prepare', 'done', startFile);
+                log(`[pyrun] start file: ${info.entry} (${info.chosen === 'set' ? 'set in the admin' : 'detected'}${info.others.length ? `; also in the zip: ${info.others.join(', ')}` : ''}) · ${info.files} Python file(s)`, 'i');
+                if (info.converted.length) log(`[pyrun] ${info.converted.length} game loop${info.converted.length > 1 ? 's' : ''} made browser-friendly`, 'i');
                 info.converted.forEach((c) => log(`[pyrun] async: ${c}`, 'i'));
                 info.warnings.forEach((w) => log(`[pyrun] warning: ${w}`, 'e'));
 
@@ -248,7 +253,8 @@ __pyrun__.prepare('/home/pyodide/game', ${JSON.stringify(game.entry)})`));
                 const btn = $('play'); btn.classList.remove('hidden'); btn.focus();
                 btn.addEventListener('click', start, { once: true });
             } catch (e) {
-                showError('Could not start', String(e && e.message || e));
+                const msg = String(e && e.message || e);
+                showError(/FileNotFoundError: The start file /.test(msg) ? 'Start file not found' : 'Could not start', msg);
             }
         })();
 
@@ -259,8 +265,18 @@ __pyrun__.prepare('/home/pyodide/game', ${JSON.stringify(game.entry)})`));
             canvas.focus();
             canvas.addEventListener('pointerdown', () => canvas.focus());
             try {
+                const t0 = performance.now();
                 await pyodide.runPythonAsync('import __pyrun__\nawait __pyrun__.run()');
                 canvas.classList.remove('on');
+                // A script that never opened a window is almost always the wrong start file (e.g. PyCharm's sample main.py)
+                if (!pyodide.runPython('import __pyrun__\n__pyrun__.STATE["window"]')) {
+                    $('endedTitle').textContent = 'No game window opened';
+                    $('endedSub').textContent = `${startFile} finished in ${((performance.now() - t0) / 1000).toFixed(1)} s without calling pygame.display.set_mode()`;
+                    $('endedHelp').textContent = info.others.length
+                        ? `This is probably not the file that starts the game. Other Python files in the zip: ${info.others.map((x) => x.split('/').pop()).join(', ')}. Set the right one as the Start file in the admin (Play in browser).`
+                        : 'Check the CONSOLE for what the script printed.';
+                    $('endedHelp').classList.remove('hidden');
+                }
                 $('ended').classList.remove('hidden');
             } catch (e) {
                 const msg = String(e && e.message || e);

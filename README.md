@@ -55,7 +55,7 @@ A store game can run in a full-screen player instead of being downloaded. In the
 
 Python games run on real Python 3.14 with pygame-ce inside the visitor's browser ([Pyodide](https://pyodide.org), WebAssembly). The player page is `play/python.html` and the runtime helper is `play/pyrun.py`.
 
-1. Zip the game folder. It should contain `main.py` (or set the entry file in the admin) and its assets.
+1. Zip the game folder with its modules and assets. The player finds the start file itself. That's the script no other file imports, which opens the window (`pygame.display.set_mode`) and runs the game, such as `PyFighter.py` next to a `fighter.py` that holds the `Fighter` class. PyCharm's sample `main.py`, `venv/`, `.idea/` and tests are ignored. To choose it yourself, type the name in **Start file** in the admin. The case and the `.py` don't matter.
 2. In the admin, open the game, then **Play in browser → Python (pygame) .zip**. Upload the .zip and press **Test it**.
 3. Publish the game. The store shows **Play now**. Direct link: `play/python.html?game=<slug>`.
 
