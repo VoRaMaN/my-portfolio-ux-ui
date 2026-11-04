@@ -132,13 +132,15 @@
         $('copyErr').onclick = async () => { try { await navigator.clipboard.writeText(lastError); $('copyErr').textContent = 'COPIED'; } catch { /* ignore */ } };
 
         function explain(msg) {
-            const start = msg.match(/FileNotFoundError: (The start file "[^"\n]*" is not in the \.zip\.[^\n]*)/);
-            if (start) return start[1];
+            const ours = msg.match(/FileNotFoundError: ((?:The start file "[^"\n]*" is not in the \.zip\.|This \.zip has no )[^\n]*)/);
+            if (ours) return ours[1];
+            const packed = info && info.archives && info.archives.length
+                ? ` Your .zip also contains ${info.archives[0].split('/').pop()}: the player can't look inside archives, so unpack it and zip the files themselves.` : '';
+            if (/FileNotFoundError|No file '.*' found|Couldn't open/.test(msg)) return `A file the game loads is missing from the .zip.${packed || ' Check that the folder it lives in (e.g. Assets) is inside the .zip.'}`;
             if (/ModuleNotFoundError: No module named '([^']+)'/.test(msg)) {
                 const m = RegExp.$1;
                 return `The game imports "${m}", which isn't available in the browser. pygame-ce and Python's standard library are included; other packages (and native code) are not.`;
             }
-            if (/FileNotFoundError|No file '.*' found|Couldn't open/.test(msg)) return 'A file the game loads is missing. Check that it is inside the .zip and that the name matches exactly — web file names are case-sensitive.';
             if (/pygame\.error: .*video/i.test(msg)) return 'pygame could not create its window. Make sure pygame.display.set_mode() runs before drawing.';
             return '';
         }
@@ -164,6 +166,30 @@
         new MutationObserver(fit).observe(canvas, { attributes: true, attributeFilter: ['width', 'height'] });
         window.addEventListener('resize', fit); fit();
         canvas.addEventListener('contextmenu', (e) => e.preventDefault());
+
+        // Games made on Windows often load "assets/x.png" from a folder called "Assets", or write paths with
+        // backslashes. Windows doesn't mind; the browser's file system is case-sensitive. So when a name isn't
+        // found exactly, look it up the Windows way (any case, \ as a separator). Exact names always win.
+        function windowsPaths(FS) {
+            const exact = FS.lookupNode.bind(FS);
+            const lookup = (parent, name) => {
+                try { return exact(parent, name); } catch (e) {
+                    if (!e || e.errno !== 44 || !parent || !FS.isDir(parent.mode) || typeof name !== 'string') throw e;
+                    if (name.includes('\\')) {
+                        let node = parent;
+                        for (const part of name.split('\\')) {
+                            if (!part || part === '.') continue;
+                            node = part === '..' ? node.parent : lookup(node, part);
+                        }
+                        return node;
+                    }
+                    const low = name.toLowerCase(), hit = Object.keys(parent.contents || {}).find((n) => n.toLowerCase() === low);
+                    if (hit === undefined) throw e;
+                    return exact(parent, hit);
+                }
+            };
+            FS.lookupNode = lookup;
+        }
 
         // ---------- which game? ----------
         async function resolveGame() {
@@ -231,7 +257,7 @@
                 step('pygame', 'done', '2.5.7');
 
                 step('prepare', 'active');
-                const helper = await (await fetch('pyrun.py')).text();
+                const helper = await (await fetch('pyrun.py', { cache: 'no-cache' })).text(); // always the runtime that matches this page
                 pyodide.FS.writeFile('/home/pyodide/__pyrun__.py', helper);
                 pyodide.unpackArchive(zip, 'zip', { extractDir: '/home/pyodide/game' });
                 info = JSON.parse(await pyodide.runPythonAsync(`
@@ -239,7 +265,10 @@ import sys
 sys.path.insert(0, '/home/pyodide')
 import __pyrun__
 __pyrun__.prepare('/home/pyodide/game', ${JSON.stringify(game.entry)}, ${JSON.stringify([game.title, game.filename])})`));
+                info.others = info.others || []; info.archives = info.archives || [];
                 startFile = info.entry.split('/').pop();
+                windowsPaths(pyodide.FS);
+                if (info.archives.length) log(`[pyrun] note: the .zip contains ${info.archives.join(', ')}; files inside archives aren't available to the game`, 'e');
                 step('prepare', 'done', startFile);
                 log(`[pyrun] start file: ${info.entry} (${info.chosen === 'set' ? 'set in the admin' : 'detected'}${info.others.length ? `; also in the zip: ${info.others.join(', ')}` : ''}) · ${info.files} Python file(s)`, 'i');
                 if (info.converted.length) log(`[pyrun] ${info.converted.length} game loop${info.converted.length > 1 ? 's' : ''} made browser-friendly`, 'i');
@@ -254,7 +283,7 @@ __pyrun__.prepare('/home/pyodide/game', ${JSON.stringify(game.entry)}, ${JSON.st
                 btn.addEventListener('click', start, { once: true });
             } catch (e) {
                 const msg = String(e && e.message || e);
-                showError(/FileNotFoundError: The start file /.test(msg) ? 'Start file not found' : 'Could not start', msg);
+                showError(/FileNotFoundError: The start file /.test(msg) ? 'Start file not found' : /FileNotFoundError: This \.zip has no /.test(msg) ? 'No Python files in the .zip' : 'Could not start', msg);
             }
         })();
 

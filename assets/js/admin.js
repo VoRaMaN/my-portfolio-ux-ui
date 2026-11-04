@@ -328,8 +328,8 @@
             </div>`;
     }
 
-    // Lists the .py files in a .zip from its central directory (no unzipping), skipping venvs, caches and IDE folders
-    async function zipPyFiles(file) {
+    // Lists the files in a .zip from its central directory (no unzipping)
+    async function zipNames(file) {
         const tail = Math.min(file.size, 65557);
         const t = new DataView(await file.slice(file.size - tail).arrayBuffer());
         let e = -1;
@@ -343,9 +343,13 @@
             names.push(cd.getUint16(p + 8, true) & 0x800 ? utf8.decode(raw) : String.fromCharCode(...raw));
             p += 46 + n + cd.getUint16(p + 30, true) + cd.getUint16(p + 32, true);
         }
-        const skip = /^(__MACOSX|__pycache__|venv|env|site-packages|build|dist|\..*)$/;
-        return names.map((n) => n.replace(/\\/g, '/')).filter((n) => /\.py$/i.test(n) && !n.split('/').pop().startsWith('._') && !n.split('/').slice(0, -1).some((d) => skip.test(d)));
+        return names.map((n) => n.replace(/\\/g, '/'));
     }
+    // the .py files the player will look at: venvs, caches, builds and IDE folders are skipped
+    const pyFilesIn = (names) => {
+        const skip = /^(__MACOSX|__pycache__|venv|env|site-packages|build|dist|\..*)$/;
+        return names.filter((n) => /\.py$/i.test(n) && !n.split('/').pop().startsWith('._') && !n.split('/').slice(0, -1).some((d) => skip.test(d)));
+    };
 
     const playKind = (g) => { const p = g.play || {}; return p.kind === 'python' ? 'python' : p.url ? 'url' : 'none'; };
     // The test link plays the uploaded files directly, so it also works for unpublished drafts
@@ -618,14 +622,21 @@
             if (!file) return;
             const head = new Uint8Array(await file.slice(0, 2).arrayBuffer());
             if (!/\.zip$/i.test(file.name) || head[0] !== 0x50 || head[1] !== 0x4b) return toast('Choose a .zip of your game folder', true);
+            const names = await zipNames(file).catch(() => null), pyFiles = names ? pyFilesIn(names) : [];
+            const base = (n) => n.split('/').pop(), exe = names?.find((n) => /\.exe$/i.test(n)), pack = names?.find((n) => /\.(rar|7z|zip)$/i.test(n));
+            if (names && names.length && !pyFiles.length) {
+                // e.g. the packaged PyInstaller build: a browser can only run the .py source
+                return toast(exe ? `This .zip has no .py files, only a packaged build (${base(exe)}) — browsers can't run .exe files. Zip the game's source folder instead: its .py files and the Assets folder.`
+                    : pack ? `This .zip has no .py files, only another archive (${base(pack)}). Unpack it, then zip the game's source folder (its .py files and Assets).`
+                        : 'This .zip has no .py files. Zip the game\'s source folder (its .py files and Assets).', true);
+            }
             const prog = progressUI($('prog-py'));
             const old = ((g.play || {}).zip_parts || []).map((p) => p.path);
             try {
-                const pyFiles = await zipPyFiles(file).catch(() => []);
                 const up = await uploadLarge(`games/${g.slug}/python`, file, prog);
                 await persist({ play: { kind: 'python', zip_parts: up.parts, size: up.size, filename: file.name, entry: $('pl-entry').value.trim() || null, py_files: pyFiles.slice(0, 200), uploaded_at: new Date().toISOString(), ...shared() } });
                 await removePaths(old);
-                toast('Python game uploaded — press "Test it"');
+                toast(pack ? `Uploaded — note: ${base(pack)} inside the .zip can't be opened by the player; unpack it if the game needs its files` : 'Python game uploaded — press "Test it"');
             } catch (e) { toast(e.message, true); }
             renderEditor();
         };
