@@ -66,10 +66,12 @@ What works:
 - the standard library
 - pure-Python code and modules spread across folders or packages
 - images, fonts and sounds (if audio isn't available, sounds are muted instead of crashing)
+- paths written on Windows: any capitalisation (`assets/` finds a folder called `Assets`) and backslashes (`Assets\\images\\hero.png`)
 - `sys.exit()`
 
 Limits:
 - pip packages other than pygame-ce, and native code
+- a packaged `.exe` (PyInstaller build) or files packed in a `.rar` inside the zip: upload a zip of the source folder (the `.py` files and Assets). The admin refuses a zip with no `.py` files.
 - threads and subprocesses
 - saved files reset when the page reloads
 - keyboard and mouse games suit desktop browsers best

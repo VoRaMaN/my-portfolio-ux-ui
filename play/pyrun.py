@@ -542,8 +542,29 @@ def find_entry(base, entry='', hint=None, ranked=None):
         raise FileNotFoundError(f'The start file "{entry}" is not in the .zip. Python files in it: {found}. '
                                 'Fix the name in the admin (Play in browser → Start file), or clear it to detect the start file automatically.')
     if not ranked:
-        raise FileNotFoundError('No .py files found in the uploaded .zip')
+        raise FileNotFoundError(_no_python(base))
     return ranked[0][1]
+
+
+def _files_like(base, exts):
+    out = []
+    for dirpath, dirs, files in os.walk(base):
+        dirs[:] = sorted(d for d in dirs if d != '__MACOSX')
+        out += [os.path.relpath(os.path.join(dirpath, f), base).replace(os.sep, '/') for f in sorted(files) if f.lower().endswith(exts) and not f.startswith('._')]
+    return out
+
+
+def _no_python(base):
+    """Why a zip with no .py files can't run — usually a packaged .exe build or an archive inside the archive."""
+    exes = _files_like(base, ('.exe', '.app', '.apk', '.x86_64'))
+    packs = _files_like(base, ('.rar', '.7z', '.zip'))
+    if exes:
+        return (f'This .zip has no Python source files: it holds a packaged build ({os.path.basename(exes[0])}), and browsers can\'t run .exe files. '
+                'Zip the game\'s source folder instead: its .py files plus the folders they load images and sounds from (e.g. Assets).')
+    if packs:
+        return (f'This .zip has no Python files, only another archive ({os.path.basename(packs[0])}). '
+                'Unpack it, then zip the game\'s source folder: its .py files plus the folders they load images and sounds from.')
+    return 'This .zip has no Python (.py) files. Zip the game\'s source folder: its .py files plus the folders they load images and sounds from.'
 
 
 def prepare(base, entry='', hint=None):
@@ -558,6 +579,7 @@ def prepare(base, entry='', hint=None):
         'chosen': 'set' if entry else 'auto',
         'others': others,
         'files': len(proj.trees),
+        'archives': _files_like(base, ('.rar', '.7z', '.zip'))[:3],
         'converted': proj.report,
         'warnings': proj.errors + [f'Game loop inside {x} cannot be converted (may freeze)' for x in proj.loop_in_init],
     })
