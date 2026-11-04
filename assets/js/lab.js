@@ -89,27 +89,124 @@
     .lab-input input:focus{border-color:#c63aeb}
     .lab-input button{width:34px;border-radius:10px;background:linear-gradient(135deg,#c63aeb,#7c3aed);color:#fff}
 
-    /* 03 holo card */
-    .lab-bg-holo{background:radial-gradient(ellipse at 50% 50%,#1c1030 0%,#06040a 70%)}
-    .hc-scene{perspective:900px}
-    .hc-card{position:relative;width:190px;height:266px;transform-style:preserve-3d;cursor:pointer}
-    .is-focus .hc-card{width:280px;height:392px}
-    .hc-face{position:absolute;inset:0;border-radius:16px;overflow:hidden;backface-visibility:hidden;-webkit-backface-visibility:hidden;box-shadow:0 40px 60px -25px rgba(0,0,0,.85)}
-    .hc-front{background:#120a1c;border:3px solid rgba(233,213,255,.35)}
-    .hc-art{position:absolute;left:9px;right:9px;top:30px;height:56%;width:calc(100% - 18px);object-fit:cover;object-position:50% 8%;border-radius:8px;border:2px solid rgba(250,204,21,.55)}
-    .hc-top{position:absolute;left:12px;right:12px;top:7px;display:flex;justify-content:space-between;align-items:center;font-size:12px;font-weight:900;letter-spacing:.04em}
-    .hc-top i{font-style:normal;color:#fca5a5;font-size:10px}
-    .hc-holo{position:absolute;inset:0;mix-blend-mode:color-dodge;opacity:calc(.25 + var(--hyp,0)*.55);background:repeating-linear-gradient(115deg,#ff0080 0%,#ffcc00 7%,#33ff99 14%,#00ccff 21%,#cc33ff 28%,#ff0080 35%);background-size:400% 400%;background-position:var(--mx) var(--my);filter:saturate(1.3)}
-    .hc-sparkle{position:absolute;inset:0;mix-blend-mode:color-dodge;opacity:.55;background-image:radial-gradient(circle at 20% 30%,#fff .8px,transparent 1.4px),radial-gradient(circle at 70% 60%,#fff .8px,transparent 1.4px),radial-gradient(circle at 40% 80%,#fff .6px,transparent 1.2px);background-size:38px 38px,53px 53px,29px 29px;background-position:calc(var(--mx)*.5) calc(var(--my)*.5),calc(var(--mx)*-.4) calc(var(--my)*.3),calc(var(--mx)*.2) calc(var(--my)*-.6)}
-    .hc-glare{position:absolute;inset:0;background:radial-gradient(circle at var(--mx) var(--my),rgba(255,255,255,.6),transparent 45%);mix-blend-mode:overlay}
-    .hc-info{position:absolute;left:9px;right:9px;bottom:9px;top:calc(56% + 38px);padding:8px 10px;border-radius:8px;background:rgba(10,6,18,.82);border:1px solid rgba(233,213,255,.2);display:flex;flex-direction:column;gap:3px}
-    .hc-info b{font-size:12px;font-weight:800}
-    .hc-info em{font-style:normal;font-size:10px;color:#d4d4d8;line-height:1.35}
-    .hc-info span{font-size:9px;letter-spacing:.18em;color:#e9d5ff}
-    .hc-info .hc-rarity{color:#facc15}
-    .hc-back{transform:rotateY(180deg);background:conic-gradient(from 45deg,#c63aeb,#3b82f6,#ec4899,#c63aeb);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;border:3px solid rgba(255,255,255,.4)}
-    .hc-back span{font-size:64px;font-weight:900;letter-spacing:-.05em;text-shadow:0 4px 24px rgba(0,0,0,.4)}
-    .hc-back small{font-size:10px;letter-spacing:.4em;font-weight:800}
+    /* 03 holo card: booster pack → pull → 3D foil card */
+    .lab-bg-holo{background:radial-gradient(ellipse at 50% 42%,#2a1146 0%,#0d0718 55%,#040308 100%)}
+    .hc-scene{position:relative;width:300px;height:470px;flex-shrink:0}
+    .hc-floor{position:absolute;left:50%;bottom:-14px;width:250px;height:44px;margin-left:-125px;border-radius:50%;background:radial-gradient(ellipse,rgba(0,0,0,.8),transparent 70%);transform:translateX(var(--sx,0px)) scale(var(--ss,1));pointer-events:none}
+    .hc-rays{position:absolute;left:50%;top:50%;width:780px;height:780px;margin:-390px 0 0 -390px;opacity:0;transform:scale(.3);transition:opacity .7s,transform 1.4s cubic-bezier(.2,.8,.2,1);pointer-events:none;will-change:transform}
+    .hc-scene.epic .hc-rays{opacity:1;transform:scale(1);animation:hcSpin 3.6s cubic-bezier(.12,.7,.3,1) both}
+    @keyframes hcSpin{from{rotate:-50deg}to{rotate:0deg}}
+    .hc-flash{position:absolute;inset:-60%;background:radial-gradient(circle,rgba(255,255,255,.95),rgba(216,180,254,.6) 25%,transparent 60%);opacity:0;pointer-events:none;z-index:6}
+    .hc-spark{position:absolute;left:50%;top:50%;width:6px;height:6px;margin:-3px;border-radius:50%;background:#fff;box-shadow:0 0 8px #f0abfc,0 0 2px #fff;z-index:5;pointer-events:none}
+    .hc-tip{position:absolute;left:0;right:0;bottom:10px;text-align:center;font-size:10px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:#d8b4fe;pointer-events:none;transition:opacity .3s;z-index:20;text-shadow:0 1px 6px #000}
+    .hc-again{position:absolute;right:12px;bottom:10px;z-index:21;padding:7px 12px;border-radius:999px;font-size:10px;font-weight:800;letter-spacing:.08em;background:linear-gradient(135deg,#c63aeb,#7c3aed);box-shadow:0 0 16px rgba(198,58,235,.5);opacity:0;pointer-events:none;transform:translateY(6px);transition:opacity .4s,transform .4s}
+    .hc-again.on{opacity:1;pointer-events:auto;transform:none}
+    .hc-again i{margin-right:6px}
+    .lab-stage:not(.is-focus) .hc-again{width:30px;height:30px;padding:0;display:grid;place-items:center}
+    .lab-stage:not(.is-focus) .hc-again span{display:none}.lab-stage:not(.is-focus) .hc-again i{margin:0}
+    .hc-opened .lab-hint{opacity:0;transition:opacity .3s}
+    /* the pack */
+    .pk-slot{position:absolute;left:0;top:15px;width:300px;height:440px;z-index:3;transition:transform .9s cubic-bezier(.5,0,.75,0),opacity .45s .45s}
+    .hc-scene[data-ph="reveal"] .pk-slot,.hc-scene[data-ph="done"] .pk-slot{transform:translateY(125%) rotate(9deg);opacity:0;pointer-events:none}
+    .pk{position:absolute;left:10px;top:0;width:280px;height:440px;transform-style:preserve-3d;cursor:grab;touch-action:none;outline:none}
+    .pk:focus-visible{filter:drop-shadow(0 0 6px #f0abfc)}
+    .pk-top,.pk-body{position:absolute;left:0;width:280px;overflow:hidden;background:linear-gradient(100deg,#2a1543 0%,#6b34a8 16%,#1b0e2e 32%,#9d6cf6 48%,#1b0e2e 64%,#5b21b6 82%,#22113a 100%);box-shadow:inset 0 0 0 1px rgba(255,255,255,.12)}
+    .pk-top{top:0;height:66px;transform-origin:0 100%}
+    .pk-body{top:62px;height:378px}
+    .pk-crimp{position:absolute;left:0;right:0;height:24px;background:repeating-linear-gradient(90deg,rgba(255,255,255,.22) 0 1.5px,rgba(0,0,0,.28) 1.5px 4px);box-shadow:inset 0 -1px 0 rgba(255,255,255,.2)}
+    .pk-top .pk-crimp{top:0}.pk-body .pk-crimp{bottom:0;box-shadow:inset 0 1px 0 rgba(255,255,255,.2)}
+    .pk-top em{position:absolute;left:0;right:0;top:32px;text-align:center;font-style:normal;font-size:8px;font-weight:900;letter-spacing:.42em;color:#f5d0fe;text-shadow:0 0 6px rgba(240,171,252,.8)}
+    .pk-top::after{content:'';position:absolute;left:8px;right:8px;bottom:3px;border-top:1.5px dashed rgba(245,208,254,.55)}
+    .pk-art{position:absolute;left:-30px;top:58px;width:340px;max-width:none;height:196px;object-fit:cover;-webkit-mask:linear-gradient(transparent,#000 22%,#000 72%,transparent);mask:linear-gradient(transparent,#000 22%,#000 72%,transparent);transform:translate(calc(var(--px,0)*-1.4px),calc(var(--py,0)*-1.4px)) scale(1.04)}
+    .pk-brand{position:absolute;left:0;right:0;top:12px;display:flex;align-items:center;justify-content:center;gap:8px}
+    .pk-brand img{width:34px;height:34px;border-radius:50%;box-shadow:0 0 0 1.5px #e9d5ff,0 0 14px rgba(232,121,249,.7)}
+    .pk-brand b{display:block;font-size:15px;font-weight:900;letter-spacing:.2em;line-height:1;background:linear-gradient(180deg,#fff,#e9d5ff 55%,#a855f7);-webkit-background-clip:text;background-clip:text;color:transparent}
+    .pk-brand small{display:block;font-size:6.5px;font-weight:800;letter-spacing:.42em;color:#d8b4fe;margin-top:3px}
+    .pk-set{position:absolute;left:0;right:0;top:244px;text-align:center}
+    .pk-set span{display:block;font-size:7px;font-weight:800;letter-spacing:.5em;color:#c4b5fd}
+    .pk-set b{display:block;margin-top:4px;font-size:25px;font-weight:900;line-height:.95;letter-spacing:.05em;background:linear-gradient(180deg,#fff 10%,#f0abfc 55%,#7c3aed);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 2px 0 #1e0b36) drop-shadow(0 0 10px rgba(168,85,247,.6))}
+    .pk-count{position:absolute;left:0;right:0;top:320px;display:flex;justify-content:center;align-items:center;gap:8px;font-size:8px;font-weight:800;letter-spacing:.16em;color:#e9d5ff}
+    .pk-count b{display:grid;place-items:center;width:26px;height:26px;border-radius:50%;font-size:13px;background:radial-gradient(#a855f7,#4c1d95);box-shadow:0 0 0 1.5px #f5d0fe,0 0 12px rgba(192,132,252,.7)}
+    .pk-foil{position:absolute;inset:0;mix-blend-mode:soft-light;opacity:calc(.45 + var(--hyp,0)*.5);background:linear-gradient(110deg,transparent 25%,rgba(255,120,220,.9) 38%,rgba(150,170,255,.9) 47%,rgba(255,255,255,.7) 53%,transparent 68%);background-size:260% 260%;background-position:var(--mx) var(--my);pointer-events:none}
+    .pk-glare{position:absolute;inset:0;background:radial-gradient(circle at var(--mx) var(--my),rgba(255,255,255,.5),transparent 42%);mix-blend-mode:overlay;pointer-events:none}
+    .pk-grain{position:absolute;inset:0;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .5 0 0 0 0 .5 0 0 0 0 .5 0 0 0 1.4 -.2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");opacity:.3;mix-blend-mode:overlay;pointer-events:none}
+    .pk-rip{position:absolute;left:0;top:59px;width:280px;height:6px;pointer-events:none}
+    .pk-rip i{position:absolute;left:0;top:2px;width:100%;height:2px;background:linear-gradient(90deg,#fff,#f0abfc);box-shadow:0 0 10px #f0abfc,0 0 3px #fff;transform:scaleX(var(--p,0));transform-origin:0 50%}
+    .pk.torn .pk-top{transition:transform .75s cubic-bezier(.3,.7,.4,1),opacity .6s .15s;transform:translate(70px,-110px) rotate(-22deg)!important;opacity:0}
+    .pk.torn .pk-rip{opacity:0;transition:opacity .3s}
+    /* the cards */
+    .hc-stack{position:absolute;left:25px;top:11px;width:250px;height:448px;z-index:2;transition:transform 1.05s cubic-bezier(.22,1,.36,1),opacity .2s}
+    .hc-scene[data-ph="pack"] .hc-stack{transform:translateY(30px) scale(.84);opacity:0}
+    .hc-scene[data-ph="open"] .hc-stack{transform:translateY(-140px) scale(.84)}
+    .hc-scene[data-ph="reveal"] .hc-stack,.hc-scene[data-ph="done"] .hc-stack{z-index:4}
+    .hc-scene.snap .hc-stack,.hc-scene.snap .hc-slot,.hc-scene.snap .pk-slot{transition:none!important}
+    .hc-slot{position:absolute;inset:0;transform-style:preserve-3d;transition:transform .8s cubic-bezier(.22,1,.36,1),opacity .55s}
+    .hc-slot.s1{transform:translate(5px,7px) rotate(2.5deg)}
+    .hc-slot.gone{transform:translate(135%,-12%) rotate(26deg);opacity:0;pointer-events:none}
+    .hc-slot.s1.up{transform:none}
+    .hc-card{position:absolute;inset:0;transform-style:preserve-3d;cursor:pointer;outline:none}
+    .hc-face,.hc-edge{position:absolute;inset:0;border-radius:14px}
+    .hc-face{backface-visibility:hidden;-webkit-backface-visibility:hidden;overflow:hidden}
+    .hc-edge{background:linear-gradient(145deg,#c4b5fd,#3b0764 55%,#a78bfa)}
+    .hc-edge.e1{transform:translateZ(.6px)}.hc-edge.e2{transform:translateZ(-.6px)}
+    .hc-front{transform:translateZ(1.6px);background:radial-gradient(ellipse at 50% 30%,#1c0c33,#07040d 70%);box-shadow:0 34px 50px -24px rgba(0,0,0,.9)}
+    .hc-front::before{content:'';position:absolute;inset:4px;border-radius:11px;border:1.5px solid rgba(192,132,252,.9);box-shadow:0 0 10px rgba(168,85,247,.65),inset 0 0 12px rgba(168,85,247,.45);z-index:4;pointer-events:none}
+    .hc-front::after{content:'';position:absolute;inset:9px;border-radius:7px;border:1px solid rgba(192,132,252,.28);z-index:4;pointer-events:none}
+    .t-gold.hc-front{background:radial-gradient(ellipse at 50% 30%,#2b1b06,#0b0703 70%)}
+    .t-gold.hc-front::before{border-color:rgba(251,191,36,.9);box-shadow:0 0 10px rgba(245,158,11,.6),inset 0 0 12px rgba(245,158,11,.4)}
+    .t-gold.hc-front::after{border-color:rgba(253,230,138,.28)}
+    .t-gold~.hc-edge{background:linear-gradient(145deg,#fde68a,#78350f 55%,#fbbf24)}
+    .hc-window{position:absolute;left:6px;right:6px;top:40px;height:196px;overflow:hidden;-webkit-mask:linear-gradient(transparent,#000 9%,#000 74%,transparent);mask:linear-gradient(transparent,#000 9%,#000 74%,transparent)}
+    .hc-art{position:absolute;left:-8%;top:-7%;width:116%;height:114%;max-width:none;object-fit:cover;transform:translate(calc(var(--px,0)*1.2px),calc(var(--py,0)*1.2px))}
+    .hc-wfoil{position:absolute;inset:0;mix-blend-mode:color-dodge;opacity:calc(.06 + var(--hyp,0)*.3);background:repeating-linear-gradient(115deg,#ff3cac 0%,#784ba0 5%,#2b86c5 10%,#33ff99 15%,#ffcc00 20%,#ff3cac 25%);background-size:320% 320%;background-position:var(--mx) var(--my);pointer-events:none}
+    .hc-desc{position:absolute;left:11px;right:11px;top:236px;margin:0;padding:4px 6px;font-size:7.4px;line-height:1.36;color:#ece8f6;border-top:1px solid rgba(192,132,252,.35)}
+    .hc-tag{position:absolute;left:0;right:0;bottom:11px;text-align:center;font-size:6.4px;font-weight:700;letter-spacing:.42em;color:#a78bfa}
+    .t-gold .hc-tag{color:#fbbf24}.t-gold .hc-desc{border-color:rgba(253,230,138,.35)}
+    .hc-rim{position:absolute;inset:0;padding:8px;border-radius:inherit;mix-blend-mode:color-dodge;opacity:calc(.3 + var(--hyp,0)*.6);background:linear-gradient(115deg,transparent 18%,rgba(255,60,172,.95) 34%,rgba(130,90,255,.95) 43%,rgba(43,160,230,.95) 51%,rgba(60,255,160,.85) 59%,transparent 76%);background-size:250% 250%;background-position:var(--mx) var(--my);-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#000 0 0) content-box exclude,linear-gradient(#000 0 0);pointer-events:none;z-index:5}
+    .hc-grain{position:absolute;inset:0;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .5 0 0 0 0 .5 0 0 0 0 .5 0 0 0 1.4 -.2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");opacity:.3;mix-blend-mode:overlay;pointer-events:none;z-index:5}
+    .hc-sparkle{position:absolute;inset:0;mix-blend-mode:color-dodge;opacity:calc(.12 + var(--hyp,0)*.6);background-image:radial-gradient(circle at 20% 30%,#fff .7px,transparent 1.3px),radial-gradient(circle at 70% 60%,#fff .7px,transparent 1.3px),radial-gradient(circle at 40% 80%,#fff .5px,transparent 1.1px);background-size:34px 34px,47px 47px,27px 27px;background-position:calc(var(--mx)*.5) calc(var(--my)*.5),calc(var(--mx)*-.4) calc(var(--my)*.3),calc(var(--mx)*.2) calc(var(--my)*-.6);pointer-events:none;z-index:5}
+    .hc-glare{position:absolute;inset:0;background:radial-gradient(circle at var(--mx) var(--my),rgba(255,255,255,.5),rgba(255,255,255,.07) 30%,transparent 55%);mix-blend-mode:overlay;pointer-events:none;z-index:6}
+    /* raised layers: each panel sits at its own depth, so it slides over the art as the card tilts */
+    .hc-pop{position:absolute;inset:0;transform-style:preserve-3d;pointer-events:none}
+    .hc-pop>*{position:absolute;backface-visibility:hidden;-webkit-backface-visibility:hidden;transform:translateZ(var(--z)) scale(calc(1 - var(--zs)))}
+    .hc-pop>*::after{content:'';position:absolute;inset:0;border-radius:inherit;background:linear-gradient(115deg,transparent 30%,rgba(255,255,255,.22) 48%,transparent 62%);background-size:260% 260%;background-position:var(--mx) var(--my);pointer-events:none}
+    .hc-title{left:14px;top:10px;--z:26px;--zs:.023}
+    .hc-title b{display:block;font-size:24px;font-weight:900;font-style:italic;letter-spacing:.03em;line-height:1;background:linear-gradient(180deg,#fff 0%,#e5e7eb 35%,#9ca3af 52%,#f5f3ff 70%,#c4b5fd 100%);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 1px 0 #1e0b36) drop-shadow(0 3px 6px rgba(0,0,0,.8))}
+    .hc-title small{display:block;margin-top:2px;padding-left:2px;font-size:7.4px;font-weight:700;letter-spacing:.58em;color:#c4b5fd;text-shadow:0 0 6px rgba(168,85,247,.8)}
+    .t-gold .hc-title b{background-image:linear-gradient(180deg,#fff,#fef3c7 35%,#d97706 55%,#fde68a 75%,#f59e0b)}
+    .t-gold .hc-title small{color:#fcd34d;text-shadow:0 0 6px rgba(245,158,11,.8)}
+    .hc-chip{top:46px;height:17px;display:flex;align-items:center;gap:5px;padding:0 7px;border-radius:4px;background:rgba(12,6,24,.82);border:1px solid rgba(192,132,252,.7);box-shadow:0 6px 12px -4px rgba(0,0,0,.8),0 0 10px rgba(168,85,247,.45);--z:18px;--zs:.016}
+    .hc-chip.rar{left:14px;font-size:9.5px;font-weight:900;font-style:italic;letter-spacing:.12em;color:#e9d5ff;text-shadow:0 0 8px #c084fc}
+    .hc-chip.rar i{width:8px;height:8px;transform:rotate(45deg);border:1.8px solid #f0abfc;box-shadow:0 0 6px #f0abfc}
+    .hc-chip.set{right:14px;font-size:5.4px;font-weight:800;letter-spacing:.18em;color:#d8b4fe}
+    .hc-chip.set img{width:15px;height:15px;border-radius:3px}
+    .t-gold .hc-chip{border-color:rgba(251,191,36,.7);box-shadow:0 6px 12px -4px rgba(0,0,0,.8),0 0 10px rgba(245,158,11,.4)}
+    .t-gold .hc-chip.rar{color:#fef3c7;text-shadow:0 0 8px #f59e0b}.t-gold .hc-chip.rar i{border-color:#fde68a;box-shadow:0 0 6px #fbbf24}.t-gold .hc-chip.set{color:#fde68a}
+    .hc-stats{left:15px;top:184px;width:104px;padding:2px 7px;border-radius:5px;background:rgba(10,5,20,.86);border:1px solid rgba(192,132,252,.55);box-shadow:0 8px 14px -6px rgba(0,0,0,.85);--z:14px;--zs:.013}
+    .hc-stats div{display:flex;align-items:center;gap:6px;height:14px;font-size:6.8px;letter-spacing:.06em;color:#e4e4e7;border-bottom:1px solid rgba(192,132,252,.18)}
+    .hc-stats div:last-child{border:0}
+    .hc-stats i{width:9px;font-size:7.5px;color:#e879f9;text-align:center}
+    .hc-stats b{margin-left:auto;font-size:8px;font-weight:700;color:#fff}
+    .t-gold .hc-stats{border-color:rgba(251,191,36,.55)}.t-gold .hc-stats i{color:#fbbf24}
+    .hc-ab{left:12px;right:12px;height:38px;display:flex;align-items:center;gap:7px;padding:0 0 0 5px;border-radius:5px;overflow:hidden;background:linear-gradient(90deg,rgba(24,10,42,.95),rgba(10,5,20,.92));border:1px solid rgba(192,132,252,.4);box-shadow:0 7px 12px -6px rgba(0,0,0,.85);--z:10px;--zs:.009}
+    .hc-ab .ic{width:28px;height:28px;flex-shrink:0;border-radius:6px;object-fit:cover;box-shadow:0 0 0 1px rgba(216,180,254,.6),0 0 10px rgba(168,85,247,.6)}
+    .hc-ab i.ic{display:grid;place-items:center;font-size:12px;color:#fde68a;background:radial-gradient(#92400e,#1c0f02);box-shadow:0 0 0 1px rgba(253,230,138,.6),0 0 10px rgba(245,158,11,.5)}
+    .hc-ab div{flex:1;min-width:0}
+    .hc-ab b{display:block;font-size:8.6px;font-weight:800;letter-spacing:.03em;color:#d8b4fe;text-transform:uppercase}
+    .hc-ab em{display:block;margin-top:1px;font-style:normal;font-size:6.4px;line-height:1.28;color:#e4e4e7}
+    .hc-ab .fx{width:60px;height:38px;flex-shrink:0;object-fit:cover;clip-path:polygon(18% 0,100% 0,100% 100%,0 100%)}
+    .t-gold .hc-ab{border-color:rgba(251,191,36,.4)}.t-gold .hc-ab b{color:#fcd34d}
+    .hc-bp{left:12px;right:12px;top:393px;height:33px;display:flex;align-items:center;justify-content:space-around;border-radius:5px;border:1px solid rgba(192,132,252,.4);background:#080512 repeating-linear-gradient(0deg,rgba(168,85,247,.12) 0 1px,transparent 1px 8px),#080512;background-image:repeating-linear-gradient(0deg,rgba(168,85,247,.14) 0 1px,transparent 1px 8px),repeating-linear-gradient(90deg,rgba(168,85,247,.14) 0 1px,transparent 1px 8px);--z:8px;--zs:.007}
+    .hc-bp img{height:29px;width:auto;mix-blend-mode:screen}
+    .hc-bp img.wide{height:22px}
+    .t-gold .hc-bp{border-color:rgba(251,191,36,.4);background-image:repeating-linear-gradient(0deg,rgba(245,158,11,.12) 0 1px,transparent 1px 8px),repeating-linear-gradient(90deg,rgba(245,158,11,.12) 0 1px,transparent 1px 8px)}
+    .hc-back{transform:rotateY(180deg) translateZ(1.6px);background:linear-gradient(145deg,#e9d5ff,#7c3aed 20%,#1e0b36 45%,#6d28d9 70%,#f5d0fe)}
+    .hc-bpanel{position:absolute;inset:9px;border-radius:8px;overflow:hidden;background:radial-gradient(circle at 50% 46%,#7c3aed 0%,#3b0764 30%,#12071f 72%);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.2),inset 0 0 24px rgba(0,0,0,.8)}
+    .hc-bpanel::before{content:'';position:absolute;inset:0;background:repeating-conic-gradient(from 0deg at 50% 46%,rgba(255,255,255,.07) 0 3deg,transparent 3deg 12deg)}
+    .hc-bpanel::after{content:'';position:absolute;inset:0;background:repeating-radial-gradient(circle at 50% 46%,transparent 0 13px,rgba(233,213,255,.09) 13px 14px)}
+    .hc-bpanel img{position:relative;z-index:1;width:104px;height:104px;border-radius:50%;box-shadow:0 0 0 3px #e9d5ff,0 0 0 7px rgba(124,58,237,.6),0 0 40px rgba(232,121,249,.8)}
+    .hc-bpanel b{position:relative;z-index:1;font-size:21px;font-weight:900;letter-spacing:.2em;margin-top:10px;background:linear-gradient(180deg,#fff,#d8b4fe);-webkit-background-clip:text;background-clip:text;color:transparent}
+    .hc-bpanel small{position:relative;z-index:1;font-size:7px;font-weight:800;letter-spacing:.5em;color:#d8b4fe}
 
     /* 04 swipe deck */
     .sw-deck{position:absolute;inset:16px 16px 70px;display:flex;align-items:center;justify-content:center}
@@ -502,40 +599,153 @@
         };
     }
 
-    // 03 ─ Holographic card
+    // 03 ─ Holo trading card: tear open a booster pack, flip through the pull, land on a 3D foil card
     function holo(stage) {
         stage.classList.add('lab-center', 'lab-bg-holo');
-        stage.insertAdjacentHTML('beforeend', `
-            <div class="hc-scene"><div class="hc-card" role="button" tabindex="0" aria-label="Flip the card" data-sfx="swipe">
-                <div class="hc-face hc-front">
-                    <div class="hc-top"><span>TRIPOD MK-II</span><i>HP 2000 ✦</i></div>
-                    <img src="assets/img/earthfall-icon.webp" alt="" class="hc-art" draggable="false">
-                    <div class="hc-info"><span class="hc-rarity">★★★★★ LEGENDARY · EARTHFALL</span><b>Heat Ray</b><em>Burns through any defence. Pair it with an Orbital Mark for a guaranteed crit.</em></div>
-                    <div class="hc-holo"></div><div class="hc-sparkle"></div><div class="hc-glare"></div>
+        const IMG = 'assets/img/aetherion-';
+        const CARDS = [
+            { theme: 't-gold', name: 'TRIPOD MK-II', sub: 'HEAVY WALKER', rarity: 'RARE', set: 'EARTHFALL', setImg: 'assets/img/earthfall-icon.webp', art: 'assets/img/earthfall-icon.webp', pos: '50% 22%',
+                stats: [['fa-heart', 'HP', '2,000'], ['fa-location-arrow', 'SPEED', '40'], ['fa-shield-halved', 'ARMOR', '140']],
+                desc: 'Three legs, one heat ray and no reason to stop: the first wave of the EARTHFALL invasion.',
+                abilities: [['fa-fire', 'Heat Ray', 'Burns through any defence in a straight line.'], ['fa-crosshairs', 'Orbital Mark', 'Marks a target: the next hit is a guaranteed crit.'], ['fa-shoe-prints', 'Stomp', 'Shakes the ground and stuns everything nearby.']],
+                bp: ['assets/img/earthfall-banner-800.webp'], tag: 'STOMP · SCORCH · SURVIVE' },
+            { theme: '', name: 'AETHERION', sub: 'SKY DESTROYER', rarity: 'EPIC', set: 'ALIEN WAR MACHINES', setImg: `${IMG}emblem.webp`, art: `${IMG}art.webp`, pos: '50% 50%',
+                stats: [['fa-heart', 'HP', '4,500'], ['fa-location-arrow', 'SPEED', '120'], ['fa-shield-halved', 'ARMOR', '80']],
+                desc: 'A sleek and deadly aerial war machine, the Aetherion dominates the skies with its overwhelming firepower and unmatched mobility.',
+                abilities: [[`${IMG}ab-plasma.webp`, 'Plasma Barrage', 'Fires a spread of plasma projectiles.', `${IMG}fx-plasma.webp`], [`${IMG}ab-dive.webp`, 'Dive Bomb', 'Accelerates downward and creates a massive impact explosion.', `${IMG}fx-dive.webp`], [`${IMG}ab-ion.webp`, 'Ion Storm', 'Releases an expanding electrical field that damages nearby enemies.', `${IMG}fx-ion.webp`]],
+                bp: [`${IMG}bp-front.webp`, `${IMG}bp-top.webp`, `${IMG}bp-side.webp`], tag: 'SOAR · STRIKE · OBLITERATE' },
+        ];
+        const icon = (x, cls) => (x.startsWith('fa-') ? `<i class="fas ${x} ${cls}"></i>` : `<img src="${x}" alt="" class="${cls}" draggable="false">`);
+        const cardHTML = (c, k) => `
+            <div class="hc-slot s${k}"><div class="hc-card" role="button" tabindex="-1" aria-label="${c.name} card">
+                <div class="hc-face hc-front ${c.theme}">
+                    <div class="hc-window"><img src="${c.art}" alt="" class="hc-art" style="object-position:${c.pos}" draggable="false"><div class="hc-wfoil"></div></div>
+                    <p class="hc-desc">${c.desc}</p><span class="hc-tag">${c.tag}</span>
+                    <div class="hc-rim"></div><div class="hc-grain"></div><div class="hc-sparkle"></div><div class="hc-glare"></div>
                 </div>
-                <div class="hc-face hc-back"><span>VV</span><small>GOJO STUDIO</small></div>
-            </div></div>`);
-        const card = stage.querySelector('.hc-card'), scene = stage.querySelector('.hc-scene');
-        // scale the card to small stages (phones) so it never touches the edges
-        new ResizeObserver(() => { const base = card.offsetHeight || 266; scene.style.transform = `scale(${Math.min(1, (stage.clientHeight - 40) / base).toFixed(3)})`; }).observe(stage);
-        let tx = 0, ty = 0, rx = 0, ry = 0, mx = 50, my = 50, tmx = 50, tmy = 50, over = false, flip = 0, flipped = false;
+                <div class="hc-edge e1"></div><div class="hc-edge e2"></div>
+                <div class="hc-face hc-back"><div class="hc-bpanel"><img src="${IMG}emblem.webp" alt="" draggable="false"><b>COMET GAME</b><small>TRADING CARD GAME</small></div><div class="hc-grain"></div><div class="hc-rim"></div><div class="hc-glare"></div></div>
+                <div class="hc-pop ${c.theme}">
+                    <div class="hc-title"><b>${c.name}</b><small>${c.sub}</small></div>
+                    <div class="hc-chip rar"><i></i>${c.rarity}</div>
+                    <div class="hc-chip set"><img src="${c.setImg}" alt="">${c.set}</div>
+                    <div class="hc-stats">${c.stats.map(([ic, l, v]) => `<div><i class="fas ${ic}"></i>${l}<b>${v}</b></div>`).join('')}</div>
+                    ${c.abilities.map(([ic, n, d, fx], j) => `<div class="hc-ab" style="top:${270 + j * 41}px">${icon(ic, 'ic')}<div><b>${n}</b><em>${d}</em></div>${fx ? `<img src="${fx}" alt="" class="fx">` : ''}</div>`).join('')}
+                    <div class="hc-bp">${c.bp.map((src, j) => `<img src="${src}" alt=""${j === 2 || c.bp.length === 1 ? ' class="wide"' : ''}>`).join('')}</div>
+                </div>
+            </div></div>`;
+        const zig = (w, h, top, bottom) => {   // crimped (zig-zag) pack edges
+            const pts = [], n = Math.round(w / 9);
+            for (let i = 0; i <= n; i++) pts.push(`${(i * w / n).toFixed(1)}px ${top && i % 2 ? 5 : 0}px`);
+            for (let i = n; i >= 0; i--) pts.push(`${(i * w / n).toFixed(1)}px ${bottom && i % 2 ? h - 5 : h}px`);
+            return `polygon(${pts.join(',')})`;
+        };
+        stage.insertAdjacentHTML('beforeend', `
+            <div class="hc-scene" data-ph="pack">
+                <canvas class="hc-rays" width="390" height="390"></canvas><div class="hc-floor"></div>
+                <div class="hc-stack">${CARDS.map(cardHTML).reverse().join('')}</div>
+                <div class="pk-slot"><div class="pk" role="button" tabindex="0" aria-label="Tear open the booster pack">
+                    <div class="pk-body" style="clip-path:${zig(280, 378, false, true)}">
+                        <img src="${IMG}pack.webp" alt="" class="pk-art" draggable="false">
+                        <div class="pk-brand"><img src="${IMG}emblem.webp" alt=""><div><b>COMET GAME</b><small>TRADING CARD GAME</small></div></div>
+                        <div class="pk-set"><span>SERIES 1 · BOOSTER PACK</span><b>ALIEN WAR<br>MACHINES</b></div>
+                        <div class="pk-count"><b>2</b>CARDS · 1 EPIC OR BETTER</div>
+                        <div class="pk-crimp"></div><div class="pk-grain"></div><div class="pk-foil"></div><div class="pk-glare"></div>
+                    </div>
+                    <div class="pk-top" style="clip-path:${zig(280, 66, true, false)}"><div class="pk-crimp"></div><em>◆ TEAR HERE ◆</em><div class="pk-grain"></div><div class="pk-foil"></div></div>
+                    <div class="pk-rip"><i></i></div>
+                </div></div>
+                <div class="hc-flash"></div>
+            </div>
+            <p class="hc-tip"></p><button class="hc-again" data-sfx="pop" aria-label="Open another pack"><i class="fas fa-rotate-right"></i><span>Open another pack</span></button>`);
+        const scene = stage.querySelector('.hc-scene'), pk = stage.querySelector('.pk'), top = stage.querySelector('.pk-top'), floor = stage.querySelector('.hc-floor');
+        const tip = stage.querySelector('.hc-tip'), again = stage.querySelector('.hc-again'), flash = stage.querySelector('.hc-flash');
+        const slots = [...stage.querySelectorAll('.hc-slot')].reverse(), cards = slots.map((x) => x.querySelector('.hc-card'));
+        const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+        // god rays, painted once: rotating a finished bitmap is nearly free, a masked gradient isn't
+        { const g = stage.querySelector('.hc-rays').getContext('2d'), R = 195;
+          const fade = g.createRadialGradient(R, R, 0, R, R, R); fade.addColorStop(0, 'rgba(216,180,254,.55)'); fade.addColorStop(0.3, 'rgba(196,132,252,.32)'); fade.addColorStop(1, 'rgba(196,132,252,0)');
+          g.fillStyle = fade;
+          for (let k = 0; k < 24; k++) { const a = (k / 24) * Math.PI * 2; g.beginPath(); g.moveTo(R, R); g.arc(R, R, R, a, a + Math.PI / 36); g.closePath(); g.fill(); } }
+        new ResizeObserver(() => { scene.style.transform = `scale(${Math.min(1.45, (stage.clientHeight - 60) / 470, (stage.clientWidth - 24) / 300).toFixed(3)})`; }).observe(stage);
+        const TIPS = { pack: 'Drag across the top to tear it open', open: '', reveal: 'Tap the card for your next pull', done: 'Move to tilt · tap to flip' };
+        let ph = 'pack', cur = -1, prog = 0, tearing = false, drag = null, timers = [];
+        let tx = 0, ty = 0, rx = 0, ry = 0, mx = 50, my = 50, tmx = 50, tmy = 50, over = false;
+        const flips = cards.map(() => 180), flipT = cards.map(() => 180);
+        const later = (fn, ms) => timers.push(setTimeout(fn, ms));
+        const phase = (p) => { ph = p; scene.dataset.ph = p; stage.classList.toggle('hc-opened', p !== 'pack'); tip.textContent = TIPS[p]; again.classList.toggle('on', p === 'done'); cards.forEach((c, i) => c.setAttribute('tabindex', i === cur && (p === 'reveal' || p === 'done') ? '0' : '-1')); };
+        const setProg = (v) => { prog = clamp(v, 0, 1); pk.style.setProperty('--p', prog.toFixed(3)); top.style.transform = `translateY(${(-prog * 4).toFixed(1)}px) rotate(${(-prog * 5).toFixed(2)}deg)`; };
+        function burst() {
+            if (reduce) return;
+            flash.animate([{ opacity: 0 }, { opacity: 0.95 }, { opacity: 0 }], { duration: 750, easing: 'ease-out' });
+            for (let i = 0; i < 28; i++) {
+                const d = document.createElement('i'); d.className = 'hc-spark'; scene.appendChild(d);
+                const a = Math.random() * Math.PI * 2, r = 140 + Math.random() * 170, sz = 0.5 + Math.random();
+                d.animate([{ transform: `translate(0,0) scale(${sz})`, opacity: 1 }, { transform: `translate(${Math.cos(a) * r}px,${Math.sin(a) * r}px) scale(0)`, opacity: 0 }], { duration: 900 + Math.random() * 700, easing: 'cubic-bezier(.15,.8,.3,1)' }).onfinish = () => d.remove();
+            }
+        }
+        function open() {
+            if (tearing || ph !== 'pack') return;
+            tearing = true; setProg(1); pk.classList.add('torn'); SFX('swipe');
+            later(() => { phase('open'); SFX('whoosh'); }, 380);
+            later(() => { cur = 0; phase('reveal'); }, 1350);
+            later(() => { flipT[0] = 0; SFX('pop'); }, 1900);
+        }
+        function next() {
+            if (ph === 'reveal' && cur === 0) {
+                slots[0].classList.add('gone'); slots[1].classList.add('up'); SFX('swipe'); cur = 1; phase('done');
+                later(() => { flipT[1] = 0; }, 260);
+                later(() => { scene.classList.add('epic'); burst(); SFX('legendary'); }, 620);
+            } else if (ph === 'done') { flipT[1] = flipT[1] ? 0 : 180; SFX('pop'); }
+        }
+        function reset() {
+            timers.forEach(clearTimeout); timers = [];
+            scene.classList.add('snap'); scene.classList.remove('epic');
+            slots.forEach((x) => x.classList.remove('gone', 'up'));
+            cards.forEach((_, i) => { flips[i] = flipT[i] = 180; });
+            pk.classList.remove('torn'); setProg(0); tearing = false; cur = -1; phase('pack');
+            void scene.offsetWidth; requestAnimationFrame(() => scene.classList.remove('snap'));
+        }
+        // tear: drag across the pack (or tap it, or press Enter)
+        pk.addEventListener('pointerdown', (e) => { if (ph !== 'pack' || tearing) return; drag = { x: e.clientX, w: pk.getBoundingClientRect().width, moved: false }; try { pk.setPointerCapture(e.pointerId); } catch { /* ignore */ } });
+        pk.addEventListener('pointermove', (e) => {
+            if (!drag) return;
+            const dx = e.clientX - drag.x;
+            if (Math.abs(dx) > 6) drag.moved = true;
+            setProg(dx / (drag.w * 0.75));
+            if (prog >= 1) { drag = null; open(); }
+        });
+        const release = () => { if (!drag) return; const d = drag; drag = null; if (!d.moved || prog > 0.55) open(); else setProg(0); };
+        pk.addEventListener('pointerup', release); pk.addEventListener('pointercancel', () => { drag = null; if (!tearing) setProg(0); });
+        pk.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); } });
+        cards.forEach((c, i) => {
+            c.addEventListener('click', () => { if (i === cur) next(); });
+            c.addEventListener('keydown', (e) => { if ((e.key === 'Enter' || e.key === ' ') && i === cur) { e.preventDefault(); next(); } });
+        });
+        again.addEventListener('click', reset);
         stage.addEventListener('pointermove', (e) => {
-            const r = card.getBoundingClientRect();
+            const el = ph === 'pack' || ph === 'open' ? pk : cards[cur] || pk, r = el.getBoundingClientRect();
             const px = clamp((e.clientX - r.left) / r.width, 0, 1), py = clamp((e.clientY - r.top) / r.height, 0, 1);
-            over = true; ty = (px - 0.5) * 34; tx = (0.5 - py) * 34; tmx = px * 100; tmy = py * 100;
+            over = true; ty = (px - 0.5) * 36; tx = (0.5 - py) * 30; tmx = px * 100; tmy = py * 100;
         });
         stage.addEventListener('pointerleave', () => { over = false; });
-        const doFlip = () => { flipped = !flipped; };
-        card.addEventListener('click', doFlip);
-        card.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); doFlip(); } });
+        phase('pack');
         return {
             frame(t) {
-                if (!over) { ty = Math.sin(t * 0.8) * 14; tx = Math.cos(t * 0.6) * 9; tmx = 50 + Math.sin(t * 0.8) * 34; tmy = 50 + Math.cos(t * 0.6) * 30; }
+                if (!over) { ty = Math.sin(t * 0.8) * 13; tx = Math.cos(t * 0.6) * 8; tmx = 50 + Math.sin(t * 0.8) * 34; tmy = 50 + Math.cos(t * 0.6) * 30; }
                 rx += (tx - rx) * 0.12; ry += (ty - ry) * 0.12; mx += (tmx - mx) * 0.12; my += (tmy - my) * 0.12;
-                flip += ((flipped ? 180 : 0) - flip) * 0.12;
-                card.style.transform = `rotateX(${rx.toFixed(2)}deg) rotateY(${(ry + flip).toFixed(2)}deg)`;
-                card.style.setProperty('--mx', `${mx.toFixed(1)}%`); card.style.setProperty('--my', `${my.toFixed(1)}%`);
-                card.style.setProperty('--hyp', Math.min(1, Math.hypot(mx - 50, my - 50) / 50).toFixed(2));
+                const hyp = Math.min(1, Math.hypot(mx - 50, my - 50) / 50).toFixed(2), vars = (el) => {
+                    el.style.setProperty('--mx', `${mx.toFixed(1)}%`); el.style.setProperty('--my', `${my.toFixed(1)}%`); el.style.setProperty('--hyp', hyp);
+                    el.style.setProperty('--px', (-ry * 0.45).toFixed(2)); el.style.setProperty('--py', (rx * 0.45).toFixed(2));
+                };
+                if (ph === 'pack' || ph === 'open') { pk.style.transform = `perspective(1100px) rotateX(${rx.toFixed(2)}deg) rotateY(${ry.toFixed(2)}deg)`; vars(pk); }
+                cards.forEach((c, i) => {
+                    flips[i] += (flipT[i] - flips[i]) * 0.13;
+                    const live = i === cur && (ph === 'reveal' || ph === 'done');
+                    c.style.transform = live ? `perspective(1100px) rotateX(${rx.toFixed(2)}deg) rotateY(${(ry + flips[i]).toFixed(2)}deg)` : `perspective(1100px) rotateY(${flips[i].toFixed(2)}deg)`;
+                    if (live) vars(c);
+                });
+                floor.style.setProperty('--sx', `${(ry * 1.4).toFixed(1)}px`); floor.style.setProperty('--ss', (1 - Math.abs(rx) / 90).toFixed(3));
             },
         };
     }
@@ -1240,7 +1450,7 @@
     const DEMOS = [
         { id: 'liquid', n: 'Liquid Button', cat: 'micro', tags: ['SVG goo', 'Morph'], hint: 'Hover · click', desc: 'A metaball button that melts into an orbiting loader, then pops into a success check.', init: liquid },
         { id: 'particles', n: 'Particle Typography', cat: 'canvas', tags: ['Canvas', 'Springs'], hint: 'Move · click · type', desc: '2,000 particles hold your word, scatter from the cursor and morph into any word you type.', init: particles },
-        { id: 'holo', n: 'Holo Trading Card', cat: 'three', tags: ['3D tilt', 'Blend modes'], hint: 'Move · click to flip', desc: 'A foil card with rainbow refraction, sparkles and glare that follow your cursor.', init: holo },
+        { id: 'holo', n: 'Holo Trading Card', cat: 'three', tags: ['Pack opening', '3D depth', 'Foil'], hint: 'Tear open the pack', desc: 'Tear open a booster pack, flip through your pull and land the EPIC Aetherion: a layered 3D foil card with refraction, glare and raised panels.', init: holo },
         { id: 'swipe', n: 'Swipe Deck', cat: 'physics', tags: ['Drag', 'Inertia'], hint: 'Drag & fling', desc: 'Tinder-style card stack with velocity flings, LIKE / NOPE stamps and an infinite deck.', init: swipe },
         { id: 'tabbar', n: 'Gooey Tab Bar', cat: 'micro', tags: ['Spring', 'SVG goo'], hint: 'Tap the tabs', desc: 'A liquid indicator that stretches and drips between tabs, driven by spring physics.', init: tabbar },
         { id: 'daynight', n: 'Day / Night Switch', cat: 'micro', tags: ['CSS', 'Theme'], hint: 'Flip the switch', desc: 'The sun rolls into a moon, clouds sink, stars twinkle on and the whole scene changes time.', init: daynight },
