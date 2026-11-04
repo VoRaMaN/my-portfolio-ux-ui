@@ -1,0 +1,14 @@
+{
+  "name": "voraman-portfolio",
+  "private": true,
+  "version": "2.0.0",
+  "description": "Voraman Vuth - UX/UI Designer & Game Developer portfolio",
+  "scripts": {
+    "build:css": "tailwindcss -i ./src/input.css -o ./assets/css/tailwind.css --minify",
+    "watch:css": "tailwindcss -i ./src/input.css -o ./assets/css/tailwind.css --watch",
+    "serve": "npx --yes http-server -p 8080 -c-1 ."
+  },
+  "devDependencies": {
+    "tailwindcss": "3.4.17"
+  }
+}

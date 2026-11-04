@@ -1,62 +1,36 @@
 <!DOCTYPE html>
-<html lang="en" class="scroll-smooth">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Voraman Vuth - UX/UI Designer</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <title>Voraman Vuth - UX/UI Designer &amp; Game Developer</title>
+    <meta name="description" content="Voraman Vuth — UX/UI designer and indie game developer (Gojo Studio). Interactive portfolio with game UI, desktop, and mobile prototypes.">
+    <meta name="theme-color" content="#060606">
+    <meta property="og:title" content="Voraman Vuth - UX/UI Designer & Game Developer">
+    <meta property="og:description" content="Interactive portfolio: game UI, web storefronts, mobile prototypes and indie games on itch.io.">
+    <meta property="og:image" content="assets/img/game-main-menu-1600.webp">
+    <meta property="og:type" content="website">
+
+    <!-- Fonts & icons: preconnect so the handshakes start early -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..900;1,6..96,400..900&family=Inter:wght@300;400;600;700&family=Press+Start+2P&display=swap" rel="stylesheet">
-    
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        'brand-black': '#060606',
-                        'brand-grey': '#282828',
-                        'brand-purple': '#C63AEB',
-                        'brand-white': '#FFFFFF',
-                        'app-bg': '#F2F4F8',
-                    },
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                        serif: ['Bodoni Moda', 'serif'],
-                        pixel: ['"Press Start 2P"', 'cursive'],
-                    },
-                    animation: {
-                        'float': 'float 6s ease-in-out infinite',
-                        'pulse-glow': 'pulse-glow 3s infinite',
-                        'fade-in': 'fadeIn 0.5s ease-out forwards',
-                        'slide-up': 'slideUp 0.4s ease-out forwards',
-                        'check': 'check 0.5s ease-in-out forwards',
-                    },
-                    keyframes: {
-                        fadeIn: {
-                            '0%': { opacity: '0', transform: 'translateY(10px)' },
-                            '100%': { opacity: '1', transform: 'translateY(0)' },
-                        },
-                        slideUp: {
-                            '0%': { transform: 'translateY(100%)' },
-                            '100%': { transform: 'translateY(0)' },
-                        },
-                        check: {
-                            '0%': { transform: 'scale(0)' },
-                            '50%': { transform: 'scale(1.2)' },
-                            '100%': { transform: 'scale(1)' },
-                        }
-                    },
-                    boxShadow: {
-                        'soft': '0 10px 40px -10px rgba(0,0,0,0.1)',
-                        'inner-light': 'inset 0 2px 4px 0 rgba(255, 255, 255, 0.3)',
-                    }
-                }
-            }
-        }
-    </script>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..900;1,6..96,400..900&family=Inter:wght@300;400;600;700;900&family=Press+Start+2P&display=swap" rel="stylesheet">
+    <!-- Icons are not needed for first paint: load without blocking render -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" media="print" onload="this.media='all'">
+    <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"></noscript>
+
+    <!-- Pre-compiled Tailwind (run `npm run build:css` after changing classes) -->
+    <link rel="stylesheet" href="assets/css/tailwind.css">
+
     <style>
+        :root {
+            --purple: #C63AEB;
+            --glass-bg: linear-gradient(135deg, rgba(255,255,255,0.09), rgba(255,255,255,0.025));
+            --glass-border: rgba(255,255,255,0.12);
+            --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+        }
+        html { scroll-behavior: smooth; }
         body {
             background-color: #060606;
             color: #ffffff;
@@ -64,374 +38,404 @@
             position: relative;
         }
 
-        /* --- Abstract Animated Background --- */
-        .bg-orb {
-            position: fixed;
-            border-radius: 50%;
-            filter: blur(100px);
-            z-index: -1;
-            opacity: 0.3;
-            animation: orb-move 25s infinite alternate ease-in-out;
-            pointer-events: none;
+        /* ---------- Ambient aurora background (GPU transforms only, no blur filter) ---------- */
+        .aurora { position: fixed; inset: 0; z-index: -2; overflow: hidden; pointer-events: none; background: #060606; }
+        .aurora span {
+            position: absolute; border-radius: 50%;
+            will-change: transform;
+            animation: drift 32s ease-in-out infinite alternate;
         }
-        .orb-1 { top: 10%; left: 20%; width: 400px; height: 400px; background: #282828; }
-        .orb-2 { bottom: 20%; right: 10%; width: 500px; height: 500px; background: #1a1a1a; animation-delay: -5s; }
-        .orb-3 { top: 40%; left: 50%; width: 300px; height: 300px; background: #2a0a33; animation-duration: 35s; }
-
-        @keyframes orb-move {
-            0% { transform: translate(0, 0) scale(1); }
-            100% { transform: translate(50px, 80px) scale(1.2); }
+        .aurora .a1 { width: 60vmax; height: 60vmax; top: -22vmax; left: -14vmax; background: radial-gradient(circle, rgba(198,58,235,0.32), transparent 62%); }
+        .aurora .a2 { width: 55vmax; height: 55vmax; bottom: -24vmax; right: -18vmax; background: radial-gradient(circle, rgba(59,130,246,0.22), transparent 62%); animation-duration: 40s; animation-delay: -10s; }
+        .aurora .a3 { width: 42vmax; height: 42vmax; top: 38%; left: 38%; background: radial-gradient(circle, rgba(236,72,153,0.14), transparent 62%); animation-duration: 48s; animation-delay: -20s; }
+        .aurora .grid-lines {
+            position: absolute; inset: 0;
+            background-image:
+                linear-gradient(rgba(255,255,255,0.035) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.035) 1px, transparent 1px);
+            background-size: 72px 72px;
+            -webkit-mask-image: radial-gradient(ellipse at 50% 30%, #000 10%, transparent 70%);
+                    mask-image: radial-gradient(ellipse at 50% 30%, #000 10%, transparent 70%);
         }
-
-        /* --- Button Hover Effects --- */
-        .btn-main {
-            background-color: #282828;
-            color: white;
-            transition: all 0.3s ease;
-        }
-        .btn-main:hover {
-            background-color: white;
-            color: black;
-            box-shadow: 0 0 15px rgba(255, 255, 255, 0.6);
-            transform: translateY(-2px);
+        @keyframes drift {
+            0%   { transform: translate3d(0, 0, 0) scale(1); }
+            50%  { transform: translate3d(8vmax, 6vmax, 0) scale(1.15); }
+            100% { transform: translate3d(-6vmax, 10vmax, 0) scale(0.95); }
         }
 
-        /* --- Project Card Styles --- */
-        .project-card {
-            transition: all 0.4s ease;
-            border: 3px solid transparent;
-            position: relative;
-            overflow: hidden;
+        /* Cursor glow (desktop only, moved with transform in rAF) */
+        .cursor-glow {
+            position: fixed; left: 0; top: 0; width: 520px; height: 520px; margin: -260px 0 0 -260px;
+            border-radius: 50%; pointer-events: none; z-index: -1; opacity: 0;
+            background: radial-gradient(circle, rgba(198,58,235,0.13), transparent 60%);
+            transition: opacity .4s ease; will-change: transform;
         }
-        .project-card:hover {
-            border-color: white;
-            box-shadow: 0 0 30px rgba(255, 255, 255, 0.5);
-            transform: translateY(-5px);
+        .cursor-glow.on { opacity: 1; }
+
+        /* Scroll progress */
+        #scroll-progress {
+            position: fixed; top: 0; left: 0; height: 2px; width: 100%; z-index: 60;
+            transform-origin: 0 50%; transform: scaleX(0);
+            background: linear-gradient(90deg, #C63AEB, #60a5fa, #f472b6);
+            box-shadow: 0 0 12px rgba(198,58,235,0.8);
         }
 
-        /* Slideshow Animation for Cards */
+        /* ---------- Glassmorphism ---------- */
+        .glass {
+            background: var(--glass-bg);
+            -webkit-backdrop-filter: blur(18px) saturate(160%);
+                    backdrop-filter: blur(18px) saturate(160%);
+            border: 1px solid var(--glass-border);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.10), 0 24px 60px -24px rgba(0,0,0,0.7);
+        }
+        .glass-dark {
+            background: rgba(12,12,16,0.55);
+            -webkit-backdrop-filter: blur(20px) saturate(150%);
+                    backdrop-filter: blur(20px) saturate(150%);
+            border: 1px solid rgba(255,255,255,0.08);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.06), 0 30px 80px -30px rgba(0,0,0,0.8);
+        }
+        @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+            .glass, .glass-dark { background: rgba(22,22,28,0.92); }
+        }
+
+        /* Mouse-follow spotlight border on glass cards */
+        .spot { position: relative; isolation: isolate; }
+        .spot::before {
+            content: ''; position: absolute; inset: -1px; border-radius: inherit; padding: 1px; pointer-events: none;
+            background: radial-gradient(320px circle at var(--mx, 50%) var(--my, 50%), rgba(198,58,235,0.75), rgba(96,165,250,0.35) 40%, transparent 70%);
+            -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+            -webkit-mask-composite: xor; mask-composite: exclude;
+            opacity: 0; transition: opacity .35s ease; z-index: 2;
+        }
+        .spot:hover::before { opacity: 1; }
+
+        /* ---------- Buttons ---------- */
+        .btn-main, .btn-glass {
+            position: relative; overflow: hidden;
+            transition: transform .35s var(--ease-out), box-shadow .35s ease, background-color .35s ease, color .35s ease;
+        }
+        .btn-main { background: linear-gradient(135deg, #C63AEB, #7c3aed); color: #fff; box-shadow: 0 10px 30px -10px rgba(198,58,235,0.7); }
+        .btn-main:hover { transform: translateY(-2px); box-shadow: 0 16px 40px -10px rgba(198,58,235,0.9); }
+        .btn-glass { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.16); color: #fff; -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); }
+        .btn-glass:hover { background: #fff; color: #060606; transform: translateY(-2px); box-shadow: 0 0 24px rgba(255,255,255,0.35); }
+        .btn-main::after, .btn-glass::after {
+            content: ''; position: absolute; top: 0; left: -120%; width: 60%; height: 100%;
+            background: linear-gradient(110deg, transparent, rgba(255,255,255,0.35), transparent);
+            transform: skewX(-20deg); transition: left .7s var(--ease-out);
+        }
+        .btn-main:hover::after, .btn-glass:hover::after { left: 140%; }
+
+        /* ---------- Hero ---------- */
+        .hero-title { perspective: 800px; }
+        .hero-letter {
+            display: inline-block; opacity: 0;
+            transform: translateY(70%) rotateX(-85deg);
+            transform-origin: 50% 100%;
+            animation: letterIn 1s var(--ease-out) forwards;
+            animation-delay: calc(var(--i) * 70ms + 250ms);
+            text-shadow: 0 0 40px rgba(198,58,235,0.25);
+        }
+        @keyframes letterIn { to { opacity: 1; transform: none; } }
+        .fade-up { opacity: 0; transform: translateY(16px); animation: fadeUp .9s var(--ease-out) forwards; animation-delay: var(--d, 0s); }
+        @keyframes fadeUp { to { opacity: 1; transform: none; } }
+        .type-caret { display: inline-block; width: 2px; height: 1em; background: #C63AEB; margin-left: 4px; vertical-align: -2px; animation: blink 1s steps(1) infinite; }
+        @keyframes blink { 50% { opacity: 0; } }
+        .pulse-dot { position: relative; }
+        .pulse-dot::after { content: ''; position: absolute; inset: 0; border-radius: 50%; background: inherit; animation: ping 1.8s cubic-bezier(0,0,.2,1) infinite; }
+        @keyframes ping { 75%, 100% { transform: scale(2.4); opacity: 0; } }
+        .scroll-mouse { width: 22px; height: 36px; border: 2px solid rgba(255,255,255,0.35); border-radius: 12px; position: relative; }
+        .scroll-mouse::after { content: ''; position: absolute; left: 50%; top: 6px; width: 3px; height: 7px; margin-left: -1.5px; border-radius: 2px; background: #fff; animation: wheel 1.8s var(--ease-out) infinite; }
+        @keyframes wheel { 0% { opacity: 0; transform: translateY(0); } 30% { opacity: 1; } 100% { opacity: 0; transform: translateY(12px); } }
+
+        /* ---------- Tools marquee ---------- */
+        .marquee { -webkit-mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent); mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent); }
+        .marquee-track { display: flex; width: max-content; animation: marquee 32s linear infinite; }
+        .marquee:hover .marquee-track { animation-play-state: paused; }
+        @keyframes marquee { to { transform: translateX(-50%); } }
+
+        /* ---------- Nav ---------- */
+        #nav-marker {
+            position: absolute; top: 0; left: 0; height: 100%; border-radius: 9999px;
+            background: rgba(255,255,255,0.10); border: 1px solid rgba(255,255,255,0.14);
+            box-shadow: 0 0 18px rgba(198,58,235,0.35), inset 0 1px 0 rgba(255,255,255,0.15);
+            transition: transform .45s var(--ease-out), width .45s var(--ease-out), opacity .3s ease;
+            opacity: 0; pointer-events: none; z-index: 0;
+        }
+        .nav-link { position: relative; z-index: 1; }
+        .nav-link.is-active { color: #fff; }
+        #site-nav.scrolled .nav-pill { background: rgba(10,10,14,0.6); }
+
+        /* ---------- Project cards (3D tilt + glare + slideshow) ---------- */
+        .tilt {
+            transform: perspective(1000px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)) translateY(var(--ty, 0));
+            transition: transform .6s var(--ease-out), box-shadow .4s ease, border-color .4s ease;
+            transform-style: preserve-3d; will-change: transform;
+        }
+        .tilt.tilting { transition: transform .08s linear, box-shadow .4s ease, border-color .4s ease; }
+        .project-card { border: 1px solid rgba(255,255,255,0.08); position: relative; overflow: hidden; }
+        .project-card:hover { --ty: -6px; border-color: rgba(255,255,255,0.35); box-shadow: 0 30px 60px -20px rgba(198,58,235,0.45), 0 0 0 1px rgba(255,255,255,0.08); }
+        .project-card .glare {
+            position: absolute; inset: 0; z-index: 15; pointer-events: none; opacity: 0; transition: opacity .4s ease;
+            background: radial-gradient(500px circle at var(--mx, 50%) var(--my, 50%), rgba(255,255,255,0.18), transparent 45%);
+            mix-blend-mode: soft-light;
+        }
+        .project-card:hover .glare { opacity: 1; }
+
         .card-slideshow img {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            opacity: 0;
-            transition: opacity 0.5s ease;
+            position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;
+            opacity: 0; transition: opacity .5s ease, transform 1.2s var(--ease-out);
         }
         .card-slideshow img:first-child { opacity: 1; }
-        .project-card:hover .card-slideshow img { animation: slideshow 6s infinite; }
-        .project-card:hover .card-slideshow img:nth-child(1) { animation-delay: 0s; }
+        .project-card:hover .card-slideshow img { animation: slideshow 6s infinite; transform: scale(1.06); }
         .project-card:hover .card-slideshow img:nth-child(2) { animation-delay: 2s; }
         .project-card:hover .card-slideshow img:nth-child(3) { animation-delay: 4s; }
+        @keyframes slideshow { 0% { opacity: 0; } 10% { opacity: 1; } 33% { opacity: 1; } 43% { opacity: 0; } 100% { opacity: 0; } }
 
-        @keyframes slideshow {
-            0% { opacity: 0; }
-            10% { opacity: 1; }
-            33% { opacity: 1; }
-            43% { opacity: 0; }
-            100% { opacity: 0; }
-        }
+        /* ---------- Scroll reveal (IntersectionObserver) ---------- */
+        .reveal { opacity: 0; transform: translateY(36px) scale(0.98); transition: opacity .9s var(--ease-out), transform .9s var(--ease-out); transition-delay: var(--d, 0s); }
+        .reveal.active { opacity: 1; transform: none; }
 
-        /* --- Form Inputs --- */
-        .input-underline {
-            background: transparent;
-            border: none;
-            border-bottom: 1px solid #4a4a4a;
-            color: white;
-            transition: border-color 0.3s;
-        }
-        .input-underline:focus {
-            outline: none;
-            border-bottom: 1px solid white;
-        }
+        /* ---------- Form ---------- */
+        .input-underline { background: transparent; border: none; border-bottom: 1px solid rgba(255,255,255,0.18); color: white; transition: border-color .3s; }
+        .input-underline:focus { outline: none; border-bottom-color: #C63AEB; }
+        .field { position: relative; }
+        .field::after { content: ''; position: absolute; left: 0; bottom: 0; height: 1px; width: 100%; background: linear-gradient(90deg, #C63AEB, #60a5fa); transform: scaleX(0); transform-origin: left; transition: transform .5s var(--ease-out); }
+        .field:focus-within::after { transform: scaleX(1); }
 
-        /* --- Scroll Animation Utility --- */
-        .reveal {
-            opacity: 0;
-            transform: translateY(30px);
-            transition: all 0.8s ease-out;
-        }
-        .reveal.active {
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-        /* --- Nav Marker --- */
-        #nav-marker {
-            position: absolute;
-            bottom: 0;
-            height: 2px;
-            background-color: white;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 0 0 10px white;
-            opacity: 0;
-            pointer-events: none;
-            z-index: 20;
-        }
-
-        /* --- Overlay / Detail Pages --- */
+        /* ---------- Detail overlays ---------- */
         .detail-page {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100vh;
-            background: #060606;
-            z-index: 100;
-            overflow-y: auto;
-            transform: translateY(100%);
-            transition: transform 0.5s cubic-bezier(0.77, 0, 0.175, 1);
+            position: fixed; inset: 0; width: 100%; height: 100vh; height: 100dvh;
+            background: radial-gradient(ellipse at top, #15081a 0%, #060606 55%);
+            z-index: 100; overflow-y: auto; overscroll-behavior: contain;
+            transform: translateY(100%); visibility: hidden;
+            transition: transform .6s cubic-bezier(0.77, 0, 0.175, 1), visibility 0s linear .6s;
         }
-        .detail-page.active { transform: translateY(0); }
+        .detail-page.active { transform: translateY(0); visibility: visible; transition: transform .6s cubic-bezier(0.77, 0, 0.175, 1), visibility 0s; }
+        .detail-close { border-radius: 9999px; padding: .6rem 1.1rem; font-size: .8rem; letter-spacing: .2em; }
+        .detail-close:hover { background: #fff; color: #060606; }
 
-        /* --- Custom Scrollbar --- */
+        /* Pause expensive ambient animation while an overlay covers it */
+        body.detail-open .aurora span, body.detail-open .marquee-track { animation-play-state: paused; }
+
+        /* ---------- Game modal ---------- */
+        #play-modal { opacity: 0; visibility: hidden; transition: opacity .35s ease, visibility 0s linear .35s; }
+        #play-modal.open { opacity: 1; visibility: visible; transition: opacity .35s ease; }
+        #play-modal .modal-box { transform: scale(.94) translateY(20px); transition: transform .45s var(--ease-out); }
+        #play-modal.open .modal-box { transform: none; }
+
+        /* Browser mockup float */
+        .float-slow { animation: floatY 7s ease-in-out infinite; }
+        @keyframes floatY { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+
+        /* ---------- Scrollbar ---------- */
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: #060606; }
         ::-webkit-scrollbar-thumb { background: #282828; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #444; }
 
-        /* --- Game UI Swapper Specifics --- */
-        .game-btn-retro {
-            font-family: 'Press Start 2P', cursive;
-            background: #c63aeb;
-            box-shadow: 4px 4px 0px #fff;
-            border: 2px solid #fff;
-            color: white;
-            text-transform: uppercase;
-        }
-        .game-btn-retro:active { transform: translate(4px, 4px); box-shadow: none; }
+        /* ---------- Game UI Lab ---------- */
+        .game-nav-item { position: relative; }
+        .game-nav-item::after { content: ''; position: absolute; bottom: -5px; left: 0; width: 0%; height: 2px; background-color: #facc15; transition: width .3s ease; }
+        .game-nav-item:hover::after { width: 100%; }
+        .scanlines { background: linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,0) 50%, rgba(0,0,0,0.2) 50%, rgba(0,0,0,0.2)); background-size: 100% 4px; pointer-events: none; }
 
-        .game-btn-modern {
-            font-family: 'Inter', sans-serif;
-            background: rgba(255,255,255,0.1);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255,255,255,0.2);
-            border-radius: 50%;
-            box-shadow: 0 0 15px rgba(198, 58, 235, 0.5);
-            color: white;
-        }
-        .game-btn-modern:active { background: rgba(198, 58, 235, 0.5); }
+        /* ---------- Store (Desktop) ---------- */
+        .store-card { transition: transform .35s var(--ease-out), box-shadow .35s ease, border-color .35s ease; }
+        .store-card:hover { transform: translateY(-5px); box-shadow: 0 0 25px rgba(198,58,235,0.4); border-color: rgba(255,255,255,0.5); }
+        .floating-cart { transition: all .4s ease; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
+        .floating-cart:hover { box-shadow: 0 0 40px rgba(255,255,255,0.3); border-color: white; }
 
-        .game-btn-minimal {
-            background: transparent;
-            border: 2px solid white;
-            border-radius: 8px;
-            color: white;
-            font-weight: bold;
-        }
-        .game-btn-minimal:active { background: white; color: black; }
+        /* ---------- Mobile app simulator ---------- */
+        .app-gradient-card { background: linear-gradient(135deg, #a78bfa 0%, #8b5cf6 100%); box-shadow: 0 10px 20px rgba(139,92,246,0.3); }
+        .glass-panel { background: rgba(255,255,255,0.8); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.5); }
+        .numpad-key { transition: all .2s; }
+        .numpad-key:active { background-color: rgba(0,0,0,0.05); transform: scale(0.95); }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .app-dark-mode { background-color: #121212 !important; color: #e0e0e0 !important; }
+        .app-dark-mode .bg-white { background-color: #1e1e1e !important; color: #ffffff !important; }
+        .app-dark-mode .glass-panel { background: rgba(30,30,30,0.8) !important; border-color: rgba(255,255,255,0.1) !important; }
+        .app-dark-mode i.text-gray-500, .app-dark-mode i.text-gray-400 { color: #a0a0a0 !important; }
+        .app-dark-mode .shadow-soft { box-shadow: 0 4px 6px -1px rgba(0,0,0,0.3) !important; }
+        .app-dark-mode input { color: white !important; }
 
-        /* --- Store (Desktop) Specifics --- */
-        .store-card {
-            transition: all 0.3s ease;
+        /* ---------- Accessibility: respect reduced motion ---------- */
+        @media (prefers-reduced-motion: reduce) {
+            html { scroll-behavior: auto; }
+            *, *::before, *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
+            .reveal, .hero-letter, .fade-up { opacity: 1 !important; transform: none !important; }
+            .cursor-glow { display: none; }
         }
-        .store-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 0 25px rgba(198, 58, 235, 0.4);
-            border-color: rgba(255,255,255,0.5);
-        }
-        
-        /* Floating Cart Glow */
-        .floating-cart {
-            transition: all 0.4s ease;
-            box-shadow: 0 0 20px rgba(0,0,0,0.5);
-        }
-        .floating-cart:hover {
-            box-shadow: 0 0 40px rgba(255, 255, 255, 0.3);
-            border-color: white;
-        }
-
-        /* --- Mobile App Simulation Specifics --- */
-        .app-gradient-card {
-            background: linear-gradient(135deg, #a78bfa 0%, #8b5cf6 100%);
-            box-shadow: 0 10px 20px rgba(139, 92, 246, 0.3);
-        }
-        .glass-panel {
-            background: rgba(255, 255, 255, 0.8);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.5);
-        }
-        .numpad-key {
-            transition: all 0.2s;
-        }
-        .numpad-key:active {
-            background-color: rgba(0,0,0,0.05);
-            transform: scale(0.95);
-        }
-
-        /* Hide Scrollbar for App */
-        .no-scrollbar::-webkit-scrollbar {
-            display: none;
-        }
-        .no-scrollbar {
-            -ms-overflow-style: none;
-            scrollbar-width: none;
-        }
-
-        /* App Dark Mode Overrides */
-        .app-dark-mode {
-            background-color: #121212 !important;
-            color: #e0e0e0 !important;
-        }
-        .app-dark-mode .bg-white {
-            background-color: #1e1e1e !important;
-            color: #ffffff !important;
-        }
-        .app-dark-mode .glass-panel {
-            background: rgba(30, 30, 30, 0.8) !important;
-            border-color: rgba(255, 255, 255, 0.1) !important;
-        }
-        .app-dark-mode i.text-gray-500, .app-dark-mode i.text-gray-400 {
-            color: #a0a0a0 !important;
-        }
-        .app-dark-mode .shadow-soft {
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3) !important;
-        }
-        .app-dark-mode input {
-            color: white !important;
-        }
-
-        /* New Game UI Specifics */
-        .game-nav-item {
-            position: relative;
-        }
-        .game-nav-item::after {
-            content: '';
-            position: absolute;
-            bottom: -5px;
-            left: 0;
-            width: 0%;
-            height: 2px;
-            background-color: #facc15;
-            transition: width 0.3s ease;
-        }
-        .game-nav-item:hover::after {
-            width: 100%;
-        }
-
-        /* Scanline effect for Retro mode */
-        .scanlines {
-            background: linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,0) 50%, rgba(0,0,0,0.2) 50%, rgba(0,0,0,0.2));
-            background-size: 100% 4px;
-            pointer-events: none;
-        }
-
+        :focus-visible { outline: 2px solid #C63AEB; outline-offset: 3px; }
     </style>
 </head>
-<body class="font-sans antialiased selection:bg-brand-white selection:text-brand-black">
+<body class="font-sans antialiased selection:bg-brand-purple selection:text-white">
 
     <!-- Ambient Background -->
-    <div class="bg-orb orb-1"></div>
-    <div class="bg-orb orb-2"></div>
-    <div class="bg-orb orb-3"></div>
+    <div class="aurora" aria-hidden="true">
+        <span class="a1"></span><span class="a2"></span><span class="a3"></span>
+        <div class="grid-lines"></div>
+    </div>
+    <div class="cursor-glow" id="cursor-glow" aria-hidden="true"></div>
+    <div id="scroll-progress" aria-hidden="true"></div>
 
-    <!-- Navigation -->
-    <nav class="fixed top-0 w-full p-8 z-50 bg-gradient-to-b from-black/80 to-transparent backdrop-blur-[2px]">
-        <div class="max-w-7xl mx-auto flex justify-between items-center relative">
-            <a href="#home" class="logo text-3xl font-bold tracking-tighter hover:text-gray-300 transition-colors z-10">VV</a>
-            
-            <!-- Nav Container -->
-            <!-- Wrapped text in SPANs to fix underline leaking -->
-            <div id="nav-container" class="relative flex space-x-8 text-sm font-semibold tracking-wider">
-                <a href="#projects" class="nav-link py-2 hover:text-gray-300 transition-colors uppercase"><span>Projects</span></a>
-                <a href="#playground" class="nav-link py-2 hover:text-gray-300 transition-colors uppercase"><span>Playground</span></a>
-                <a href="#contact" class="nav-link py-2 hover:text-gray-300 transition-colors uppercase"><span>Contact</span></a>
-                <!-- Animated Underline Marker -->
+    <!-- Navigation (floating glass pill) -->
+    <nav id="site-nav" class="fixed top-0 inset-x-0 z-50 px-3 sm:px-6 pt-4">
+        <div class="nav-pill glass max-w-5xl mx-auto rounded-full flex justify-between items-center pl-5 pr-2 py-2 transition-colors duration-500">
+            <a href="#home" class="logo text-2xl font-black tracking-tighter hover:text-brand-purple transition-colors" aria-label="Home">VV</a>
+
+            <div id="nav-container" class="relative flex items-center text-[10px] sm:text-xs font-semibold tracking-wider">
                 <div id="nav-marker"></div>
+                <a href="#projects" class="nav-link px-2.5 sm:px-4 py-2 text-gray-300 hover:text-white transition-colors uppercase"><span>Work</span></a>
+                <a href="#games" class="nav-link px-2.5 sm:px-4 py-2 text-gray-300 hover:text-white transition-colors uppercase"><span>Games</span></a>
+                <a href="#playground" class="nav-link px-2.5 sm:px-4 py-2 text-gray-300 hover:text-white transition-colors uppercase"><span>Lab</span></a>
+                <a href="#contact" class="nav-link px-2.5 sm:px-4 py-2 text-gray-300 hover:text-white transition-colors uppercase"><span>Contact</span></a>
             </div>
+
+            <a href="https://gojo-studio.itch.io/" target="_blank" rel="noopener" class="btn-main rounded-full px-3 sm:px-4 py-2 text-xs font-bold flex items-center gap-2" aria-label="Gojo Studio on itch.io">
+                <i class="fab fa-itch-io"></i><span class="hidden sm:inline tracking-wider">ITCH.IO</span>
+            </a>
         </div>
     </nav>
 
     <!-- Social Sidebar -->
-    <div class="fixed bottom-10 left-8 z-40 flex flex-col gap-6 text-xl mix-blend-difference hidden md:flex">
-        <a href="#" class="hover:text-gray-400 transition-colors hover:-translate-y-1 transform duration-300"><i class="fab fa-facebook-f"></i></a>
-        <a href="#" class="hover:text-gray-400 transition-colors hover:-translate-y-1 transform duration-300"><i class="fab fa-instagram"></i></a>
-        <a href="https://github.com/VoRaMaN" target="_blank" class="hover:text-gray-400 transition-colors hover:-translate-y-1 transform duration-300"><i class="fab fa-github"></i></a>
-        <a href="https://t.me/voraman9966" target="_blank" class="hover:text-brand-purple transition-colors hover:-translate-y-1 transform duration-300"><i class="fab fa-telegram"></i></a>
+    <div class="fixed bottom-10 left-6 z-40 hidden md:flex flex-col gap-1 p-2 rounded-full glass">
+        <a href="https://gojo-studio.itch.io/" target="_blank" rel="noopener" aria-label="itch.io" class="w-10 h-10 flex items-center justify-center rounded-full text-gray-300 hover:text-white hover:bg-[#fa5c5c] transition-all hover:-translate-y-0.5"><i class="fab fa-itch-io"></i></a>
+        <a href="https://github.com/VoRaMaN" target="_blank" rel="noopener" aria-label="GitHub" class="w-10 h-10 flex items-center justify-center rounded-full text-gray-300 hover:text-black hover:bg-white transition-all hover:-translate-y-0.5"><i class="fab fa-github"></i></a>
+        <a href="https://t.me/voraman9966" target="_blank" rel="noopener" aria-label="Telegram" class="w-10 h-10 flex items-center justify-center rounded-full text-gray-300 hover:text-white hover:bg-[#229ED9] transition-all hover:-translate-y-0.5"><i class="fab fa-telegram"></i></a>
+        <a href="mailto:voramanvuth@gmail.com" aria-label="Email" class="w-10 h-10 flex items-center justify-center rounded-full text-gray-300 hover:text-white hover:bg-brand-purple transition-all hover:-translate-y-0.5"><i class="fas fa-envelope"></i></a>
     </div>
 
     <!-- MAIN CONTENT WRAPPER -->
     <main id="main-content">
-        
+
         <!-- HOME SECTION -->
-        <section id="home" class="min-h-screen flex flex-col justify-center items-center text-center relative px-4 pt-20">
-            <div class="reveal">
-                <p class="text-xs md:text-sm tracking-[0.2em] text-gray-400 mb-4 font-bold">I AM</p>
-                <h1 class="text-6xl md:text-8xl lg:text-9xl font-serif font-bold tracking-tight mb-4 text-brand-white">
-                    VORAMAN
-                </h1>
-                <p class="text-sm md:text-base tracking-widest text-gray-400 text-right w-full max-w-2xl mx-auto pr-4 md:pr-10">
-                    UX / UI DESIGNER
-                </p>
+        <section id="home" class="min-h-screen flex flex-col justify-center items-center text-center relative px-4 pt-24 pb-28">
+            <div class="fade-up glass rounded-full px-4 py-1.5 mb-8 flex items-center gap-2 text-[11px] font-semibold tracking-widest text-gray-300" style="--d:.1s">
+                <span class="pulse-dot w-2 h-2 rounded-full bg-green-400"></span> OPEN TO UX/UI ROLES &amp; COLLABS
             </div>
-            
-            <div class="absolute bottom-20 reveal delay-200">
-                <a href="#projects" class="btn-main px-8 py-3 rounded text-xs font-bold tracking-widest uppercase inline-block">
-                    Explore
+
+            <p class="fade-up text-xs md:text-sm tracking-[0.3em] text-gray-400 mb-4 font-bold" style="--d:.2s">I AM</p>
+            <h1 class="hero-title text-6xl sm:text-7xl md:text-8xl lg:text-9xl font-serif font-bold tracking-tight mb-5 text-brand-white" aria-label="Voraman">
+                <span class="hero-letter" style="--i:0" aria-hidden="true">V</span><span class="hero-letter" style="--i:1" aria-hidden="true">O</span><span class="hero-letter" style="--i:2" aria-hidden="true">R</span><span class="hero-letter" style="--i:3" aria-hidden="true">A</span><span class="hero-letter" style="--i:4" aria-hidden="true">M</span><span class="hero-letter" style="--i:5" aria-hidden="true">A</span><span class="hero-letter" style="--i:6" aria-hidden="true">N</span>
+            </h1>
+            <p class="fade-up text-sm md:text-base tracking-[0.35em] text-gray-300 h-6" style="--d:.9s">
+                <span id="role-text">UX / UI DESIGNER</span><span class="type-caret" aria-hidden="true"></span>
+            </p>
+            <p class="fade-up text-gray-400 max-w-md mt-6 text-sm leading-relaxed" style="--d:1.05s">
+                I design interfaces people enjoy using — and build games people enjoy playing.
+            </p>
+
+            <div class="fade-up flex flex-wrap justify-center gap-3 mt-10" style="--d:1.2s">
+                <a href="#projects" class="btn-main px-7 py-3 rounded-full text-xs font-bold tracking-widest uppercase inline-flex items-center gap-2">
+                    Explore Work <i class="fas fa-arrow-down text-[10px]"></i>
+                </a>
+                <a href="#games" class="btn-glass px-7 py-3 rounded-full text-xs font-bold tracking-widest uppercase inline-flex items-center gap-2">
+                    <i class="fas fa-gamepad"></i> My Games
                 </a>
             </div>
+
+            <a href="#projects" class="fade-up absolute bottom-8 flex flex-col items-center gap-2 text-[10px] tracking-[0.3em] text-gray-500 hover:text-white transition-colors" style="--d:1.6s" aria-label="Scroll down">
+                <span class="scroll-mouse"></span> SCROLL
+            </a>
         </section>
+
+        <!-- TOOLS MARQUEE -->
+        <div class="reveal px-4 -mt-10 mb-10">
+            <div class="marquee glass max-w-5xl mx-auto rounded-2xl py-4 overflow-hidden">
+                <div class="marquee-track gap-12 text-sm font-semibold text-gray-300">
+                    <!-- Set 1 -->
+                    <span class="flex items-center gap-3 pl-12"><img src="assets/img/tool-figma.webp" alt="" width="24" height="24" class="w-6 h-6 object-contain" loading="lazy" decoding="async">Figma</span>
+                    <span class="flex items-center gap-3"><img src="assets/img/tool-photoshop.webp" alt="" width="24" height="24" class="w-6 h-6 object-contain" loading="lazy" decoding="async">Photoshop</span>
+                    <span class="flex items-center gap-3"><img src="assets/img/tool-illustrator.webp" alt="" width="24" height="24" class="w-6 h-6 object-contain" loading="lazy" decoding="async">Illustrator</span>
+                    <span class="flex items-center gap-3"><img src="assets/img/tool-framer.webp" alt="" width="24" height="24" class="w-6 h-6 object-contain rounded" loading="lazy" decoding="async">Framer</span>
+                    <span class="flex items-center gap-3"><img src="assets/img/tool-trello.webp" alt="" width="24" height="24" class="w-6 h-6 object-contain" loading="lazy" decoding="async">Trello</span>
+                    <span class="flex items-center gap-3"><i class="fas fa-gamepad text-brand-purple text-lg"></i>Game UI</span>
+                    <span class="flex items-center gap-3"><i class="fab fa-itch-io text-[#fa5c5c] text-lg"></i>Indie Games</span>
+                    <span class="flex items-center gap-3 pr-12"><i class="fas fa-mobile-alt text-blue-400 text-lg"></i>Prototyping</span>
+                    <!-- Set 2 (duplicate for seamless loop) -->
+                    <span class="flex items-center gap-3 pl-12" aria-hidden="true"><img src="assets/img/tool-figma.webp" alt="" width="24" height="24" class="w-6 h-6 object-contain" loading="lazy" decoding="async">Figma</span>
+                    <span class="flex items-center gap-3" aria-hidden="true"><img src="assets/img/tool-photoshop.webp" alt="" width="24" height="24" class="w-6 h-6 object-contain" loading="lazy" decoding="async">Photoshop</span>
+                    <span class="flex items-center gap-3" aria-hidden="true"><img src="assets/img/tool-illustrator.webp" alt="" width="24" height="24" class="w-6 h-6 object-contain" loading="lazy" decoding="async">Illustrator</span>
+                    <span class="flex items-center gap-3" aria-hidden="true"><img src="assets/img/tool-framer.webp" alt="" width="24" height="24" class="w-6 h-6 object-contain rounded" loading="lazy" decoding="async">Framer</span>
+                    <span class="flex items-center gap-3" aria-hidden="true"><img src="assets/img/tool-trello.webp" alt="" width="24" height="24" class="w-6 h-6 object-contain" loading="lazy" decoding="async">Trello</span>
+                    <span class="flex items-center gap-3" aria-hidden="true"><i class="fas fa-gamepad text-brand-purple text-lg"></i>Game UI</span>
+                    <span class="flex items-center gap-3" aria-hidden="true"><i class="fab fa-itch-io text-[#fa5c5c] text-lg"></i>Indie Games</span>
+                    <span class="flex items-center gap-3 pr-12" aria-hidden="true"><i class="fas fa-mobile-alt text-blue-400 text-lg"></i>Prototyping</span>
+                </div>
+            </div>
+        </div>
 
         <!-- PROJECTS SECTION -->
         <section id="projects" class="min-h-screen py-20 px-4 md:px-12 flex flex-col justify-center items-center">
-            
-            <h2 class="text-sm font-bold tracking-[0.3em] text-gray-500 mb-16 uppercase reveal">Selected Works</h2>
+            <div class="reveal text-center mb-14">
+                <p class="text-xs font-bold tracking-[0.3em] text-brand-purple mb-3 uppercase">Selected Works</p>
+                <h2 class="text-4xl md:text-5xl font-serif font-bold">Interactive case studies</h2>
+                <p class="text-gray-400 mt-3 text-sm">Click a card to open a playable prototype.</p>
+            </div>
 
-            <!-- Cards Container -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 w-full max-w-6xl mb-20">
-                
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 w-full max-w-6xl mb-10" data-stagger>
+
                 <!-- Game Card -->
-                <div class="reveal group cursor-pointer" onclick="openDetail('game')">
+                <div class="reveal group cursor-pointer" role="button" tabindex="0" onclick="openDetail('game')" onkeydown="if(event.key==='Enter')openDetail('game')">
                     <p class="text-center text-xs font-bold tracking-widest mb-4 text-gray-400 group-hover:text-white transition-colors">GAME</p>
-                    <div class="project-card h-[400px] md:h-[500px] rounded-3xl bg-brand-grey relative">
+                    <div class="project-card tilt h-[420px] md:h-[500px] rounded-3xl bg-brand-grey">
                         <div class="card-slideshow w-full h-full absolute inset-0">
-                            <img src="https://images.unsplash.com/photo-1550745165-9bc0b252726f?q=80&w=2070&auto=format&fit=crop" alt="Game 1">
-                            <img src="https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=2070&auto=format&fit=crop" alt="Game 2">
-                            <img src="https://images.unsplash.com/photo-1538481199705-c710c4e965fc?q=80&w=2165&auto=format&fit=crop" alt="Game 3">
+                            <img src="assets/img/game-fighting-800.webp" alt="Fighting game HUD" width="800" height="450" decoding="async" loading="lazy">
+                            <img src="assets/img/game-car-menu-800.webp" alt="Car select menu" width="800" height="450" decoding="async" loading="lazy">
+                            <img src="assets/img/game-loadout-800.webp" alt="Weapon loadout screen" width="800" height="450" decoding="async" loading="lazy">
                         </div>
-                        <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent flex items-end p-6 z-10 pointer-events-none">
-                            <div class="transform translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">
-                                <h3 class="text-xl font-bold">Immersive Gaming</h3>
-                                <p class="text-xs text-gray-300 mt-1">Play & Test UI</p>
+                        <div class="glare"></div>
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/10 to-transparent z-10 pointer-events-none"></div>
+                        <div class="absolute bottom-4 inset-x-4 z-20 glass rounded-2xl p-4 flex items-center justify-between pointer-events-none">
+                            <div>
+                                <h3 class="text-lg font-bold">Immersive Gaming</h3>
+                                <p class="text-xs text-gray-300 mt-0.5">Play &amp; Test UI</p>
                             </div>
+                            <span class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center group-hover:bg-white group-hover:text-black transition-colors"><i class="fas fa-arrow-right -rotate-45 group-hover:rotate-0 transition-transform duration-500"></i></span>
                         </div>
                     </div>
                 </div>
 
                 <!-- Desktop Card -->
-                <div class="reveal delay-100 group cursor-pointer" onclick="openDetail('desktop')">
+                <div class="reveal group cursor-pointer" role="button" tabindex="0" onclick="openDetail('desktop')" onkeydown="if(event.key==='Enter')openDetail('desktop')">
                     <p class="text-center text-xs font-bold tracking-widest mb-4 text-gray-400 group-hover:text-white transition-colors">DESKTOP</p>
-                    <div class="project-card h-[400px] md:h-[500px] rounded-3xl bg-brand-grey relative">
-                         <div class="card-slideshow w-full h-full absolute inset-0">
-                            <img src="https://images.unsplash.com/photo-1611162617474-5b21e879e113?q=80&w=1974&auto=format&fit=crop" alt="Desktop 1">
-                            <img src="https://images.unsplash.com/photo-1481487484168-9b995ecc1679?q=80&w=2070&auto=format&fit=crop" alt="Desktop 2">
-                            <img src="https://images.unsplash.com/photo-1517694712202-14dd9538aa97?q=80&w=2070&auto=format&fit=crop" alt="Desktop 3">
+                    <div class="project-card tilt h-[420px] md:h-[500px] rounded-3xl bg-brand-grey">
+                        <div class="card-slideshow w-full h-full absolute inset-0">
+                            <img src="assets/img/desk-mainmenu-800.webp" alt="Game launcher main menu" width="800" height="450" decoding="async" loading="lazy">
+                            <img src="assets/img/desk-vinland-800.webp" alt="Vinland Saga store page" width="800" height="450" decoding="async" loading="lazy">
+                            <img src="assets/img/desk-iggsite2-800.webp" alt="Game studio website" width="800" height="450" decoding="async" loading="lazy">
                         </div>
-                        <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent flex items-end p-6 z-10 pointer-events-none">
-                            <div class="transform translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">
-                                <h3 class="text-xl font-bold">Web Storefronts</h3>
-                                <p class="text-xs text-gray-300 mt-1">View Prototype</p>
+                        <div class="glare"></div>
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/10 to-transparent z-10 pointer-events-none"></div>
+                        <div class="absolute bottom-4 inset-x-4 z-20 glass rounded-2xl p-4 flex items-center justify-between pointer-events-none">
+                            <div>
+                                <h3 class="text-lg font-bold">Web Storefronts</h3>
+                                <p class="text-xs text-gray-300 mt-0.5">View Prototype</p>
                             </div>
+                            <span class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center group-hover:bg-white group-hover:text-black transition-colors"><i class="fas fa-arrow-right -rotate-45 group-hover:rotate-0 transition-transform duration-500"></i></span>
                         </div>
                     </div>
                 </div>
 
-                <!-- Mobile Card - UPDATED ACTION -->
-                <div class="reveal delay-200 group cursor-pointer" onclick="openDetail('mobile')">
+                <!-- Mobile Card -->
+                <div class="reveal group cursor-pointer" role="button" tabindex="0" onclick="openDetail('mobile')" onkeydown="if(event.key==='Enter')openDetail('mobile')">
                     <p class="text-center text-xs font-bold tracking-widest mb-4 text-gray-400 group-hover:text-white transition-colors">MOBILE</p>
-                    <div class="project-card h-[400px] md:h-[500px] rounded-3xl bg-brand-grey relative">
-                         <div class="card-slideshow w-full h-full absolute inset-0">
-                            <img src="https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?q=80&w=2070&auto=format&fit=crop" alt="Mobile 1">
-                            <img src="https://images.unsplash.com/photo-1555421689-d68471e189f2?q=80&w=2070&auto=format&fit=crop" alt="Mobile 2">
-                            <img src="https://images.unsplash.com/photo-1526498460520-4c246339dccb?q=80&w=2070&auto=format&fit=crop" alt="Mobile 3">
+                    <div class="project-card tilt h-[420px] md:h-[500px] rounded-3xl bg-brand-grey">
+                        <div class="card-slideshow w-full h-full absolute inset-0">
+                            <img src="assets/img/mob-bankapp.webp" alt="Bank app" width="647" height="1152" decoding="async" loading="lazy">
+                            <img src="assets/img/mob-smarthome.webp" alt="Smart home app" width="647" height="1152" decoding="async" loading="lazy">
+                            <img src="assets/img/mob-ecommerce.webp" alt="E-commerce app" width="647" height="1152" decoding="async" loading="lazy">
                         </div>
-                        <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent flex items-end p-6 z-10 pointer-events-none">
-                            <div class="transform translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">
-                                <h3 class="text-xl font-bold">Mobile UI/UX</h3>
-                                <p class="text-xs text-gray-300 mt-1">Click to view collection</p>
+                        <div class="glare"></div>
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/10 to-transparent z-10 pointer-events-none"></div>
+                        <div class="absolute bottom-4 inset-x-4 z-20 glass rounded-2xl p-4 flex items-center justify-between pointer-events-none">
+                            <div>
+                                <h3 class="text-lg font-bold">Mobile UI/UX</h3>
+                                <p class="text-xs text-gray-300 mt-0.5">Launch the simulator</p>
                             </div>
+                            <span class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center group-hover:bg-white group-hover:text-black transition-colors"><i class="fas fa-arrow-right -rotate-45 group-hover:rotate-0 transition-transform duration-500"></i></span>
                         </div>
                     </div>
                 </div>
@@ -439,43 +443,122 @@
             </div>
         </section>
 
-        <!-- PLAYGROUND SECTION -->
-         <section id="playground" class="min-h-screen py-20 px-4 md:px-12 flex flex-col justify-center items-center relative overflow-hidden">
-            <div class="absolute inset-0 bg-brand-purple/5 radial-gradient z-0"></div>
-            
-            <div class="reveal text-center mb-12 z-10 w-full">
-                <h2 class="text-4xl md:text-5xl font-bold mb-4 uppercase">Playground</h2>
-                <p class="text-gray-400">Interactive UI Lab & Component Testing</p>
+        <!-- GAMES SECTION (Game Developer / itch.io) -->
+        <section id="games" class="min-h-screen py-24 px-4 md:px-12 flex flex-col justify-center items-center">
+            <div class="reveal text-center mb-14 max-w-2xl">
+                <p class="text-xs font-bold tracking-[0.3em] text-[#fa5c5c] mb-3 uppercase">Beyond UI / UX</p>
+                <h2 class="text-4xl md:text-6xl font-serif font-bold leading-tight">I also <em class="text-transparent bg-clip-text bg-gradient-to-r from-brand-purple via-pink-400 to-blue-400">build games.</em></h2>
+                <p class="text-gray-400 mt-5 leading-relaxed">
+                    Under <span class="text-white font-semibold">Gojo Studio</span> I design and develop indie games — the mechanics, the HUD, and every menu in between. Play them on itch.io.
+                </p>
             </div>
 
-            <!-- Playground Container Grid -->
-            <div class="reveal w-full max-w-7xl grid grid-cols-1 lg:grid-cols-2 gap-8 z-10">
-                
-                <!-- 1. Component Customizer - UPDATED -->
-                <div class="bg-[#0e0e0e] border border-[#1a1a1a] rounded-3xl p-8 flex flex-col shadow-2xl">
-                    <h3 class="text-xl font-bold mb-6 text-gray-200 border-b border-gray-800 pb-2 flex justify-between items-center">
+            <div class="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-5 gap-8 items-stretch">
+
+                <!-- Browser mockup previewing the itch.io page -->
+                <a href="https://gojo-studio.itch.io/" target="_blank" rel="noopener" class="reveal lg:col-span-3 block group" aria-label="Open Gojo Studio on itch.io">
+                    <div class="float-slow glass-dark spot rounded-3xl overflow-hidden h-full flex flex-col">
+                        <!-- Browser chrome -->
+                        <div class="flex items-center gap-3 px-4 py-3 border-b border-white/10 bg-white/[0.03]">
+                            <div class="flex gap-1.5">
+                                <span class="w-3 h-3 rounded-full bg-[#ff5f57]"></span>
+                                <span class="w-3 h-3 rounded-full bg-[#febc2e]"></span>
+                                <span class="w-3 h-3 rounded-full bg-[#28c840]"></span>
+                            </div>
+                            <div class="flex-1 flex items-center gap-2 bg-black/40 border border-white/10 rounded-full px-4 py-1.5 text-xs text-gray-300 min-w-0">
+                                <i class="fas fa-lock text-[10px] text-green-400"></i>
+                                <span class="truncate">gojo-studio.itch.io</span>
+                            </div>
+                            <i class="fas fa-up-right-from-square text-gray-400 group-hover:text-white transition-colors text-sm"></i>
+                        </div>
+                        <!-- Page preview -->
+                        <div class="relative flex-1 min-h-[320px] md:min-h-[380px] overflow-hidden">
+                            <img src="assets/img/gojo-banner.webp" alt="" width="1024" height="572" class="absolute inset-0 w-full h-full object-cover opacity-70 group-hover:scale-105 group-hover:opacity-90 transition-all duration-1000" loading="lazy" decoding="async">
+                            <div class="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-black/10"></div>
+                            <div class="absolute inset-x-0 bottom-0 p-6 md:p-8 flex flex-col sm:flex-row sm:items-end justify-between gap-6">
+                                <div class="flex items-center gap-4">
+                                    <img src="assets/img/gojo-logo.webp" alt="Gojo Studio logo" width="72" height="72" class="w-16 h-16 md:w-[72px] md:h-[72px] rounded-2xl object-cover border border-white/20 shadow-2xl" loading="lazy" decoding="async">
+                                    <div>
+                                        <h3 class="text-2xl md:text-3xl font-black tracking-tight">GOJO STUDIO</h3>
+                                        <p class="text-xs text-gray-300 mt-1 flex items-center gap-2"><i class="fab fa-itch-io text-[#fa5c5c]"></i> Indie games · Playable in browser</p>
+                                    </div>
+                                </div>
+                                <span class="btn-main rounded-full px-6 py-3 text-xs font-bold tracking-widest uppercase inline-flex items-center gap-2 self-start sm:self-auto">
+                                    <i class="fas fa-play text-[10px]"></i> Play my games
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+
+                <!-- What I build -->
+                <div class="lg:col-span-2 flex flex-col gap-4" data-stagger>
+                    <div class="reveal glass spot rounded-2xl p-5 flex gap-4 items-start">
+                        <div class="w-12 h-12 shrink-0 rounded-xl bg-brand-purple/20 text-brand-purple flex items-center justify-center text-lg"><i class="fas fa-chess-knight"></i></div>
+                        <div>
+                            <h4 class="font-bold">Game Design</h4>
+                            <p class="text-sm text-gray-400 mt-1">Mechanics, level flow and player feedback loops — designed with the same user-first thinking as my product work.</p>
+                        </div>
+                    </div>
+                    <button type="button" onclick="openDetail('game')" class="reveal glass spot rounded-2xl p-5 flex gap-4 items-start text-left group">
+                        <div class="w-12 h-12 shrink-0 rounded-xl bg-yellow-400/15 text-yellow-400 flex items-center justify-center text-lg"><i class="fas fa-gamepad"></i></div>
+                        <div class="flex-1">
+                            <h4 class="font-bold flex items-center justify-between">Game UI &amp; HUD <i class="fas fa-arrow-right text-xs text-gray-500 group-hover:text-white group-hover:translate-x-1 transition-all"></i></h4>
+                            <p class="text-sm text-gray-400 mt-1">Menus, loadouts and HUDs players read at a glance. Try the interactive Game UI Lab.</p>
+                        </div>
+                    </button>
+                    <a href="https://gojo-studio.itch.io/" target="_blank" rel="noopener" class="reveal glass spot rounded-2xl p-5 flex gap-4 items-start group">
+                        <div class="w-12 h-12 shrink-0 rounded-xl bg-[#fa5c5c]/15 text-[#fa5c5c] flex items-center justify-center text-lg"><i class="fab fa-itch-io"></i></div>
+                        <div class="flex-1">
+                            <h4 class="font-bold flex items-center justify-between">Published on itch.io <i class="fas fa-up-right-from-square text-xs text-gray-500 group-hover:text-white transition-colors"></i></h4>
+                            <p class="text-sm text-gray-400 mt-1">Playable builds, devlogs and updates at <span class="text-gray-200">gojo-studio.itch.io</span>.</p>
+                        </div>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Optional: itch.io embed widgets (filled from ITCH_GAMES in the script below) -->
+            <div id="itch-games" class="hidden w-full max-w-6xl mt-12">
+                <h3 class="reveal text-sm font-bold tracking-[0.3em] text-gray-400 uppercase mb-6 text-center">Play right here</h3>
+                <div id="itch-games-grid" class="grid grid-cols-1 md:grid-cols-2 gap-6" data-stagger></div>
+            </div>
+        </section>
+
+        <!-- PLAYGROUND SECTION -->
+        <section id="playground" class="min-h-screen py-20 px-4 md:px-12 flex flex-col justify-center items-center relative">
+            <div class="reveal text-center mb-12 w-full">
+                <p class="text-xs font-bold tracking-[0.3em] text-blue-400 mb-3 uppercase">Playground</p>
+                <h2 class="text-4xl md:text-5xl font-serif font-bold mb-3">UI Lab</h2>
+                <p class="text-gray-400">Interactive UI Lab &amp; Component Testing</p>
+            </div>
+
+            <div class="w-full max-w-7xl grid grid-cols-1 lg:grid-cols-2 gap-8" data-stagger>
+
+                <!-- 1. Component Customizer -->
+                <div class="reveal glass-dark spot rounded-3xl p-6 md:p-8 flex flex-col">
+                    <h3 class="text-xl font-bold mb-6 text-gray-200 border-b border-white/10 pb-3 flex justify-between items-center">
                         <span>Button Designer</span>
                         <i class="fas fa-sliders-h text-sm text-gray-500"></i>
                     </h3>
-                    
+
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-8 flex-grow">
                         <!-- Controls -->
                         <div class="space-y-5 text-sm">
                             <div>
-                                <label class="block text-xs font-bold tracking-widest text-gray-400 mb-2">LABEL TEXT</label>
-                                <input type="text" id="labelText" value="Get Started" class="w-full bg-[#1a1a1a] border border-[#333] rounded px-3 py-2 text-white focus:border-brand-purple outline-none transition-colors">
+                                <label for="labelText" class="block text-xs font-bold tracking-widest text-gray-400 mb-2">LABEL TEXT</label>
+                                <input type="text" id="labelText" value="Get Started" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white focus:border-brand-purple outline-none transition-colors">
                             </div>
 
                             <div class="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label class="block text-xs font-bold tracking-widest text-gray-400 mb-2">BG COLOR</label>
+                                    <label for="colorPicker" class="block text-xs font-bold tracking-widest text-gray-400 mb-2">BG COLOR</label>
                                     <div class="flex items-center gap-3">
                                         <input type="color" id="colorPicker" value="#C63AEB" class="w-8 h-8 rounded cursor-pointer bg-transparent border-none">
                                         <span id="colorValue" class="text-gray-500 text-[10px] hidden sm:inline">#C63AEB</span>
                                     </div>
                                 </div>
                                 <div>
-                                    <label class="block text-xs font-bold tracking-widest text-gray-400 mb-2">TEXT COLOR</label>
+                                    <label for="textColorPicker" class="block text-xs font-bold tracking-widest text-gray-400 mb-2">TEXT COLOR</label>
                                     <div class="flex items-center gap-3">
                                         <input type="color" id="textColorPicker" value="#FFFFFF" class="w-8 h-8 rounded cursor-pointer bg-transparent border-none">
                                         <span id="textColorValue" class="text-gray-500 text-[10px] hidden sm:inline">#FFFFFF</span>
@@ -484,39 +567,37 @@
                             </div>
 
                             <div>
-                                <label class="block text-xs font-bold tracking-widest text-gray-400 mb-2">DIMENSIONS</label>
+                                <span class="block text-xs font-bold tracking-widest text-gray-400 mb-2">DIMENSIONS</span>
                                 <div class="space-y-3">
                                     <div class="flex items-center gap-2">
                                         <span class="text-xs w-8 text-gray-500">W:</span>
-                                        <input type="range" min="80" max="300" value="160" class="w-full h-1 bg-gray-700 rounded-lg appearance-none cursor-pointer" id="widthInput">
+                                        <input type="range" min="80" max="300" value="160" class="w-full h-1 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-brand-purple" id="widthInput" aria-label="Width">
                                     </div>
                                     <div class="flex items-center gap-2">
                                         <span class="text-xs w-8 text-gray-500">H:</span>
-                                        <input type="range" min="30" max="100" value="50" class="w-full h-1 bg-gray-700 rounded-lg appearance-none cursor-pointer" id="heightInput">
+                                        <input type="range" min="30" max="100" value="50" class="w-full h-1 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-brand-purple" id="heightInput" aria-label="Height">
                                     </div>
                                 </div>
                             </div>
 
                             <div>
-                                <label class="block text-xs font-bold tracking-widest text-gray-400 mb-2">BORDER RADIUS</label>
-                                <input type="range" min="0" max="50" value="25" class="w-full h-1 bg-gray-700 rounded-lg appearance-none cursor-pointer" id="radiusInput">
+                                <label for="radiusInput" class="block text-xs font-bold tracking-widest text-gray-400 mb-2">BORDER RADIUS</label>
+                                <input type="range" min="0" max="50" value="25" class="w-full h-1 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-brand-purple" id="radiusInput">
                             </div>
 
                             <div>
-                                <label class="block text-xs font-bold tracking-widest text-gray-400 mb-2">STATE PREVIEW</label>
-                                <div class="flex gap-2">
-                                    <button onclick="setPreviewState('default')" class="px-3 py-1 bg-[#1a1a1a] rounded text-xs hover:bg-[#333]">Normal</button>
-                                    <button onclick="setPreviewState('hover')" class="px-3 py-1 bg-[#1a1a1a] rounded text-xs hover:bg-[#333]">Hover</button>
-                                    <button onclick="setPreviewState('active')" class="px-3 py-1 bg-[#1a1a1a] rounded text-xs hover:bg-[#333]">Active</button>
+                                <span class="block text-xs font-bold tracking-widest text-gray-400 mb-2">STATE PREVIEW</span>
+                                <div class="flex gap-2" id="state-buttons">
+                                    <button onclick="setPreviewState('default', this)" class="state-btn px-3 py-1 bg-white/15 rounded-full text-xs hover:bg-white/20 transition-colors">Normal</button>
+                                    <button onclick="setPreviewState('hover', this)" class="state-btn px-3 py-1 bg-white/5 rounded-full text-xs hover:bg-white/20 transition-colors">Hover</button>
+                                    <button onclick="setPreviewState('active', this)" class="state-btn px-3 py-1 bg-white/5 rounded-full text-xs hover:bg-white/20 transition-colors">Active</button>
                                 </div>
                             </div>
                         </div>
 
                         <!-- Preview Area -->
-                        <div class="flex items-center justify-center bg-[#060606] rounded-xl border border-dashed border-gray-800 relative min-h-[250px]">
+                        <div class="flex items-center justify-center bg-black/40 rounded-2xl border border-dashed border-white/10 relative min-h-[250px]">
                             <p class="absolute top-4 left-4 text-xs text-gray-600">PREVIEW</p>
-                            
-                            <!-- Updated Preview Element -->
                             <button id="previewCard" class="bg-brand-purple text-white font-bold flex items-center justify-center relative text-center px-4 cursor-pointer select-none transition-all duration-300 shadow-[0_0_20px_rgba(198,58,235,0.4)]">
                                 <span id="previewTitle" class="z-10 relative">Get Started</span>
                             </button>
@@ -524,14 +605,14 @@
                     </div>
                 </div>
 
-                <!-- 2. Mobile App Mockup - STATIC placeholder to link to Detail View -->
-                <div class="bg-[#0e0e0e] border border-[#1a1a1a] rounded-3xl p-8 flex flex-col shadow-2xl items-center text-center justify-center group cursor-pointer hover:border-brand-purple/50 transition-colors" onclick="openDetail('mobile')">
-                    <div class="w-20 h-20 bg-brand-grey rounded-full flex items-center justify-center mb-6 group-hover:bg-brand-purple group-hover:text-white transition-colors duration-300">
+                <!-- 2. Mobile App launcher -->
+                <div class="reveal glass-dark spot rounded-3xl p-8 flex flex-col items-center text-center justify-center group cursor-pointer" role="button" tabindex="0" onclick="openDetail('mobile')" onkeydown="if(event.key==='Enter')openDetail('mobile')">
+                    <div class="w-20 h-20 glass rounded-full flex items-center justify-center mb-6 group-hover:bg-brand-purple group-hover:scale-110 transition-all duration-500">
                         <i class="fas fa-mobile-alt text-3xl"></i>
                     </div>
                     <h3 class="text-2xl font-bold mb-2">App Prototyping</h3>
-                    <p class="text-gray-400 mb-6 max-w-xs">Click here to launch the interactive Bank App simulator based on recent designs.</p>
-                    <span class="text-brand-purple font-bold text-sm tracking-widest uppercase border-b border-brand-purple">Launch Simulator</span>
+                    <p class="text-gray-400 mb-6 max-w-xs">Launch the interactive Bank App simulator — send money, flip cards and toggle dark mode.</p>
+                    <span class="text-brand-purple font-bold text-sm tracking-widest uppercase border-b border-brand-purple group-hover:tracking-[0.3em] transition-all duration-500">Launch Simulator</span>
                 </div>
 
             </div>
@@ -539,65 +620,85 @@
 
         <!-- CONTACT SECTION -->
         <section id="contact" class="min-h-screen flex items-center justify-center px-4 md:px-12 py-20">
-            <div class="max-w-7xl w-full grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
-                
-                <div class="reveal space-y-12 pt-10">
+            <div class="max-w-7xl w-full grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-start">
+
+                <div class="reveal space-y-10 pt-6">
                     <div class="text-center lg:text-left">
-                        <h2 class="text-4xl md:text-5xl font-bold mb-6">CONTACT INFO</h2>
+                        <p class="text-xs font-bold tracking-[0.3em] text-brand-purple mb-3 uppercase">Say hello</p>
+                        <h2 class="text-4xl md:text-5xl font-serif font-bold mb-6">Let's work together</h2>
                         <p class="text-gray-400 leading-relaxed max-w-md mx-auto lg:mx-0">
-                            I'm open to UX/UI roles, freelance design, and collaborations. Feel free to reach out via the platforms below.
+                            I'm open to UX/UI roles, freelance design, game UI and collaborations. Feel free to reach out via the platforms below.
                         </p>
                     </div>
 
-                    <!-- Updated Contact Details -->
-                    <div class="space-y-8 text-center lg:text-left">
-                        <div>
-                            <h3 class="text-xl font-bold text-gray-300 mb-1 uppercase tracking-wider">Email</h3>
-                            <a href="mailto:voramanvuth@gmail.com" class="text-lg hover:text-brand-purple transition-colors">voramanvuth@gmail.com</a>
-                        </div>
-                        
-                        <div>
-                            <h3 class="text-xl font-bold text-gray-300 mb-1 uppercase tracking-wider">Phone</h3>
-                            <a href="tel:+85595908373" class="text-lg hover:text-brand-purple transition-colors">+855 95 908 373</a>
-                        </div>
-
-                        <div>
-                            <h3 class="text-xl font-bold text-gray-300 mb-1 uppercase tracking-wider">Github</h3>
-                            <a href="https://github.com/VoRaMaN" target="_blank" class="text-lg hover:text-brand-purple transition-colors">
-                                <i class="fab fa-github mr-2"></i> github.com/VoRaMaN
-                            </a>
-                        </div>
-
-                        <div>
-                            <h3 class="text-xl font-bold text-gray-300 mb-1 uppercase tracking-wider">Telegram</h3>
-                            <a href="https://t.me/voraman9966" target="_blank" class="text-lg hover:text-brand-purple transition-colors">
-                                <i class="fab fa-telegram mr-2"></i> t.me/voraman9966
-                            </a>
-                        </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4" data-stagger>
+                        <a href="mailto:voramanvuth@gmail.com" class="reveal glass spot rounded-2xl p-4 flex items-center gap-4 group">
+                            <span class="w-11 h-11 rounded-xl bg-brand-purple/20 text-brand-purple flex items-center justify-center group-hover:scale-110 transition-transform"><i class="fas fa-envelope"></i></span>
+                            <span class="min-w-0"><span class="block text-[10px] font-bold tracking-widest text-gray-500 uppercase">Email</span><span class="block text-sm truncate">voramanvuth@gmail.com</span></span>
+                        </a>
+                        <a href="tel:+85595908373" class="reveal glass spot rounded-2xl p-4 flex items-center gap-4 group">
+                            <span class="w-11 h-11 rounded-xl bg-green-500/15 text-green-400 flex items-center justify-center group-hover:scale-110 transition-transform"><i class="fas fa-phone"></i></span>
+                            <span><span class="block text-[10px] font-bold tracking-widest text-gray-500 uppercase">Phone</span><span class="block text-sm">+855 95 908 373</span></span>
+                        </a>
+                        <a href="https://github.com/VoRaMaN" target="_blank" rel="noopener" class="reveal glass spot rounded-2xl p-4 flex items-center gap-4 group">
+                            <span class="w-11 h-11 rounded-xl bg-white/10 text-white flex items-center justify-center group-hover:scale-110 transition-transform"><i class="fab fa-github"></i></span>
+                            <span><span class="block text-[10px] font-bold tracking-widest text-gray-500 uppercase">Github</span><span class="block text-sm">github.com/VoRaMaN</span></span>
+                        </a>
+                        <a href="https://t.me/voraman9966" target="_blank" rel="noopener" class="reveal glass spot rounded-2xl p-4 flex items-center gap-4 group">
+                            <span class="w-11 h-11 rounded-xl bg-[#229ED9]/20 text-[#229ED9] flex items-center justify-center group-hover:scale-110 transition-transform"><i class="fab fa-telegram"></i></span>
+                            <span><span class="block text-[10px] font-bold tracking-widest text-gray-500 uppercase">Telegram</span><span class="block text-sm">t.me/voraman9966</span></span>
+                        </a>
+                        <a href="https://gojo-studio.itch.io/" target="_blank" rel="noopener" class="reveal glass spot rounded-2xl p-4 flex items-center gap-4 group sm:col-span-2">
+                            <span class="w-11 h-11 rounded-xl bg-[#fa5c5c]/15 text-[#fa5c5c] flex items-center justify-center group-hover:scale-110 transition-transform"><i class="fab fa-itch-io"></i></span>
+                            <span class="flex-1"><span class="block text-[10px] font-bold tracking-widest text-gray-500 uppercase">itch.io — My Games</span><span class="block text-sm">gojo-studio.itch.io</span></span>
+                            <i class="fas fa-up-right-from-square text-xs text-gray-500 group-hover:text-white transition-colors"></i>
+                        </a>
                     </div>
                 </div>
 
-                <div class="reveal bg-[#0e0e0e] p-8 md:p-12 rounded-lg border border-[#1a1a1a]">
-                    <h2 class="text-3xl md:text-4xl font-bold mb-12 text-center">CONTACT FORM</h2>
-                    <!-- Updated Form to use JS-trigger -->
-                    <form id="contact-form" class="space-y-10">
-                        <div><input type="text" id="form-name" placeholder="Your name" required class="input-underline w-full py-3 bg-transparent placeholder-gray-500"></div>
-                        <div><input type="email" id="form-email" placeholder="Your e-mail" required class="input-underline w-full py-3 bg-transparent placeholder-gray-500"></div>
-                        <div><textarea id="form-message" placeholder="message" rows="3" required class="input-underline w-full py-3 bg-transparent placeholder-gray-500 resize-none"></textarea></div>
-                        <div class="pt-8 text-center md:text-right">
-                            <button type="submit" class="btn-main px-8 py-3 rounded text-xs font-bold tracking-widest uppercase">Send Message</button>
+                <div class="reveal glass-dark rounded-3xl p-8 md:p-12">
+                    <h2 class="text-3xl md:text-4xl font-bold mb-10 text-center">Contact Form</h2>
+                    <form id="contact-form" class="space-y-9">
+                        <div class="field"><label for="form-name" class="sr-only">Your name</label><input type="text" id="form-name" placeholder="Your name" required class="input-underline w-full py-3 bg-transparent placeholder-gray-500"></div>
+                        <div class="field"><label for="form-email" class="sr-only">Your e-mail</label><input type="email" id="form-email" placeholder="Your e-mail" required class="input-underline w-full py-3 bg-transparent placeholder-gray-500"></div>
+                        <div class="field"><label for="form-message" class="sr-only">Message</label><textarea id="form-message" placeholder="Message" rows="3" required class="input-underline w-full py-3 bg-transparent placeholder-gray-500 resize-none"></textarea></div>
+                        <div class="pt-6 text-center md:text-right">
+                            <button type="submit" class="btn-main px-8 py-3 rounded-full text-xs font-bold tracking-widest uppercase inline-flex items-center gap-2">Send Message <i class="fas fa-paper-plane text-[10px]"></i></button>
                         </div>
                     </form>
                 </div>
             </div>
         </section>
+
+        <footer class="px-4 pb-10">
+            <div class="glass max-w-5xl mx-auto rounded-2xl px-6 py-5 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-gray-400">
+                <p>&copy; <span id="year">2026</span> Voraman Vuth · UX/UI Designer &amp; Game Developer</p>
+                <div class="flex items-center gap-5 text-base">
+                    <a href="https://gojo-studio.itch.io/" target="_blank" rel="noopener" class="hover:text-[#fa5c5c] transition-colors" aria-label="itch.io"><i class="fab fa-itch-io"></i></a>
+                    <a href="https://github.com/VoRaMaN" target="_blank" rel="noopener" class="hover:text-white transition-colors" aria-label="GitHub"><i class="fab fa-github"></i></a>
+                    <a href="https://t.me/voraman9966" target="_blank" rel="noopener" class="hover:text-[#229ED9] transition-colors" aria-label="Telegram"><i class="fab fa-telegram"></i></a>
+                    <a href="#home" class="hover:text-white transition-colors text-xs tracking-widest" aria-label="Back to top">TOP <i class="fas fa-arrow-up ml-1"></i></a>
+                </div>
+            </div>
+        </footer>
     </main>
+
+    <!-- PLAY MODAL (itch.io in-browser game embed) -->
+    <div id="play-modal" class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/70" role="dialog" aria-modal="true" aria-labelledby="play-modal-title" onclick="if(event.target===this)closePlayModal()">
+        <div class="modal-box glass-dark rounded-3xl w-full max-w-5xl overflow-hidden">
+            <div class="flex items-center justify-between px-5 py-3 border-b border-white/10">
+                <h3 id="play-modal-title" class="font-bold text-sm tracking-widest uppercase">Game</h3>
+                <button onclick="closePlayModal()" class="w-9 h-9 rounded-full hover:bg-white/10 flex items-center justify-center" aria-label="Close game"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="aspect-video bg-black"><iframe id="play-modal-frame" title="Game" class="w-full h-full" allow="autoplay; fullscreen; gamepad" allowfullscreen></iframe></div>
+        </div>
+    </div>
 
     <!-- ============================================= -->
     <!-- 1. GAME DETAIL PAGE (Interactive Swapper)     -->
     <!-- ============================================= -->
     <div id="game-detail" class="detail-page">
-        <button onclick="closeDetail('game')" class="fixed top-8 right-8 z-50 text-white hover:text-brand-purple transition-colors text-xl font-bold tracking-widest mix-blend-difference">
+        <button onclick="closeDetail('game')" class="detail-close glass fixed top-5 right-5 md:top-8 md:right-8 z-50 text-white font-bold transition-colors" aria-label="Close">
             CLOSE <i class="fas fa-times ml-2"></i>
         </button>
         
@@ -609,7 +710,7 @@
 
             <!-- INTERACTIVE GAME AREA (Main Menu Simulation) -->
             <!-- Note: Container height increased for menu layout -->
-            <div id="game-ui-container" class="relative h-[600px] w-full bg-cover bg-center rounded-3xl overflow-hidden shadow-2xl transition-all duration-500 mb-16" style="background-image: url('Game/background.jpg');">
+            <div id="game-ui-container" class="relative h-[600px] w-full bg-cover bg-center rounded-3xl overflow-hidden shadow-2xl transition-all duration-500 mb-8" style="background-image: url('assets/img/game-background.webp');">
                 
                 <!-- Overlay for readability -->
                 <div id="game-bg-overlay" class="absolute inset-0 bg-black/60 transition-opacity duration-500"></div>
@@ -644,7 +745,7 @@
                                 <span class="text-xs font-bold text-white tracking-wider">RANK 55</span>
                             </div>
                             <div class="w-10 h-10 rounded-lg bg-gray-700 overflow-hidden border-2 border-white/20">
-                                <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=100&q=80" class="w-full h-full object-cover">
+                                <img loading="lazy" decoding="async" src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=100&q=80" alt="" class="w-full h-full object-cover">
                             </div>
                         </div>
                     </div>
@@ -660,7 +761,7 @@
                                     <i class="fas fa-exchange-alt text-white text-xs"></i>
                                 </div>
                                 <div class="h-32 bg-gray-800 rounded-xl mb-3 overflow-hidden relative shadow-inner">
-                                    <img src="Game/map.jpg" class="w-full h-full object-cover opacity-60 group-hover:scale-110 group-hover:opacity-80 transition-all duration-700">
+                                    <img loading="lazy" decoding="async" src="assets/img/game-map.webp" alt="" class="w-full h-full object-cover opacity-60 group-hover:scale-110 group-hover:opacity-80 transition-all duration-700">
                                     <div class="absolute inset-0 flex flex-col items-center justify-center">
                                         <span class="text-xs font-bold tracking-widest text-white/70 mb-1">CURRENT MODE</span>
                                         <span class="text-xl font-black italic text-white tracking-widest drop-shadow-md">RANKED</span>
@@ -704,7 +805,7 @@
                                 <!-- Friend 1 -->
                                 <div class="flex items-center gap-3 p-2 hover:bg-white/10 rounded-xl cursor-pointer group transition-colors border border-transparent hover:border-white/5">
                                     <div class="w-10 h-10 rounded-lg bg-gray-700 relative overflow-hidden">
-                                        <img src="https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?auto=format&fit=crop&w=100&q=80" class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all">
+                                        <img loading="lazy" decoding="async" src="https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?auto=format&fit=crop&w=100&q=80" alt="" class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all">
                                         <div class="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-black"></div>
                                     </div>
                                     <div class="flex-1 min-w-0">
@@ -717,7 +818,7 @@
                                 <!-- Friend 2 -->
                                 <div class="flex items-center gap-3 p-2 hover:bg-white/10 rounded-xl cursor-pointer group transition-colors border border-transparent hover:border-white/5">
                                     <div class="w-10 h-10 rounded-lg bg-gray-700 relative overflow-hidden">
-                                        <img src="https://images.unsplash.com/photo-1527980965255-d3b416303d12?auto=format&fit=crop&w=100&q=80" class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all">
+                                        <img loading="lazy" decoding="async" src="https://images.unsplash.com/photo-1527980965255-d3b416303d12?auto=format&fit=crop&w=100&q=80" alt="" class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all">
                                         <div class="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-black"></div>
                                     </div>
                                     <div class="flex-1 min-w-0">
@@ -730,7 +831,7 @@
                                  <!-- Friend 3 -->
                                  <div class="flex items-center gap-3 p-2 hover:bg-white/10 rounded-xl cursor-pointer group transition-colors border border-transparent hover:border-white/5">
                                     <div class="w-10 h-10 rounded-lg bg-gray-700 relative overflow-hidden">
-                                        <img src="https://images.unsplash.com/photo-1633332755192-727a05c4013d?auto=format&fit=crop&w=100&q=80" class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all">
+                                        <img loading="lazy" decoding="async" src="https://images.unsplash.com/photo-1633332755192-727a05c4013d?auto=format&fit=crop&w=100&q=80" alt="" class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all">
                                         <div class="absolute bottom-0 right-0 w-3 h-3 bg-gray-500 rounded-full border-2 border-black"></div>
                                     </div>
                                     <div class="flex-1 min-w-0">
@@ -747,39 +848,49 @@
             </div>
 
             <!-- CONTROLS PANEL -->
-            <div class="bg-[#111] p-6 border-t border-gray-700 flex flex-col md:flex-row items-center justify-between gap-6">
+            <div class="glass rounded-2xl p-6 flex flex-col md:flex-row items-center justify-between gap-6">
                 <div>
                     <h3 class="text-sm font-bold text-gray-400 mb-2 uppercase tracking-widest">Select Visual Style</h3>
                     <div class="flex gap-3">
-                        <button onclick="setGameUI('modern')" class="px-4 py-2 border border-gray-600 rounded hover:bg-white hover:text-black transition-colors text-xs font-bold bg-white text-black">Modern Glass</button>
-                        <button onclick="setGameUI('retro')" class="px-4 py-2 border border-gray-600 rounded hover:bg-white hover:text-black transition-colors text-xs font-pixel">Retro CRT</button>
-                        <button onclick="setGameUI('minimal')" class="px-4 py-2 border border-gray-600 rounded hover:bg-white hover:text-black transition-colors text-xs">Wireframe</button>
+                        <button data-game-style="modern" onclick="setGameUI('modern')" class="px-4 py-2 border border-white/20 rounded-full hover:bg-white hover:text-black transition-colors text-xs font-bold bg-white text-black">Modern Glass</button>
+                        <button data-game-style="retro" onclick="setGameUI('retro')" class="px-4 py-2 border border-white/20 rounded-full hover:bg-white hover:text-black transition-colors text-xs font-pixel">Retro CRT</button>
+                        <button data-game-style="minimal" onclick="setGameUI('minimal')" class="px-4 py-2 border border-white/20 rounded-full hover:bg-white hover:text-black transition-colors text-xs">Wireframe</button>
                     </div>
                 </div>
                 
                 <div class="w-full md:w-auto flex flex-col gap-2 opacity-50 pointer-events-none">
-                    <label class="text-xs text-gray-500 font-bold">CUSTOM COLOR (Disabled for Demo)</label>
+                    <span class="text-xs text-gray-500 font-bold">CUSTOM COLOR (Disabled for Demo)</span>
                     <input type="color" id="customGameColor" class="w-full h-8 rounded cursor-not-allowed bg-gray-800 border-none" disabled>
                 </div>
             </div>
             
-            <!-- Game Project Gallery (Preserved) -->
+            <!-- itch.io CTA -->
+            <a href="https://gojo-studio.itch.io/" target="_blank" rel="noopener" class="glass spot mt-8 rounded-2xl p-5 md:p-6 flex flex-col sm:flex-row items-center gap-5 group">
+                <img src="assets/img/gojo-logo.webp" alt="Gojo Studio logo" width="64" height="64" class="w-16 h-16 rounded-xl object-cover border border-white/10" loading="lazy" decoding="async">
+                <div class="flex-1 text-center sm:text-left">
+                    <h3 class="font-bold text-lg">Want to play the real thing?</h3>
+                    <p class="text-sm text-gray-400">My games — built and designed by me — are live on itch.io under Gojo Studio.</p>
+                </div>
+                <span class="btn-main rounded-full px-6 py-3 text-xs font-bold tracking-widest uppercase inline-flex items-center gap-2"><i class="fab fa-itch-io"></i> gojo-studio.itch.io</span>
+            </a>
+
+            <!-- Game Project Gallery -->
             <h3 class="text-2xl font-bold mb-8 border-b border-gray-800 pb-4 mt-10">More Game Projects</h3>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                 <div class="group relative aspect-video bg-gray-800 rounded-xl overflow-hidden">
-                    <img src="Game/Desktop - 1.png" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+                 <div class="group relative aspect-video bg-gray-800 rounded-xl overflow-hidden border border-white/10">
+                    <img loading="lazy" decoding="async" src="assets/img/game-car-menu-800.webp" srcset="assets/img/game-car-menu-800.webp 800w, assets/img/game-car-menu-1600.webp 1600w" sizes="(min-width:1024px) 33vw, (min-width:768px) 50vw, 100vw" alt="Car select main menu" width="800" height="450" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
                     <div class="absolute inset-0 bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                         <span class="font-pixel text-sm">CAR MAIN MENU</span>
                     </div>
                 </div>
-                <div class="group relative aspect-video bg-gray-800 rounded-xl overflow-hidden">
-                    <img src="Game/Frame 1.png" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+                <div class="group relative aspect-video bg-gray-800 rounded-xl overflow-hidden border border-white/10">
+                    <img loading="lazy" decoding="async" src="assets/img/game-fighting-800.webp" srcset="assets/img/game-fighting-800.webp 800w, assets/img/game-fighting-1600.webp 1600w" sizes="(min-width:1024px) 33vw, (min-width:768px) 50vw, 100vw" alt="Fighting game HUD" width="800" height="450" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
                     <div class="absolute inset-0 bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                         <span class="font-pixel text-sm">FIGHTING GAME</span>
                     </div>
                 </div>
-                 <div class="group relative aspect-video bg-gray-800 rounded-xl overflow-hidden">
-                    <img src="Game/Loadout.png" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+                 <div class="group relative aspect-video bg-gray-800 rounded-xl overflow-hidden border border-white/10">
+                    <img loading="lazy" decoding="async" src="assets/img/game-loadout-800.webp" srcset="assets/img/game-loadout-800.webp 800w, assets/img/game-loadout-1600.webp 1600w" sizes="(min-width:1024px) 33vw, (min-width:768px) 50vw, 100vw" alt="Weapon loadout screen" width="800" height="450" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
                     <div class="absolute inset-0 bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                         <span class="font-pixel text-sm">LOADOUT</span>
                     </div>
@@ -793,7 +904,7 @@
     <!-- 2. DESKTOP DETAIL PAGE (Interactive Store)    -->
     <!-- ============================================= -->
     <div id="desktop-detail" class="detail-page">
-        <button onclick="closeDetail('desktop')" class="fixed top-8 right-8 z-50 text-white hover:text-brand-purple transition-colors text-xl font-bold tracking-widest mix-blend-difference">
+        <button onclick="closeDetail('desktop')" class="detail-close glass fixed top-5 right-5 md:top-8 md:right-8 z-50 text-white font-bold transition-colors" aria-label="Close">
             CLOSE <i class="fas fa-times ml-2"></i>
         </button>
 
@@ -805,12 +916,12 @@
                 <h3 class="text-xl font-bold mb-8 flex items-center gap-2"><i class="fas fa-gamepad"></i> COMET GAME</h3>
                 <div class="space-y-1">
                     <p class="text-xs font-bold text-gray-500 mb-2 mt-6 uppercase tracking-wider">GENRE</p>
-                    <a href="#" class="block py-2 px-4 rounded hover:bg-gray-800 text-gray-300 hover:text-white transition-colors">Adventure</a>
-                    <a href="#" class="block py-2 px-4 rounded bg-brand-purple text-white font-bold transition-colors">Action</a>
-                    <a href="#" class="block py-2 px-4 rounded hover:bg-gray-800 text-gray-300 hover:text-white transition-colors">Fighting</a>
-                    <a href="#" class="block py-2 px-4 rounded hover:bg-gray-800 text-gray-300 hover:text-white transition-colors">RPG</a>
-                    <a href="#" class="block py-2 px-4 rounded hover:bg-gray-800 text-gray-300 hover:text-white transition-colors">Racing</a>
-                    <a href="#" class="block py-2 px-4 rounded hover:bg-gray-800 text-gray-300 hover:text-white transition-colors">Strategy</a>
+                    <a href="#" onclick="return false" class="block py-2 px-4 rounded hover:bg-gray-800 text-gray-300 hover:text-white transition-colors">Adventure</a>
+                    <a href="#" onclick="return false" class="block py-2 px-4 rounded bg-brand-purple text-white font-bold transition-colors">Action</a>
+                    <a href="#" onclick="return false" class="block py-2 px-4 rounded hover:bg-gray-800 text-gray-300 hover:text-white transition-colors">Fighting</a>
+                    <a href="#" onclick="return false" class="block py-2 px-4 rounded hover:bg-gray-800 text-gray-300 hover:text-white transition-colors">RPG</a>
+                    <a href="#" onclick="return false" class="block py-2 px-4 rounded hover:bg-gray-800 text-gray-300 hover:text-white transition-colors">Racing</a>
+                    <a href="#" onclick="return false" class="block py-2 px-4 rounded hover:bg-gray-800 text-gray-300 hover:text-white transition-colors">Strategy</a>
                 </div>
             </div>
 
@@ -831,7 +942,7 @@
                         <!-- Card 1 -->
                         <div class="store-card bg-[#151515] rounded-xl overflow-hidden cursor-pointer group border border-transparent" onclick="openGameProduct(1)">
                             <div class="h-64 overflow-hidden relative">
-                                <img src="Desktop/Dashboard.png" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                                <img loading="lazy" decoding="async" src="assets/img/desk-dashboard-800.webp" alt="Dashboard UI" width="800" height="450" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
                                 <div class="absolute bottom-2 right-2 bg-black/80 px-2 py-1 rounded text-xs font-bold"><i class="fab fa-windows"></i></div>
                             </div>
                             <div class="p-4">
@@ -846,7 +957,7 @@
                         <!-- Card 2 -->
                         <div class="store-card bg-[#151515] rounded-xl overflow-hidden cursor-pointer group border border-transparent" onclick="openGameProduct(2)">
                             <div class="h-64 overflow-hidden relative">
-                                <img src="Desktop/MainMenu.png" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                                <img loading="lazy" decoding="async" src="assets/img/desk-mainmenu-800.webp" alt="Launcher main menu" width="800" height="450" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
                                 <div class="absolute bottom-2 right-2 bg-black/80 px-2 py-1 rounded text-xs font-bold"><i class="fab fa-windows"></i></div>
                             </div>
                             <div class="p-4">
@@ -861,7 +972,7 @@
                         <!-- Card 3 -->
                         <div class="store-card bg-[#151515] rounded-xl overflow-hidden cursor-pointer group border border-transparent" onclick="openGameProduct(3)">
                             <div class="h-64 overflow-hidden relative">
-                                <img src="Desktop/IGGSITE.png" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                                <img loading="lazy" decoding="async" src="assets/img/desk-iggsite-800.webp" alt="Studio website" width="800" height="450" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
                             </div>
                             <div class="p-4">
                                 <h3 class="font-bold text-lg mb-1 truncate">Need For Speed</h3>
@@ -884,7 +995,7 @@
                         <!-- Left: Main Image -->
                         <div class="lg:col-span-2 space-y-4">
                             <!-- Removed thumbnails, added aspect-video for 1920x1080 fit -->
-                            <img id="product-main-img" src="" class="w-full aspect-video object-cover rounded-xl shadow-2xl border border-gray-800">
+                            <img loading="lazy" decoding="async" id="product-main-img" src="assets/img/desk-dashboard-1600.webp" alt="Selected product screenshot" width="1600" height="900" class="w-full aspect-video object-cover rounded-xl shadow-2xl border border-gray-800">
 
                              <!-- Reviews Section -->
                              <div class="mt-8 pt-8 border-t border-gray-800">
@@ -957,7 +1068,7 @@
     <!-- 3. MOBILE DETAIL PAGE (Bank App Simulator)    -->
     <!-- ============================================= -->
     <div id="mobile-detail" class="detail-page">
-        <button onclick="closeDetail('mobile')" class="fixed top-8 right-8 z-50 text-white hover:text-brand-purple transition-colors text-xl font-bold tracking-widest mix-blend-difference">
+        <button onclick="closeDetail('mobile')" class="detail-close glass fixed top-5 right-5 md:top-8 md:right-8 z-50 text-white font-bold transition-colors" aria-label="Close">
             CLOSE <i class="fas fa-times ml-2"></i>
         </button>
         
@@ -988,7 +1099,7 @@
                             <!-- Top Bar -->
                             <div class="flex justify-between items-center mt-6 mb-4">
                                 <div class="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center overflow-hidden">
-                                    <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=100&q=80" alt="Avatar" class="w-full h-full object-cover">
+                                    <img loading="lazy" decoding="async" src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=100&q=80" alt="Avatar" class="w-full h-full object-cover">
                                 </div>
                                 <div onclick="toggleAppTheme()" class="cursor-pointer p-2 rounded-full hover:bg-gray-200 transition-colors">
                                     <i class="fas fa-cog text-gray-400"></i>
@@ -1201,7 +1312,7 @@
                                         <span class="text-3xl font-bold text-gray-800 tracking-tight" id="mb-amount">$0</span>
                                     </div>
                                     <!-- Send Button -->
-                                    <button onclick="processPayment()" class="w-full bg-blue-500 text-white font-bold py-3 rounded-xl shadow-lg shadow-blue-500/30 active:scale-95 transition-transform flex items-center justify-center gap-2">
+                                    <button id="mb-send-btn" onclick="processPayment()" class="w-full bg-blue-500 text-white font-bold py-3 rounded-xl shadow-lg shadow-blue-500/30 active:scale-95 transition-transform flex items-center justify-center gap-2">
                                         Send Now <i class="fas fa-paper-plane text-xs"></i>
                                     </button>
                                 </div>
@@ -1244,7 +1355,7 @@
                     <p class="text-gray-400 mb-6">A clean, high-contrast interface designed for rapid transactions. Key features include a glassmorphism card component and an intuitive numpad overlay.</p>
                     
                     <div class="space-y-4">
-                        <div class="flex items-center gap-4 bg-gray-900/50 p-3 rounded-lg border border-gray-800">
+                        <div class="flex items-center gap-4 glass p-3 rounded-xl">
                             <div class="w-10 h-10 bg-brand-purple/20 rounded-full flex items-center justify-center text-brand-purple">
                                 <i class="fas fa-fingerprint"></i>
                             </div>
@@ -1253,7 +1364,7 @@
                                 <p class="text-xs text-gray-500">Biometric Login Flow</p>
                             </div>
                         </div>
-                        <div class="flex items-center gap-4 bg-gray-900/50 p-3 rounded-lg border border-gray-800">
+                        <div class="flex items-center gap-4 glass p-3 rounded-xl">
                             <div class="w-10 h-10 bg-blue-500/20 rounded-full flex items-center justify-center text-blue-500">
                                 <i class="fas fa-bolt"></i>
                             </div>
@@ -1271,19 +1382,19 @@
                 <h3 class="text-2xl font-bold mb-8 text-center">More Mobile Designs</h3>
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     <div class="aspect-[9/16] bg-gray-900 rounded-2xl relative group overflow-hidden border border-gray-800">
-                        <img src="Mobile/bankapp.png" class="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-opacity duration-500">
+                        <img loading="lazy" decoding="async" src="assets/img/mob-bankapp.webp" alt="Bank app" width="647" height="1152" class="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-opacity duration-500">
                         <div class="absolute bottom-0 left-0 w-full p-6 bg-gradient-to-t from-black to-transparent">
                             <h4 class="font-bold text-lg translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all">Bank App</h4>
                         </div>
                     </div>
                     <div class="aspect-[9/16] bg-gray-900 rounded-2xl relative group overflow-hidden border border-gray-800">
-                         <img src="Mobile/Smart Home.png" class="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-opacity duration-500">
+                         <img loading="lazy" decoding="async" src="assets/img/mob-smarthome.webp" alt="Smart home app" width="647" height="1152" class="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-opacity duration-500">
                         <div class="absolute bottom-0 left-0 w-full p-6 bg-gradient-to-t from-black to-transparent">
                             <h4 class="font-bold text-lg translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all">Smart Home</h4>
                         </div>
                     </div>
                     <div class="aspect-[9/16] bg-gray-900 rounded-2xl relative group overflow-hidden border border-gray-800">
-                         <img src="Mobile/ecommerce.png" class="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-opacity duration-500">
+                         <img loading="lazy" decoding="async" src="assets/img/mob-ecommerce.webp" alt="E-commerce app" width="647" height="1152" class="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-opacity duration-500">
                         <div class="absolute bottom-0 left-0 w-full p-6 bg-gradient-to-t from-black to-transparent">
                             <h4 class="font-bold text-lg translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all">Ecommerce Web App</h4>
                         </div>
@@ -1296,46 +1407,172 @@
 
 
     <script>
-        // --- Smooth Scroll Reveal ---
-        const initReveal = () => {
-            const reveals = document.querySelectorAll('.reveal');
-            const windowHeight = window.innerHeight;
-            const elementVisible = 150;
+        // =====================================================================
+        //  itch.io GAMES — add your games here to show playable widgets.
+        //  • id:        the number from itch.io → Edit game → Distribute → Embed game
+        //               (https://itch.io/embed/XXXXXXX)
+        //  • uploadId:  (optional, HTML5 games) the number from the "Embed game"
+        //               iframe code https://itch.io/embed-upload/YYYYYYY — adds a
+        //               "Play here" button that runs the game in a popup.
+        //  Leave the list empty to hide the section.
+        // =====================================================================
+        const ITCH_GAMES = [
+            // { id: '1234567', title: 'Comet Game', uploadId: '7654321' },
+        ];
 
-            reveals.forEach((reveal) => {
-                const elementTop = reveal.getBoundingClientRect().top;
-                if (elementTop < windowHeight - elementVisible) {
-                    reveal.classList.add('active');
+        const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        const finePointer = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+
+        // --- Scroll reveal (IntersectionObserver instead of scroll listener) ---
+        document.querySelectorAll('[data-stagger]').forEach(group => {
+            [...group.children].forEach((child, i) => {
+                const el = child.classList.contains('reveal') ? child : child.querySelector('.reveal');
+                if (el) el.style.setProperty('--d', `${i * 0.12}s`);
+            });
+        });
+        const revealObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('active');
+                    revealObserver.unobserve(entry.target);
                 }
             });
+        }, { rootMargin: '0px 0px -10% 0px', threshold: 0.08 });
+        const observeReveals = (root = document) => root.querySelectorAll('.reveal:not(.active)').forEach(el => revealObserver.observe(el));
+        observeReveals();
+
+        // --- Hero role typing loop ---
+        (() => {
+            const el = document.getElementById('role-text');
+            const roles = ['UX / UI DESIGNER', 'GAME DEVELOPER', 'PROTOTYPE BUILDER'];
+            if (prefersReducedMotion) return;
+            let r = 0, i = roles[0].length, deleting = true;
+            const tick = () => {
+                const word = roles[r];
+                if (deleting) {
+                    i--;
+                    if (i <= 0) { deleting = false; r = (r + 1) % roles.length; }
+                } else {
+                    i++;
+                    if (i >= roles[r].length) { deleting = true; el.textContent = roles[r]; return setTimeout(tick, 2200); }
+                }
+                el.textContent = (deleting ? word : roles[r]).slice(0, Math.max(i, 0));
+                setTimeout(tick, deleting ? 45 : 85);
+            };
+            setTimeout(tick, 3200);
+        })();
+
+        // --- Pointer effects: cursor glow, 3D tilt, spotlight borders (one rAF loop) ---
+        if (finePointer && !prefersReducedMotion) {
+            const glow = document.getElementById('cursor-glow');
+            let px = 0, py = 0, gx = 0, gy = 0, target = null, rafId = null;
+
+            const frame = () => {
+                gx += (px - gx) * 0.18; gy += (py - gy) * 0.18;
+                glow.style.transform = `translate3d(${gx}px, ${gy}px, 0)`;
+                if (target) {
+                    const r = target.getBoundingClientRect();
+                    const x = px - r.left, y = py - r.top;
+                    target.style.setProperty('--mx', `${x}px`);
+                    target.style.setProperty('--my', `${y}px`);
+                    if (target.classList.contains('tilt')) {
+                        target.style.setProperty('--ry', `${((x / r.width) - 0.5) * 10}deg`);
+                        target.style.setProperty('--rx', `${(0.5 - (y / r.height)) * 10}deg`);
+                    }
+                }
+                rafId = (Math.abs(px - gx) > 0.5 || Math.abs(py - gy) > 0.5) ? requestAnimationFrame(frame) : null;
+            };
+
+            window.addEventListener('pointermove', (e) => {
+                px = e.clientX; py = e.clientY;
+                glow.classList.add('on');
+                const t = e.target.closest ? e.target.closest('.tilt, .spot') : null;
+                if (t !== target) {
+                    if (target) {
+                        target.classList.remove('tilting');
+                        target.style.setProperty('--rx', '0deg');
+                        target.style.setProperty('--ry', '0deg');
+                    }
+                    target = t;
+                    if (target && target.classList.contains('tilt')) target.classList.add('tilting');
+                }
+                if (!rafId) rafId = requestAnimationFrame(frame);
+            }, { passive: true });
+            document.addEventListener('pointerleave', () => glow.classList.remove('on'));
         }
-        window.addEventListener('scroll', initReveal);
-        window.addEventListener('load', initReveal);
+
+        // --- Scroll progress + nav state (rAF-throttled, passive) ---
+        (() => {
+            const bar = document.getElementById('scroll-progress');
+            const nav = document.getElementById('site-nav');
+            let ticking = false;
+            const update = () => {
+                const max = document.documentElement.scrollHeight - innerHeight;
+                bar.style.transform = `scaleX(${max > 0 ? scrollY / max : 0})`;
+                nav.classList.toggle('scrolled', scrollY > 40);
+                ticking = false;
+            };
+            window.addEventListener('scroll', () => { if (!ticking) { ticking = true; requestAnimationFrame(update); } }, { passive: true });
+            update();
+        })();
 
         // --- Detail Page Logic ---
+        let lastFocus = null;
         function openDetail(type) {
-            // Close any open details first
             document.querySelectorAll('.detail-page.active').forEach(el => el.classList.remove('active'));
-            
             const detailEl = document.getElementById(`${type}-detail`);
-            if(detailEl) {
+            if (detailEl) {
+                lastFocus = document.activeElement;
                 detailEl.classList.add('active');
+                detailEl.scrollTop = 0;
                 document.body.style.overflow = 'hidden';
+                document.body.classList.add('detail-open');
+                setTimeout(() => detailEl.querySelector('.detail-close')?.focus({ preventScroll: true }), 300);
             }
-            
-            // Reset Specific Logic
-            if(type === 'game') setGameUI('modern'); // Default to Modern for new UI
-            if(type === 'mobile') mobileNavigate('home'); 
+            if (type === 'game') setGameUI('modern');
+            if (type === 'mobile') mobileNavigate('home');
+            if (type === 'desktop') backToStore();
         }
 
         function closeDetail(type) {
             document.getElementById(`${type}-detail`).classList.remove('active');
-            document.body.style.overflow = 'auto';
+            document.body.style.overflow = '';
+            document.body.classList.remove('detail-open');
+            if (lastFocus) lastFocus.focus({ preventScroll: true });
         }
 
+        document.addEventListener('keydown', (e) => {
+            if (e.key !== 'Escape') return;
+            if (document.getElementById('play-modal').classList.contains('open')) return closePlayModal();
+            const open = document.querySelector('.detail-page.active');
+            if (open) closeDetail(open.id.replace('-detail', ''));
+        });
+
         // --- Store Logic (Desktop) ---
-        // --- Game UI Swapper Logic (UPDATED FOR NEW MENU) ---
-        function setGameUI(style) {
+        const STORE_PRODUCTS = {
+            1: { title: 'Spider-Man: Remastered', price: '$39.99', img: 'assets/img/desk-dashboard-1600.webp' },
+            2: { title: 'God of War', price: '$49.99', img: 'assets/img/desk-mainmenu-1600.webp' },
+            3: { title: 'Need For Speed', price: '$29.99', img: 'assets/img/desk-iggsite-1600.webp' },
+        };
+        function openGameProduct(id) {
+            const p = STORE_PRODUCTS[id];
+            if (!p) return;
+            document.getElementById('product-main-img').src = p.img;
+            document.getElementById('product-title').textContent = p.title;
+            document.getElementById('product-price').textContent = p.price;
+            document.getElementById('store-grid-view').classList.add('hidden');
+            const view = document.getElementById('store-product-view');
+            view.classList.remove('hidden');
+            view.classList.remove('animate-fade-in'); void view.offsetWidth; view.classList.add('animate-fade-in');
+            document.getElementById('store-content-area').scrollTop = 0;
+        }
+        function backToStore() {
+            document.getElementById('store-product-view').classList.add('hidden');
+            document.getElementById('store-grid-view').classList.remove('hidden');
+        }
+
+        // --- Game UI Swapper Logic ---
+        function setGameUI(style, btn) {
             const container = document.getElementById('game-ui-container');
             const overlay = document.getElementById('game-bg-overlay');
             const scanlines = document.getElementById('game-scanlines');
@@ -1345,68 +1582,48 @@
             const modeCard = document.getElementById('gamemode-card');
             const uiLayer = document.getElementById('game-ui-layer');
 
-            // --- Reset Base Styles ---
-            // Remove style-specific classes to allow clean switching
-            container.className = "relative h-[600px] w-full bg-cover bg-center overflow-hidden shadow-2xl transition-all duration-500 mb-16";
+            // Highlight the selected style button
+            document.querySelectorAll('[data-game-style]').forEach(b => {
+                const on = b.dataset.gameStyle === style;
+                b.classList.toggle('bg-white', on);
+                b.classList.toggle('text-black', on);
+            });
+
+            container.className = "relative h-[600px] w-full bg-cover bg-center overflow-hidden shadow-2xl transition-all duration-500 mb-8";
             playBtn.className = "w-full py-5 text-black font-black text-2xl tracking-[0.2em] uppercase transition-all transform hover:scale-[1.02] active:scale-95 relative overflow-hidden group";
             friendsPanel.className = "w-full md:w-80 flex flex-col h-[350px] transition-all";
             scanlines.style.opacity = '0';
             uiLayer.style.fontFamily = "'Inter', sans-serif";
 
-            // --- Apply Styles ---
-
             if (style === 'modern') {
-                // Modern Glassmorphism (Default)
                 container.classList.add('rounded-3xl');
                 overlay.className = "absolute inset-0 bg-black/60 transition-opacity duration-500";
-                
                 nav.className = "flex justify-between items-center border-b border-white/10 pb-4 backdrop-blur-sm";
-                
                 playBtn.classList.add('bg-gradient-to-r', 'from-yellow-500', 'to-yellow-600', 'hover:from-yellow-400', 'hover:to-yellow-500', 'rounded-2xl', 'shadow-[0_0_30px_rgba(234,179,8,0.3)]', 'border-b-4', 'border-yellow-700');
-                
                 friendsPanel.className += " bg-black/40 backdrop-blur-xl border border-white/10 rounded-2xl p-5 shadow-2xl";
                 modeCard.className = "bg-black/40 border border-white/10 p-4 rounded-2xl backdrop-blur-md hover:bg-black/60 hover:border-yellow-400/50 transition-all cursor-pointer group relative overflow-hidden";
-            } 
+            }
             else if (style === 'retro') {
-                // Retro CRT / Arcade
                 uiLayer.style.fontFamily = "'Press Start 2P', cursive";
-                container.classList.remove('rounded-3xl');
                 container.classList.add('border-4', 'border-green-500', 'bg-black');
                 overlay.className = "absolute inset-0 bg-black/40";
-                
-                // Scanlines on
                 scanlines.style.opacity = '1';
-
                 nav.className = "flex justify-between items-center border-b-4 border-green-500 pb-4 bg-black/80";
-
                 playBtn.classList.add('bg-green-600', 'hover:bg-green-500', 'text-white', 'border-4', 'border-white', 'shadow-[4px_4px_0px_#fff]', 'active:translate-x-1', 'active:translate-y-1', 'active:shadow-none');
-                
                 friendsPanel.className += " bg-black/90 border-4 border-green-500 p-5 shadow-none";
                 modeCard.className = "bg-black border-4 border-green-500 p-4 hover:bg-green-900/20 transition-all cursor-pointer group relative overflow-hidden";
-            } 
+            }
             else if (style === 'minimal') {
-                // Minimalist Wireframe
                 container.classList.add('rounded-lg', 'border', 'border-white');
-                overlay.className = "absolute inset-0 bg-gray-900/95"; // Solid dark background
-                
+                overlay.className = "absolute inset-0 bg-gray-900/95";
                 nav.className = "flex justify-between items-center border-b border-white pb-4";
-
                 playBtn.classList.add('bg-transparent', 'text-white', 'border', 'border-white', 'hover:bg-white', 'hover:text-black', 'rounded-lg');
-                
                 friendsPanel.className += " bg-transparent border border-white rounded-lg p-5";
                 modeCard.className = "bg-transparent border border-white p-4 rounded-lg hover:bg-white/10 transition-all cursor-pointer group relative overflow-hidden";
             }
         }
 
-        // Optional: No color picker logic needed for this complex UI, keeping function empty to prevent errors if called
-        function setGameCustomColor(color) {
-            // Custom color logic disabled for main menu demo
-        }
-        
-        // Initialize default UI
-        // setGameUI('modern'); // Called in openDetail now
-
-        // --- Playground Component Logic (UPDATED) ---
+        // --- Playground Component Logic ---
         const previewCard = document.getElementById('previewCard');
         const previewTitle = document.getElementById('previewTitle');
         const colorPicker = document.getElementById('colorPicker');
@@ -1415,108 +1632,73 @@
         const heightInput = document.getElementById('heightInput');
         const radiusInput = document.getElementById('radiusInput');
 
-        // Event Listeners
-        radiusInput.addEventListener('input', updatePreview);
-        widthInput.addEventListener('input', updatePreview);
-        heightInput.addEventListener('input', updatePreview);
-        
-        document.getElementById('labelText').addEventListener('input', (e) => {
-            previewTitle.textContent = e.target.value;
-        });
-
-        colorPicker.addEventListener('input', (e) => {
-            const color = e.target.value;
-            document.getElementById('colorValue').textContent = color;
-            updatePreview();
-        });
-
-        textColorPicker.addEventListener('input', (e) => {
-            const color = e.target.value;
-            document.getElementById('textColorValue').textContent = color;
-            updatePreview();
-        });
+        [radiusInput, widthInput, heightInput].forEach(el => el.addEventListener('input', updatePreview));
+        document.getElementById('labelText').addEventListener('input', (e) => { previewTitle.textContent = e.target.value; });
+        colorPicker.addEventListener('input', (e) => { document.getElementById('colorValue').textContent = e.target.value; updatePreview(); });
+        textColorPicker.addEventListener('input', (e) => { document.getElementById('textColorValue').textContent = e.target.value; updatePreview(); });
 
         function updatePreview() {
-            // Apply styles
             previewCard.style.width = `${widthInput.value}px`;
             previewCard.style.height = `${heightInput.value}px`;
             previewCard.style.borderRadius = `${radiusInput.value}px`;
             previewCard.style.backgroundColor = colorPicker.value;
             previewCard.style.color = textColorPicker.value;
-            previewCard.style.boxShadow = `0 0 20px ${colorPicker.value}66`; // Add alpha for glow
+            previewCard.style.boxShadow = `0 0 20px ${colorPicker.value}66`;
         }
 
-        function setPreviewState(state) {
+        function setPreviewState(state, btn) {
+            document.querySelectorAll('.state-btn').forEach(b => { b.classList.remove('bg-white/15'); b.classList.add('bg-white/5'); });
+            if (btn) { btn.classList.remove('bg-white/5'); btn.classList.add('bg-white/15'); }
             previewCard.style.transform = '';
-            
-            if (state === 'default') {
-               // Reset active states managed by CSS mostly, but force transform reset
-            }
+            previewCard.style.boxShadow = `0 0 20px ${colorPicker.value}66`;
             if (state === 'hover') {
                 previewCard.style.transform = 'translateY(-4px)';
                 previewCard.style.boxShadow = `0 10px 25px ${colorPicker.value}88`;
             }
-            if (state === 'active') {
-                previewCard.style.transform = 'scale(0.95)';
-            }
+            if (state === 'active') previewCard.style.transform = 'scale(0.95)';
         }
-        
-        // Initial Update
         updatePreview();
 
-
-        // --- Mobile App Simulator Logic (NEW) ---
+        // --- Mobile App Simulator Logic ---
         function mobileNavigate(screen) {
             const homeScreen = document.getElementById('mb-screen-home');
             const sendScreen = document.getElementById('mb-screen-send');
             const cardsScreen = document.getElementById('mb-screen-cards');
             const successScreen = document.getElementById('mb-screen-success');
-            
-            // Reset styles
+
             successScreen.style.opacity = '0';
             successScreen.style.pointerEvents = 'none';
 
-            if(screen === 'send') {
+            if (screen === 'send') {
                 homeScreen.style.transform = 'translateX(-100%)';
                 sendScreen.style.transform = 'translateX(0)';
                 resetAmount();
-            } 
-            else if (screen === 'home') {
+            } else if (screen === 'home') {
                 homeScreen.style.transform = 'translateX(0)';
                 sendScreen.style.transform = 'translateX(100%)';
                 cardsScreen.style.transform = 'translateY(100%)';
-            }
-            else if (screen === 'cards') {
+            } else if (screen === 'cards') {
                 cardsScreen.style.transform = 'translateY(0)';
             }
         }
 
         // --- Numpad Logic ---
         let currentAmount = "0";
-
         function updateAmount(char) {
             const display = document.getElementById('mb-amount');
-            
             if (currentAmount === "0" && char !== ".") {
                 currentAmount = char;
             } else {
-                if(char === "." && currentAmount.includes(".")) return;
-                if(currentAmount.length > 7) return; // Limit length
+                if (char === "." && currentAmount.includes(".")) return;
+                if (currentAmount.length > 7) return;
                 currentAmount += char;
             }
             display.innerText = "$" + currentAmount;
         }
-
         function deleteAmount() {
-            const display = document.getElementById('mb-amount');
-            if(currentAmount.length === 1) {
-                currentAmount = "0";
-            } else {
-                currentAmount = currentAmount.slice(0, -1);
-            }
-            display.innerText = "$" + currentAmount;
+            currentAmount = currentAmount.length === 1 ? "0" : currentAmount.slice(0, -1);
+            document.getElementById('mb-amount').innerText = "$" + currentAmount;
         }
-
         function resetAmount() {
             currentAmount = "0";
             document.getElementById('mb-amount').innerText = "$0";
@@ -1524,19 +1706,17 @@
 
         // --- Payment Success Flow ---
         function processPayment() {
-            const btn = document.querySelector('#mb-screen-send button');
+            const btn = document.getElementById('mb-send-btn');
+            if (btn.disabled) return;
             const originalText = btn.innerHTML;
-            
-            // Loading State
+            btn.disabled = true;
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing';
-            
             setTimeout(() => {
                 const successScreen = document.getElementById('mb-screen-success');
                 successScreen.style.opacity = '1';
                 successScreen.style.pointerEvents = 'auto';
-                
-                // Reset Button
                 btn.innerHTML = originalText;
+                btn.disabled = false;
             }, 1000);
         }
 
@@ -1545,124 +1725,100 @@
         function toggleCardNumber() {
             const display = document.getElementById('card-number-display');
             const icon = document.getElementById('card-eye-icon');
-            
-            if(isCardVisible) {
-                display.innerText = "**** **** **** 4563";
-                icon.className = "fas fa-eye text-xs";
-                isCardVisible = false;
-            } else {
-                display.innerText = "4242 9821 3321 4563";
-                icon.className = "fas fa-eye-slash text-xs";
-                isCardVisible = true;
-            }
+            isCardVisible = !isCardVisible;
+            display.innerText = isCardVisible ? "4242 9821 3321 4563" : "**** **** **** 4563";
+            icon.className = isCardVisible ? "fas fa-eye-slash text-xs" : "fas fa-eye text-xs";
         }
 
-        // --- Dark Mode Toggle ---
+        // --- App Dark Mode Toggle ---
         let isDarkMode = false;
         function toggleAppTheme() {
             const frame = document.getElementById('mobile-app-frame');
             const screen = document.getElementById('app-screen-container');
             const bottomGrad = document.getElementById('bottom-gradient');
-            const navIcons = document.querySelectorAll('.fa-chevron-left, .fa-chevron-down');
-            
-            if(!isDarkMode) {
-                frame.classList.add('app-dark-mode');
-                screen.classList.add('app-dark-mode');
-                bottomGrad.classList.remove('from-[#f8f9fc]');
-                bottomGrad.classList.add('from-[#121212]');
-                
-                // Icon colors fix for dark mode
-                navIcons.forEach(i => i.classList.replace('text-gray-800', 'text-white'));
-                
-                isDarkMode = true;
-            } else {
-                frame.classList.remove('app-dark-mode');
-                screen.classList.remove('app-dark-mode');
-                bottomGrad.classList.remove('from-[#121212]');
-                bottomGrad.classList.add('from-[#f8f9fc]');
-                
-                 // Icon colors fix
-                 navIcons.forEach(i => i.classList.replace('text-white', 'text-gray-800'));
-
-                isDarkMode = false;
-            }
+            const navIcons = document.querySelectorAll('#mobile-detail .fa-chevron-left, #mobile-detail .fa-chevron-down');
+            isDarkMode = !isDarkMode;
+            frame.classList.toggle('app-dark-mode', isDarkMode);
+            screen.classList.toggle('app-dark-mode', isDarkMode);
+            bottomGrad.classList.toggle('from-[#f8f9fc]', !isDarkMode);
+            bottomGrad.classList.toggle('from-[#121212]', isDarkMode);
+            navIcons.forEach(i => isDarkMode ? i.classList.replace('text-gray-800', 'text-white') : i.classList.replace('text-white', 'text-gray-800'));
         }
 
-
-        // --- Nav Marker Animation (FIXED FOR TEXT WIDTH) ---
-        const sections = document.querySelectorAll('section');
+        // --- Nav marker (glass pill that slides to the active link) ---
         const marker = document.getElementById('nav-marker');
         const navLinks = document.querySelectorAll('.nav-link');
-        const navContainer = document.getElementById('nav-container');
-
-        // Updated function to measure the SPAN (text) instead of the link (container)
         function updateMarker(link) {
-            if(!link) {
-                marker.style.opacity = '0';
-                return;
-            }
-
-            // Find the span inside the link to get exact text width
-            const textSpan = link.querySelector('span');
-            
-            if(textSpan) {
-                const spanRect = textSpan.getBoundingClientRect();
-                const containerRect = navContainer.getBoundingClientRect();
-
-                // Calculate relative position to the container
-                marker.style.width = `${spanRect.width}px`;
-                marker.style.left = `${spanRect.left - containerRect.left}px`;
-                marker.style.opacity = '1';
-            }
+            navLinks.forEach(l => l.classList.toggle('is-active', l === link));
+            if (!link) { marker.style.opacity = '0'; return; }
+            marker.style.width = `${link.offsetWidth}px`;
+            marker.style.transform = `translateX(${link.offsetLeft}px)`;
+            marker.style.opacity = '1';
         }
+        navLinks.forEach(link => link.addEventListener('click', (e) => updateMarker(e.currentTarget)));
 
-        // Click Handler
-        navLinks.forEach(link => {
-            link.addEventListener('click', (e) => {
-                // Pass the currentTarget (the <a> tag) not just the target (which might be the span)
-                updateMarker(e.currentTarget);
-            });
-        });
-
-        // Scroll Observer
-        const observerOptions = { threshold: 0.4 };
-        const observer = new IntersectionObserver((entries) => {
+        // Fires when a section crosses the middle of the viewport (works for tall sections too)
+        const sectionObserver = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    const id = entry.target.getAttribute('id');
-                    const activeLink = document.querySelector(`a[href="#${id}"]`);
-                    if(activeLink) updateMarker(activeLink);
-                }
+                if (!entry.isIntersecting) return;
+                const id = entry.target.id;
+                updateMarker(document.querySelector(`.nav-link[href="#${id}"]`));
             });
-        }, observerOptions);
+        }, { rootMargin: '-45% 0px -50% 0px' });
+        document.querySelectorAll('main section[id]').forEach(s => sectionObserver.observe(s));
+        window.addEventListener('resize', () => updateMarker(document.querySelector('.nav-link.is-active')), { passive: true });
 
-        sections.forEach(section => observer.observe(section));
-
-        // Initial Position Check
-        window.addEventListener('load', () => {
-             // Optional: Hide initially or set to Home
-             marker.style.opacity = '0';
-        });
+        // --- itch.io embeds ---
+        function openPlayModal(uploadId, title) {
+            const modal = document.getElementById('play-modal');
+            document.getElementById('play-modal-title').textContent = title || 'Game';
+            document.getElementById('play-modal-frame').src = `https://itch.io/embed-upload/${encodeURIComponent(uploadId)}?color=060606`;
+            modal.classList.add('open');
+            document.body.style.overflow = 'hidden';
+        }
+        function closePlayModal() {
+            const modal = document.getElementById('play-modal');
+            modal.classList.remove('open');
+            // Unload the game so it stops running (CPU/audio) once the popup closes
+            setTimeout(() => { document.getElementById('play-modal-frame').src = 'about:blank'; }, 350);
+            if (!document.querySelector('.detail-page.active')) document.body.style.overflow = '';
+        }
+        (() => {
+            if (!ITCH_GAMES.length) return;
+            const wrap = document.getElementById('itch-games');
+            const grid = document.getElementById('itch-games-grid');
+            ITCH_GAMES.forEach((g, i) => {
+                const card = document.createElement('div');
+                card.className = 'reveal glass spot rounded-2xl p-3 flex flex-col gap-3';
+                card.style.setProperty('--d', `${i * 0.12}s`);
+                card.innerHTML = `
+                    <iframe src="https://itch.io/embed/${encodeURIComponent(g.id)}?dark=true&linkback=true&border_width=0" title="${g.title || 'itch.io game'}"
+                        loading="lazy" class="w-full h-[167px] rounded-xl" frameborder="0"></iframe>`;
+                if (g.uploadId) {
+                    const btn = document.createElement('button');
+                    btn.className = 'btn-main rounded-full py-2.5 text-xs font-bold tracking-widest uppercase';
+                    btn.innerHTML = '<i class="fas fa-play mr-2"></i>Play here';
+                    btn.addEventListener('click', () => openPlayModal(g.uploadId, g.title));
+                    card.appendChild(btn);
+                }
+                grid.appendChild(card);
+            });
+            wrap.classList.remove('hidden');
+            observeReveals(wrap);
+        })();
 
         // --- Contact Form Logic (Gmail Redirect) ---
-        document.getElementById('contact-form').addEventListener('submit', function(e) {
+        document.getElementById('contact-form').addEventListener('submit', function (e) {
             e.preventDefault();
-            
             const name = document.getElementById('form-name').value;
             const email = document.getElementById('form-email').value;
             const message = document.getElementById('form-message').value;
-            
-            // Encode components for URL
             const subject = encodeURIComponent(`Contact from Website: ${name}`);
             const body = encodeURIComponent(`Name: ${name}\nEmail: ${email}\n\nMessage:\n${message}`);
-            
-            // Gmail Compose URL
-            const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=voramanvuth@gmail.com&su=${subject}&body=${body}`;
-            
-            // Open in new tab
-            window.open(gmailUrl, '_blank');
+            window.open(`https://mail.google.com/mail/?view=cm&fs=1&to=voramanvuth@gmail.com&su=${subject}&body=${body}`, '_blank', 'noopener');
         });
 
+        document.getElementById('year').textContent = new Date().getFullYear();
     </script>
 </body>
 </html>
