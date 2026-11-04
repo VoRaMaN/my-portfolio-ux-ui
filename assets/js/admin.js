@@ -328,6 +328,18 @@
             </div>`;
     }
 
+    const playKind = (g) => { const p = g.play || {}; return p.kind === 'python' ? 'python' : p.url ? 'url' : 'none'; };
+    // The test link plays the uploaded files directly, so it also works for unpublished drafts
+    const testUrl = (g) => {
+        const p = g.play || {};
+        if (p.kind === 'python' && (p.zip_parts || []).length) {
+            const q = new URLSearchParams({ src: p.zip_parts.map((x) => mediaUrl(x.path)).join(','), entry: p.entry || '', title: g.title || 'Python game' });
+            if (g.icon_url) q.set('icon', g.icon_url.startsWith('assets/') ? `../${g.icon_url}` : mediaUrl(g.icon_url));
+            return `play/python.html?${q}`;
+        }
+        return p.url || '';
+    };
+
     function mediaSections(g, dl) {
         const shots = g.screenshots || [];
         const vids = g.videos || [];
@@ -413,16 +425,31 @@
             <!-- Play in browser -->
             <div class="glass rounded-2xl p-5 space-y-4">
                 <h3 class="font-bold">Play in browser</h3>
-                <p class="text-xs text-gray-400">Paste the address of a web build (GitHub Pages, Vercel, an itch.io HTML5 embed link…). The store then shows <b>Play now</b> and runs the game in a full-screen player instead of a download.</p>
-                <div class="grid sm:grid-cols-2 gap-4">
-                    ${field('pl-url', 'Game URL (embeddable)', (g.play || {}).url || '', 'url', 'placeholder="https://voraman.github.io/My-Game/"')}
-                    ${field('pl-itch', 'itch.io page (optional)', (g.play || {}).itch_url || '', 'url', 'placeholder="https://gojo-studio.itch.io/my-game"')}
+                <div class="flex flex-wrap gap-2 text-sm" role="radiogroup" aria-label="How this game plays">
+                    ${[['none', 'fa-ban', 'Off'], ['url', 'fa-globe', 'Web build URL'], ['python', 'fa-brands fa-python', 'Python (pygame) .zip']].map(([v, ic, l]) => `<label class="btn-ghost rounded-lg px-3 py-2 cursor-pointer flex items-center gap-2"><input type="radio" name="pl-kind" value="${v}" class="accent-brand-purple" ${playKind(g) === v ? 'checked' : ''}><i class="${ic.startsWith('fa-brands') ? ic : 'fas ' + ic}"></i>${l}</label>`).join('')}
                 </div>
-                <div><label class="lbl" for="pl-tips">Loading-screen tips (one per line)</label><textarea id="pl-tips" rows="3" class="inp">${esc(((g.play || {}).tips || []).join('\n'))}</textarea></div>
+                <div id="pl-url-box" class="${playKind(g) === 'url' ? '' : 'hidden'} space-y-2">
+                    <p class="text-xs text-gray-400">Paste the address of a web build (GitHub Pages, Vercel, an itch.io HTML5 embed link…). The store runs it in a full-screen player.</p>
+                    ${field('pl-url', 'Game URL (embeddable)', (g.play || {}).url || '', 'url', 'placeholder="https://voraman.github.io/My-Game/"')}
+                </div>
+                <div id="pl-py-box" class="${playKind(g) === 'python' ? '' : 'hidden'} space-y-3">
+                    <p class="text-xs text-gray-400 leading-relaxed">Zip your pygame project folder (with <code>main.py</code> and its assets) and upload it. It runs on real Python 3.14 + pygame-ce in the visitor's browser (Pyodide/WebAssembly) — no build step. Normal <code>while running:</code> loops, <code>Clock.tick()</code>, <code>time.sleep()</code> and <code>event.wait()</code> are converted automatically. Pure-Python code and the standard library work; other pip packages and native code don't.</p>
+                    ${(g.play || {}).kind === 'python' && (g.play.zip_parts || []).length ? `<p class="text-sm"><i class="fab fa-python text-yellow-300 mr-2"></i><b>${esc(g.play.filename || 'game.zip')}</b> · ${fmtBytes(g.play.size)}${g.play.uploaded_at ? ` · uploaded ${new Date(g.play.uploaded_at).toLocaleString()}` : ''}</p>` : '<p class="text-sm text-gray-400">No Python build uploaded yet.</p>'}
+                    <div id="py-drop" class="drop rounded-xl p-6 text-center">
+                        <i class="fab fa-python text-3xl text-yellow-300 mb-2"></i>
+                        <p class="text-sm text-gray-300">Drop the game's .zip here</p>
+                        <label class="btn-main inline-block rounded-lg px-4 py-2 text-xs font-bold mt-3 cursor-pointer"><i class="fas fa-upload mr-1"></i>Choose .zip<input type="file" accept=".zip,application/zip" class="hidden" id="py-input"></label>
+                    </div>
+                    <div class="hidden" id="prog-py"></div>
+                    ${field('pl-entry', 'Entry file (optional — main.py is found automatically)', (g.play || {}).entry || '', 'text', 'placeholder="main.py"')}
+                </div>
+                <div class="grid sm:grid-cols-2 gap-4">
+                    ${field('pl-itch', 'itch.io page (optional)', (g.play || {}).itch_url || '', 'url', 'placeholder="https://gojo-studio.itch.io/my-game"')}
+                    <div><label class="lbl" for="pl-tips">Loading-screen tips (one per line)</label><textarea id="pl-tips" rows="2" class="inp">${esc(((g.play || {}).tips || []).join('\n'))}</textarea></div>
+                </div>
                 <div class="flex flex-wrap gap-2">
                     <button id="pl-save" class="btn-ghost rounded-lg px-4 py-2 text-sm"><i class="fas fa-floppy-disk mr-1"></i>Save play settings</button>
-                    ${(g.play || {}).url ? `<a href="${esc(g.play.url)}" target="_blank" rel="noopener" class="btn-ghost rounded-lg px-4 py-2 text-sm"><i class="fas fa-play mr-1"></i>Test URL</a>
-                    <button id="pl-clear" class="btn-ghost rounded-lg px-4 py-2 text-sm text-red-300"><i class="fas fa-xmark mr-1"></i>Remove</button>` : ''}
+                    ${testUrl(g) ? `<a href="${esc(testUrl(g))}" target="_blank" rel="noopener" class="btn-ghost rounded-lg px-4 py-2 text-sm"><i class="fas fa-play mr-1"></i>Test it</a>` : ''}
                 </div>
             </div>`;
     }
@@ -558,15 +585,47 @@
         });
 
         // Play in browser
-        $('pl-save').addEventListener('click', async () => {
-            const url = $('pl-url').value.trim(); const itch = $('pl-itch').value.trim();
-            if (url && !/^https:\/\//.test(url)) return toast('The game URL must start with https://', true);
-            if (itch && !/^https:\/\//.test(itch)) return toast('The itch.io URL must start with https://', true);
-            const tips = $('pl-tips').value.split('\n').map((x) => x.trim()).filter(Boolean).slice(0, 12);
-            await persist({ play: url ? { url, itch_url: itch || null, tips } : {} });
-            toast(url ? 'Play settings saved' : 'Play removed'); renderEditor();
+        document.querySelectorAll('input[name="pl-kind"]').forEach((r) => r.addEventListener('change', () => {
+            $('pl-url-box').classList.toggle('hidden', r.value !== 'url' || !r.checked);
+            $('pl-py-box').classList.toggle('hidden', r.value !== 'python' || !r.checked);
+        }));
+        const shared = () => ({
+            itch_url: $('pl-itch').value.trim() || null,
+            tips: $('pl-tips').value.split('\n').map((x) => x.trim()).filter(Boolean).slice(0, 12),
         });
-        $('pl-clear')?.addEventListener('click', async () => { await persist({ play: {} }); toast('Play removed'); renderEditor(); });
+        const uploadPython = async (file) => {
+            if (!file) return;
+            const head = new Uint8Array(await file.slice(0, 2).arrayBuffer());
+            if (!/\.zip$/i.test(file.name) || head[0] !== 0x50 || head[1] !== 0x4b) return toast('Choose a .zip of your game folder', true);
+            const prog = progressUI($('prog-py'));
+            const old = ((g.play || {}).zip_parts || []).map((p) => p.path);
+            try {
+                const up = await uploadLarge(`games/${g.slug}/python`, file, prog);
+                await persist({ play: { kind: 'python', zip_parts: up.parts, size: up.size, filename: file.name, entry: $('pl-entry').value.trim() || null, uploaded_at: new Date().toISOString(), ...shared() } });
+                await removePaths(old);
+                toast('Python game uploaded — press "Test it"');
+            } catch (e) { toast(e.message, true); }
+            renderEditor();
+        };
+        $('py-input').addEventListener('change', (e) => uploadPython(e.target.files[0]));
+        dropZone($('py-drop'), (files) => uploadPython(files[0]));
+        $('pl-save').addEventListener('click', async () => {
+            const kind = document.querySelector('input[name="pl-kind"]:checked')?.value || 'none';
+            const cur = g.play || {};
+            let play = {};
+            if (kind === 'url') {
+                const url = $('pl-url').value.trim();
+                if (!/^https:\/\//.test(url)) return toast('The game URL must start with https://', true);
+                play = { url, ...shared() };
+            } else if (kind === 'python') {
+                if (!(cur.kind === 'python' && (cur.zip_parts || []).length)) return toast('Upload the game .zip first', true);
+                play = { ...cur, entry: $('pl-entry').value.trim() || null, ...shared() };
+            }
+            if (shared().itch_url && !/^https:\/\//.test(shared().itch_url)) return toast('The itch.io URL must start with https://', true);
+            if (kind !== 'python' && cur.kind === 'python') await removePaths((cur.zip_parts || []).map((p) => p.path));
+            await persist({ play });
+            toast(kind === 'none' ? 'Play turned off' : 'Play settings saved'); renderEditor();
+        });
     }
 
     // ---------- Settings tab ----------

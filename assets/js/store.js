@@ -56,7 +56,10 @@
     const bySlug = (slug) => S.games.find((g) => g.slug === slug);
     const visibleGames = () => S.games.filter((g) => S.settings.show_concepts !== false || g.kind !== 'concept');
     const priceLabel = (g) => (Number(g.price) > 0 ? `$${Number(g.price).toFixed(2)}` : 'Free');
-    const hasPlay = (g) => !!(g && g.play && g.play.url);
+    // A game is playable in the browser via a web build URL, or a Python (pygame) .zip run by play/python.html
+    const isPython = (g) => !!(g && g.play && g.play.kind === 'python');
+    const hasPlay = (g) => !!(g && g.play && (isPython(g) ? (g.play.zip_parts || []).length : g.play.url));
+    const playUrl = (g) => (isPython(g) ? `play/python.html?game=${encodeURIComponent(g.slug)}` : g.play.url);
     const platIcon = (p) => {
         const s = String(p).toLowerCase();
         if (s.includes('win')) return 'fab fa-windows';
@@ -176,7 +179,7 @@
                 <img id="gp-icon" alt="" class="w-9 h-9 rounded-lg object-cover">
                 <div class="min-w-0"><p id="gp-title" class="font-bold text-sm truncate"></p><p class="text-[10px] text-green-400 tracking-widest uppercase"><span class="inline-block w-1.5 h-1.5 rounded-full bg-green-400 mr-1 align-middle"></span>Playing in your browser</p></div>
                 <div class="ml-auto flex items-center gap-2">
-                    <a id="gp-itch" target="_blank" rel="noopener" class="btn-glass rounded-lg px-3 py-1.5 text-xs !hidden sm:!inline-flex items-center gap-1.5"><i class="fab fa-itch-io"></i>itch.io</a>
+                    <a id="gp-itch" target="_blank" rel="noopener" class="btn-glass rounded-lg px-3 py-1.5 text-xs hidden sm:inline-flex items-center gap-1.5"><i class="fab fa-itch-io"></i>itch.io</a>
                     <a id="gp-newtab" target="_blank" rel="noopener" class="btn-glass rounded-lg px-3 py-1.5 text-xs inline-flex items-center gap-1.5" aria-label="Open in new tab"><i class="fas fa-up-right-from-square"></i><span class="hidden sm:inline">New tab</span></a>
                     <button id="gp-full" class="btn-glass rounded-lg px-3 py-1.5 text-xs inline-flex items-center gap-1.5" aria-label="Fullscreen"><i class="fas fa-expand"></i><span class="hidden sm:inline">Fullscreen</span></button>
                     <button id="gp-close" class="btn-glass rounded-lg px-3 py-1.5 text-xs" aria-label="Close game"><i class="fas fa-xmark"></i></button>
@@ -583,6 +586,7 @@
                 <aside class="space-y-4">
                     <div class="glass rounded-2xl p-5 space-y-3 text-sm">
                         ${hasPlay(g) ? '<p class="flex items-center gap-3"><i class="fas fa-globe w-5 text-green-400"></i> Plays in your browser — no install</p>' : ''}
+                        ${isPython(g) && hasPlay(g) ? '<p class="flex items-center gap-3"><i class="fab fa-python w-5 text-yellow-300"></i> Python + pygame, running on WebAssembly</p>' : ''}
                         ${(g.tags || []).includes('Multiplayer') ? '<p class="flex items-center gap-3"><i class="fas fa-users w-5 text-blue-300"></i> Online multiplayer</p>' : ''}
                         ${g.playable ? '<p class="flex items-center gap-3"><i class="fas fa-gamepad w-5 text-green-400"></i> Playable build</p>' : ''}
                         ${(g.tags || []).includes('Singleplayer') ? '<p class="flex items-center gap-3"><i class="fas fa-user w-5 text-blue-300"></i> Single-player</p>' : ''}
@@ -737,9 +741,10 @@
         const icon = mediaUrl(g.icon_url || g.capsule_url);
         $('gp-icon').src = icon; $('gp-loader-icon').src = icon;
         $('gp-title').textContent = g.title; $('gp-loader-title').textContent = g.title;
-        $('gp-newtab').href = g.play.url;
+        $('gp-newtab').href = playUrl(g);
         const itch = $('gp-itch');
-        if (g.play.itch_url) { itch.href = g.play.itch_url; itch.classList.remove('!hidden'); } else itch.classList.add('!hidden');
+        // inline style beats the responsive classes, so the button is truly gone when there's no itch.io page
+        if (g.play.itch_url) { itch.href = g.play.itch_url; itch.style.display = ''; } else itch.style.display = 'none';
         const loader = $('gp-loader');
         loader.classList.remove('opacity-0', 'pointer-events-none');
         const tips = (g.play.tips && g.play.tips.length) ? g.play.tips : ['Fullscreen gives the best experience.', 'Press Esc or ✕ to leave the game.', 'Progress is saved in this browser.'];
@@ -752,7 +757,7 @@
             setTimeout(() => { loader.classList.add('opacity-0', 'pointer-events-none'); clearInterval(S.tipTimer); }, Math.max(0, 1600 - (performance.now() - t0)));
         };
         S.playing = g;
-        frame.src = g.play.url;
+        frame.src = playUrl(g);
         P.classList.remove('hidden'); P.classList.add('flex');
         requestAnimationFrame(() => P.classList.add('gp-open'));
         window.SFX?.play('whoosh');

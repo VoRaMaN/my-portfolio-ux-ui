@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Python Game Player</title>
+    <meta name="robots" content="noindex">
+    <meta name="theme-color" content="#060606">
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root { --purple: #C63AEB; --ease: cubic-bezier(.22, 1, .36, 1); }
+        * { box-sizing: border-box; }
+        html, body { margin: 0; height: 100%; background: #050507; color: #fff; font-family: Inter, system-ui, sans-serif; overflow: hidden; }
+        body { display: flex; align-items: center; justify-content: center; background: radial-gradient(ellipse at 50% 30%, #1b0b22 0%, #050507 65%); }
+        #stage { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; }
+        #canvas { display: block; width: var(--w, 640px) !important; height: var(--h, 360px) !important; outline: none; background: #000; box-shadow: 0 30px 80px -20px rgba(0,0,0,.9); opacity: 0; transition: opacity .6s ease; }
+        #canvas.on { opacity: 1; }
+        #canvas.pixel { image-rendering: pixelated; }
+
+        .card { position: relative; z-index: 2; width: min(440px, 92vw); padding: 30px 28px; border-radius: 26px; background: rgba(14, 12, 22, .92); border: 1px solid rgba(255,255,255,.1); box-shadow: 0 40px 100px -30px rgba(198,58,235,.45); text-align: center; animation: in .7s var(--ease) both; }
+        @keyframes in { from { opacity: 0; transform: translateY(18px) scale(.97); } to { opacity: 1; transform: none; } }
+        .hidden { display: none !important; }
+        .icon-wrap { position: relative; width: 92px; height: 92px; margin: 0 auto 18px; }
+        .icon-wrap img, .icon-wrap .ph { position: relative; width: 92px; height: 92px; border-radius: 24px; object-fit: cover; display: flex; align-items: center; justify-content: center; font-size: 40px; background: linear-gradient(135deg, #3776ab, #ffd43b); }
+        .ring { position: absolute; inset: -9px; border-radius: 50%; background: conic-gradient(from 0deg, #c63aeb, #3776ab, #ffd43b, #c63aeb); -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 3px), #000 calc(100% - 2px)); mask: radial-gradient(farthest-side, transparent calc(100% - 3px), #000 calc(100% - 2px)); animation: spin 1.4s linear infinite; }
+        .ready .ring { animation-duration: 6s; opacity: .6; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        h1 { margin: 0; font-size: 22px; font-weight: 900; letter-spacing: -.01em; }
+        .sub { margin: 6px 0 20px; font-size: 11px; letter-spacing: .18em; text-transform: uppercase; color: #a1a1aa; }
+        .steps { list-style: none; padding: 0; margin: 0 0 18px; text-align: left; display: grid; gap: 9px; }
+        .steps li { display: flex; align-items: center; gap: 10px; font-size: 13px; color: #71717a; transition: color .3s; }
+        .steps li .dot { flex-shrink: 0; width: 18px; height: 18px; border-radius: 50%; border: 2px solid #3f3f46; display: flex; align-items: center; justify-content: center; font-size: 10px; transition: all .3s; }
+        .steps li.active { color: #fff; }
+        .steps li.active .dot { border-color: var(--purple); border-top-color: transparent; animation: spin .8s linear infinite; }
+        .steps li.done { color: #d4d4d8; }
+        .steps li.done .dot { border-color: #22c55e; background: #22c55e; color: #052e14; }
+        .steps li.done .dot::after { content: '✓'; font-weight: 900; }
+        .steps li .meta { margin-left: auto; font-size: 11px; color: #71717a; font-variant-numeric: tabular-nums; }
+        .bar { height: 6px; border-radius: 3px; background: rgba(255,255,255,.08); overflow: hidden; }
+        .bar span { display: block; height: 100%; width: 0; border-radius: 3px; background: linear-gradient(90deg, #c63aeb, #60a5fa); transition: width .25s; }
+        .bar.indeterminate span { width: 35%; animation: slide 1.1s ease-in-out infinite; }
+        @keyframes slide { from { transform: translateX(-100%); } to { transform: translateX(300%); } }
+        .play { margin-top: 20px; width: 100%; padding: 15px; border: 0; border-radius: 16px; background: linear-gradient(135deg, #16a34a, #22c55e); color: #fff; font: 800 15px Inter, sans-serif; letter-spacing: .12em; cursor: pointer; box-shadow: 0 14px 40px -10px rgba(34,197,94,.7); transition: transform .3s var(--ease), box-shadow .3s; position: relative; overflow: hidden; }
+        .play:hover { transform: translateY(-2px) scale(1.01); box-shadow: 0 18px 50px -10px rgba(34,197,94,.9); }
+        .play::after { content: ''; position: absolute; inset: 0; border-radius: inherit; box-shadow: 0 0 0 0 rgba(74,222,128,.7); animation: ping 1.8s infinite; }
+        @keyframes ping { to { box-shadow: 0 0 0 14px rgba(74,222,128,0); } }
+        .hint { margin-top: 12px; font-size: 11px; color: #71717a; line-height: 1.5; }
+        .err h1 { color: #fca5a5; }
+        pre { text-align: left; max-height: 40vh; overflow: auto; margin: 14px 0 0; padding: 12px; border-radius: 12px; background: #0a0a0f; border: 1px solid rgba(248,113,113,.25); font: 11px/1.45 ui-monospace, SFMono-Regular, Menlo, monospace; color: #fecaca; white-space: pre-wrap; word-break: break-word; }
+        .row { display: flex; gap: 10px; margin-top: 16px; }
+        .btn { flex: 1; padding: 11px; border-radius: 12px; border: 1px solid rgba(255,255,255,.14); background: rgba(255,255,255,.06); color: #fff; font: 700 12px Inter, sans-serif; letter-spacing: .08em; cursor: pointer; transition: background .2s; }
+        .btn:hover { background: rgba(255,255,255,.14); }
+        #consoleBtn { position: fixed; left: 12px; bottom: 12px; z-index: 5; padding: 6px 10px; border-radius: 9px; border: 1px solid rgba(255,255,255,.12); background: rgba(0,0,0,.6); color: #a1a1aa; font: 700 10px ui-monospace, Menlo, monospace; letter-spacing: .1em; cursor: pointer; }
+        #consoleBtn:hover { color: #fff; }
+        #console { position: fixed; left: 12px; right: 12px; bottom: 46px; z-index: 5; max-height: 34vh; overflow: auto; padding: 10px 12px; border-radius: 12px; background: rgba(5,5,8,.94); border: 1px solid rgba(255,255,255,.1); font: 11px/1.5 ui-monospace, Menlo, monospace; color: #d4d4d8; white-space: pre-wrap; }
+        #console .e { color: #fca5a5; } #console .i { color: #93c5fd; }
+    </style>
+</head>
+<body>
+    <div id="stage"><canvas id="canvas" tabindex="0" aria-label="Game"></canvas></div>
+
+    <!-- loading / ready -->
+    <section id="loader" class="card" aria-live="polite">
+        <div class="icon-wrap"><span class="ring"></span><img id="icon" alt="" class="hidden"><span id="iconPh" class="ph">🐍</span></div>
+        <h1 id="title">Python game</h1>
+        <p class="sub">Python · pygame · WebAssembly</p>
+        <ul class="steps">
+            <li id="s-download"><span class="dot"></span>Downloading the game<span class="meta" id="m-download"></span></li>
+            <li id="s-python"><span class="dot"></span>Starting Python 3.14<span class="meta" id="m-python"></span></li>
+            <li id="s-pygame"><span class="dot"></span>Loading pygame-ce<span class="meta" id="m-pygame"></span></li>
+            <li id="s-prepare"><span class="dot"></span>Preparing it for the browser<span class="meta" id="m-prepare"></span></li>
+        </ul>
+        <div class="bar" id="bar"><span></span></div>
+        <button id="play" class="play hidden">▶ CLICK TO PLAY</button>
+        <p class="hint" id="hint">First load downloads Python itself (about 12 MB); after that it's cached.</p>
+    </section>
+
+    <!-- error -->
+    <section id="error" class="card err hidden" role="alert">
+        <div class="icon-wrap"><span class="ph" style="background:linear-gradient(135deg,#7f1d1d,#ef4444)">!</span></div>
+        <h1>The game stopped</h1>
+        <p class="sub" id="errKind">Python error</p>
+        <p class="hint" id="errHelp" style="margin-top:0"></p>
+        <pre id="errText"></pre>
+        <div class="row"><button class="btn" id="copyErr">COPY ERROR</button><button class="btn" id="restart1">RESTART</button></div>
+    </section>
+
+    <!-- ended -->
+    <section id="ended" class="card hidden">
+        <div class="icon-wrap"><span class="ph" style="background:linear-gradient(135deg,#c63aeb,#3b82f6)">🎮</span></div>
+        <h1>Thanks for playing!</h1>
+        <p class="sub">The game has closed</p>
+        <div class="row"><button class="btn" id="restart2">PLAY AGAIN</button></div>
+    </section>
+
+    <button id="consoleBtn" aria-expanded="false">CONSOLE</button>
+    <div id="console" class="hidden" aria-label="Python output"></div>
+
+    <script src="../assets/js/config.js"></script>
+    <script>
+    (() => {
+        const PYODIDE_VERSION = '314.0.7';
+        const PYODIDE_URL = `https://cdn.jsdelivr.net/pyodide/v${PYODIDE_VERSION}/full/`;
+        const $ = (id) => document.getElementById(id);
+        const qs = new URLSearchParams(location.search);
+        const canvas = $('canvas');
+        const out = $('console');
+        let pyodide = null, info = null, lastError = '';
+
+        // ---------- helpers ----------
+        const fmt = (n) => (n >= 1048576 ? `${(n / 1048576).toFixed(1)} MB` : `${Math.max(1, Math.round(n / 1024))} KB`);
+        const step = (id, state, meta) => {
+            const li = $(`s-${id}`); li.classList.remove('active', 'done'); if (state) li.classList.add(state);
+            if (meta !== undefined) $(`m-${id}`).textContent = meta;
+        };
+        const bar = (pct) => { const b = $('bar'); b.classList.toggle('indeterminate', pct == null); b.firstElementChild.style.width = pct == null ? '' : `${pct}%`; };
+        const log = (text, cls) => {
+            const line = document.createElement('div'); if (cls) line.className = cls; line.textContent = text;
+            out.appendChild(line); while (out.childElementCount > 600) out.firstChild.remove();
+            out.scrollTop = out.scrollHeight;
+        };
+        $('consoleBtn').addEventListener('click', () => {
+            const open = out.classList.toggle('hidden') === false;
+            $('consoleBtn').setAttribute('aria-expanded', String(open));
+        });
+        const restart = () => location.reload();
+        $('restart1').onclick = restart; $('restart2').onclick = restart;
+        $('copyErr').onclick = async () => { try { await navigator.clipboard.writeText(lastError); $('copyErr').textContent = 'COPIED'; } catch { /* ignore */ } };
+
+        function explain(msg) {
+            if (/ModuleNotFoundError: No module named '([^']+)'/.test(msg)) {
+                const m = RegExp.$1;
+                return `The game imports "${m}", which isn't available in the browser. pygame-ce and Python's standard library are included; other packages (and native code) are not.`;
+            }
+            if (/FileNotFoundError|No file '.*' found|Couldn't open/.test(msg)) return 'A file the game loads is missing. Check that it is inside the .zip and that the name matches exactly — web file names are case-sensitive.';
+            if (/pygame\.error: .*video/i.test(msg)) return 'pygame could not create its window. Make sure pygame.display.set_mode() runs before drawing.';
+            return '';
+        }
+        function showError(kind, msg) {
+            lastError = msg;
+            $('loader').classList.add('hidden'); $('ended').classList.add('hidden');
+            $('errKind').textContent = kind;
+            $('errText').textContent = msg;
+            const help = explain(msg); $('errHelp').textContent = help; $('errHelp').classList.toggle('hidden', !help);
+            $('error').classList.remove('hidden');
+            canvas.classList.remove('on');
+            log(msg, 'e');
+        }
+
+        // Scale the game canvas to fit the window, keeping its aspect ratio
+        function fit() {
+            const cw = canvas.width || 640, ch = canvas.height || 360;
+            const s = Math.min(window.innerWidth / cw, window.innerHeight / ch);
+            canvas.style.setProperty('--w', `${Math.floor(cw * s)}px`);
+            canvas.style.setProperty('--h', `${Math.floor(ch * s)}px`);
+            canvas.classList.toggle('pixel', s >= 1.8);
+        }
+        new MutationObserver(fit).observe(canvas, { attributes: true, attributeFilter: ['width', 'height'] });
+        window.addEventListener('resize', fit); fit();
+        canvas.addEventListener('contextmenu', (e) => e.preventDefault());
+
+        // ---------- which game? ----------
+        async function resolveGame() {
+            const slug = qs.get('game');
+            if (qs.get('src')) {
+                return { title: qs.get('title') || 'Python game', icon: qs.get('icon') || '', entry: qs.get('entry') || '', urls: qs.get('src').split(',').filter(Boolean) };
+            }
+            if (!slug) throw new Error('No game selected. Open this page from the store, or add ?game=<slug>.');
+            const rows = await window.PF.rest(`portfolio_games?select=title,icon_url,play&slug=eq.${encodeURIComponent(slug)}`);
+            const g = rows && rows[0];
+            const parts = g?.play?.zip_parts || [];
+            if (!g || g.play?.kind !== 'python' || !parts.length) throw new Error(`"${slug}" has no Python build uploaded yet.`);
+            const site = (v) => (v && v.startsWith('assets/') ? `../${v}` : window.PF.mediaUrl(v));
+            return { title: g.title, icon: site(g.icon_url), entry: g.play.entry || '', urls: parts.map((p) => window.PF.mediaUrl(p.path || p)), size: g.play.size };
+        }
+
+        async function download(urls, knownSize) {
+            const chunks = []; let loaded = 0, total = knownSize || 0;
+            for (const url of urls) {
+                const res = await fetch(url);
+                if (!res.ok) throw new Error(`Couldn't download the game (HTTP ${res.status}).`);
+                if (!knownSize) total += +res.headers.get('content-length') || 0;
+                const reader = res.body.getReader();
+                for (;;) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+                    chunks.push(value); loaded += value.length;
+                    bar(total ? Math.min(100, (loaded / total) * 100) : null);
+                    $('m-download').textContent = total ? `${fmt(loaded)} / ${fmt(total)}` : fmt(loaded);
+                }
+            }
+            const buf = new Uint8Array(loaded); let o = 0;
+            for (const c of chunks) { buf.set(c, o); o += c.length; }
+            if (buf[0] !== 0x50 || buf[1] !== 0x4b) throw new Error('The uploaded file is not a .zip archive.');
+            return buf;
+        }
+
+        function loadScript(src) {
+            return new Promise((resolve, reject) => {
+                const s = document.createElement('script'); s.src = src; s.crossOrigin = 'anonymous';
+                s.onload = resolve; s.onerror = () => reject(new Error('Could not load the Python runtime (check your connection).'));
+                document.head.appendChild(s);
+            });
+        }
+
+        // ---------- boot ----------
+        (async () => {
+            try {
+                if (typeof WebAssembly !== 'object') throw new Error('This browser does not support WebAssembly, which is needed to run Python.');
+                const game = await resolveGame();
+                $('title').textContent = game.title; document.title = `${game.title} · Python`;
+                if (game.icon) { const img = $('icon'); img.src = game.icon; img.onload = () => { img.classList.remove('hidden'); $('iconPh').classList.add('hidden'); }; }
+
+                step('download', 'active');
+                const [zip] = await Promise.all([download(game.urls, game.size), loadScript(`${PYODIDE_URL}pyodide.js`)]);
+                step('download', 'done', fmt(zip.length));
+
+                step('python', 'active'); bar(null);
+                const t0 = performance.now();
+                pyodide = await window.loadPyodide({ indexURL: PYODIDE_URL, stdout: (t) => log(t), stderr: (t) => log(t, 'e') });
+                step('python', 'done', `${((performance.now() - t0) / 1000).toFixed(1)}s`);
+
+                step('pygame', 'active');
+                await pyodide.loadPackage('pygame-ce', { messageCallback: () => {}, errorCallback: (m) => log(m, 'e') });
+                step('pygame', 'done', '2.5.7');
+
+                step('prepare', 'active');
+                const helper = await (await fetch('pyrun.py')).text();
+                pyodide.FS.writeFile('/home/pyodide/__pyrun__.py', helper);
+                pyodide.unpackArchive(zip, 'zip', { extractDir: '/home/pyodide/game' });
+                info = JSON.parse(await pyodide.runPythonAsync(`
+import sys
+sys.path.insert(0, '/home/pyodide')
+import __pyrun__
+__pyrun__.prepare('/home/pyodide/game', ${JSON.stringify(game.entry)})`));
+                step('prepare', 'done', info.converted.length ? `${info.converted.length} loop${info.converted.length > 1 ? 's' : ''} converted` : 'ready');
+                log(`[pyrun] entry: ${info.entry} · ${info.files} Python file(s)`, 'i');
+                info.converted.forEach((c) => log(`[pyrun] async: ${c}`, 'i'));
+                info.warnings.forEach((w) => log(`[pyrun] warning: ${w}`, 'e'));
+
+                bar(100);
+                document.querySelector('#loader .icon-wrap').classList.add('ready');
+                $('loader').classList.add('ready');
+                $('hint').textContent = matchMedia('(pointer: coarse)').matches ? 'Most pygame games expect a keyboard and mouse.' : 'Click the game to give it keyboard focus. Press Esc in the player to leave full screen.';
+                const btn = $('play'); btn.classList.remove('hidden'); btn.focus();
+                btn.addEventListener('click', start, { once: true });
+            } catch (e) {
+                showError('Could not start', String(e && e.message || e));
+            }
+        })();
+
+        async function start() {
+            $('loader').classList.add('hidden');
+            pyodide.canvas.setCanvas2D(canvas);
+            canvas.classList.add('on');
+            canvas.focus();
+            canvas.addEventListener('pointerdown', () => canvas.focus());
+            try {
+                await pyodide.runPythonAsync('import __pyrun__\nawait __pyrun__.run()');
+                canvas.classList.remove('on');
+                $('ended').classList.remove('hidden');
+            } catch (e) {
+                const msg = String(e && e.message || e);
+                const last = msg.trim().split('\n').pop();
+                showError(last.split(':')[0] || 'Python error', msg);
+            }
+        }
+    })();
+    </script>
+</body>
+</html>

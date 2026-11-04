@@ -43,6 +43,30 @@ Start with the admin upload; if downloads grow, upgrade Supabase or switch the g
 
 A store game can run in a full-screen player instead of being downloaded. In the admin, open the game, go to **Play in browser** and paste an embeddable URL, such as GitHub Pages or an itch.io HTML5 embed link. Stick Empire Conquest 3D uses `https://voraman.github.io/Stick-Empire-Conquest-3D/`. Direct link: `index.html#store/stick-empire-conquest-3d/play`.
 
+## Python (pygame) games in the browser
+
+Python games run on real Python 3.14 with pygame-ce inside the visitor's browser ([Pyodide](https://pyodide.org), WebAssembly). The player page is `play/python.html` and the runtime helper is `play/pyrun.py`.
+
+1. Zip the game folder. It should contain `main.py` (or set the entry file in the admin) and its assets.
+2. In the admin, open the game, then **Play in browser → Python (pygame) .zip**. Upload the .zip and press **Test it**.
+3. Publish the game. The store shows **Play now**. Direct link: `play/python.html?game=<slug>`.
+
+Normal desktop pygame code works unchanged. When the game loads, `pyrun.py` rewrites blocking loops in memory: functions that contain a `while running:` game loop become async, and `Clock.tick()`, `time.sleep()`, `pygame.time.wait()` and `pygame.event.wait()` stop blocking. Your files are not modified, and error messages keep your real line numbers. Loops without a Clock are capped at 60 fps.
+
+What works:
+- the standard library
+- pure-Python code and modules spread across folders or packages
+- images, fonts and sounds (if audio isn't available, sounds are muted instead of crashing)
+- `sys.exit()`
+
+Limits:
+- pip packages other than pygame-ce, and native code
+- threads and subprocesses
+- saved files reset when the page reloads
+- keyboard and mouse games suit desktop browsers best
+
+The first visit downloads about 12 MB of Python runtime from jsDelivr; after that the browser caches it.
+
 ## Editing styles
 
 The page uses a **pre-built** Tailwind CSS file (`assets/css/tailwind.css`) instead of the Tailwind CDN script, which is much faster to load.
