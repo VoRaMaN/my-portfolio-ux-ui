@@ -21,6 +21,7 @@ import importlib.machinery
 import inspect
 import json
 import os
+import re
 import sys
 import time
 
@@ -31,7 +32,7 @@ NEVER_ASYNC = {'__init__', '__new__', '__del__', '__enter__', '__exit__', '__rep
 SPRITE_BASES = {'Sprite', 'DirtySprite', 'Group', 'RenderUpdates', 'LayeredUpdates', 'GroupSingle'}
 INTERACT = {'event', 'display', 'tick', 'event_wait'}
 
-STATE = {'root': None, 'main': None, 'project': None}
+STATE = {'root': None, 'main': None, 'project': None, 'window': False}
 
 
 # --------------------------------------------------------------------- analysis
@@ -394,50 +395,168 @@ def _install_hook(root):
     sys.dont_write_bytecode = True
 
 
-# ------------------------------------------------------------------ public API
-def find_entry(base, entry=''):
-    """Locate the entry script inside the unpacked project (zips often wrap everything in one folder)."""
-    cands = []
+# ------------------------------------------------------------------ finding the start file
+# Projects arrive straight from an editor: PyCharm's sample main.py, a venv, tests, and modules such as
+# fighter.py (class Fighter) sit next to the real game script. So rather than trusting a file name, every
+# .py file is scored. The start file is one no other file imports, that opens the window (set_mode) itself
+# or through what it imports, and that actually runs code at the top level.
+IDE_SAMPLES = ('This is a sample Python script', "print_hi('PyCharm')")
+RUN_NAMES = {'main', '__main__', 'game', 'run', 'app', 'play', 'start', 'launcher'}
+TESTISH = re.compile(r'^(test_.*|.*_test|tests?|conftest|setup)$', re.I)
+WINDOW = re.compile(r'\bset_mode\s*\(')
+
+
+def _norm(s):
+    s = re.sub(r'[^a-z0-9]', '', str(s).lower())
+    return re.sub(r'(v?\d+)+$', '', s) or s      # "PyFighter V1" → "pyfighter"
+
+
+def _py_files(base, skip=True, read=True):
+    out = {}
     for dirpath, dirs, files in os.walk(base):
-        dirs[:] = [d for d in dirs if d not in SKIP_DIRS and not d.startswith('.')]
-        for f in files:
-            if f.endswith('.py'):
-                cands.append(os.path.join(dirpath, f))
-    if not cands:
-        raise FileNotFoundError('No .py files found in the uploaded .zip')
-    depth = lambda p: p.count(os.sep)
+        dirs[:] = sorted(d for d in dirs if d != '__MACOSX' and not (skip and (d in SKIP_DIRS or d.startswith('.'))))
+        for f in sorted(files):
+            if f.endswith('.py') and not f.startswith('._'):
+                p = os.path.join(dirpath, f)
+                if not read:
+                    out[p] = ''
+                    continue
+                try:
+                    with open(p, encoding='utf-8', errors='replace') as fh:
+                        out[p] = fh.read()
+                except OSError:
+                    pass
+    return out
+
+
+def _imported_names(src):
+    names = set()
+    try:
+        tree = ast.parse(src)
+    except SyntaxError:
+        for m in re.finditer(r'^\s*(?:from\s+([\w.]+)\s+import\s+([\w, ]+)|import\s+([\w., ]+))', src, re.M):
+            for grp in m.groups():
+                if grp:
+                    names.update(x for x in re.split(r'[.,\s]+', grp) if x)
+        return names, None
+    for n in ast.walk(tree):
+        if isinstance(n, ast.Import):
+            for a in n.names:
+                names.update(a.name.split('.'))
+        elif isinstance(n, ast.ImportFrom):
+            if n.module:
+                names.update(n.module.split('.'))
+            names.update(a.name for a in n.names)
+    return names, tree
+
+
+def _runs_code(tree):
+    """True when running the file does something beyond defining functions, classes and constants."""
+    for n in tree.body:
+        if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef, ast.Import, ast.ImportFrom, ast.Pass)):
+            continue
+        if isinstance(n, ast.Expr) and isinstance(n.value, ast.Constant):
+            continue
+        if isinstance(n, (ast.Assign, ast.AnnAssign, ast.AugAssign)) and not any(isinstance(x, ast.Call) for x in ast.walk(n)):
+            continue
+        return True
+    return False
+
+
+def rank_entries(base, hint=None):
+    """All candidate start files, best first, as (score, path)."""
+    files = _py_files(base)
+    hints = {h for h in (_norm(os.path.splitext(x)[0]) for x in (hint if isinstance(hint, (list, tuple)) else [hint]) if x) if h}
+    info, mods = {}, {}
+    for p, src in files.items():
+        names, tree = _imported_names(src)
+        stem = os.path.splitext(os.path.basename(p))[0]
+        mod = os.path.basename(os.path.dirname(p)) if stem == '__init__' else stem
+        test = bool(TESTISH.match(stem)) or any(TESTISH.match(x) for x in os.path.relpath(p, base).split(os.sep)[:-1])
+        info[p] = {'names': names, 'tree': tree, 'stem': stem, 'src': src, 'test': test}
+        mods.setdefault(mod, []).append(p)
+    imported = set()
+    for p, d in info.items():
+        if d['test']:
+            continue                               # a test importing the game doesn't make the game a module
+        for nm in d['names']:
+            imported.update(q for q in mods.get(nm, ()) if q != p)
+
+    def reaches_window(p):
+        seen, todo = {p}, [p]
+        while todo:
+            cur = todo.pop()
+            if WINDOW.search(info[cur]['src']):
+                return True
+            for nm in info[cur]['names']:
+                for q in mods.get(nm, ()):
+                    if q not in seen:
+                        seen.add(q); todo.append(q)
+        return False
+
+    scored = []
+    for p, d in info.items():
+        src, stem, s = d['src'], d['stem'], 0
+        if p in imported:
+            s -= 1000                              # e.g. fighter.py: the game imports its Fighter class
+        if WINDOW.search(src):
+            s += 120
+        elif reaches_window(p):
+            s += 100
+        if re.search(r'^\s*(?:import|from)\s+pygame\b', src, re.M):
+            s += 20
+        if d['tree'] is not None and _runs_code(d['tree']):
+            s += 30
+        if re.search(r'^\s*while\b', src, re.M):
+            s += 10
+        if re.search(r'''__name__\s*==\s*['"]__main__['"]''', src):
+            s += 10
+        if stem.lower() in RUN_NAMES:
+            s += 15
+        n = _norm(stem)
+        if n and (n in hints or (len(n) >= 4 and any(len(h) >= 4 and (h.startswith(n) or n.startswith(h)) for h in hints))):
+            s += 40                                # PyFighter.py in "PyFighter V1.zip"
+        if d['test']:
+            s -= 200
+        if any(t in src for t in IDE_SAMPLES):
+            s -= 300                               # PyCharm's "sample Python script" main.py
+        s -= 4 * os.path.relpath(p, base).count(os.sep)
+        scored.append((s, p))
+    scored.sort(key=lambda x: (-x[0], x[1].count(os.sep), x[1].lower()))
+    return scored
+
+
+def find_entry(base, entry='', hint=None, ranked=None):
+    """Locate the start file inside the unpacked project (zips often wrap everything in one folder)."""
+    ranked = rank_entries(base, hint) if ranked is None else ranked
     if entry:
-        want = entry.replace('\\', '/').strip('/')
-        hits = [p for p in cands if p.replace(os.sep, '/').endswith('/' + want)]
+        files = _py_files(base, skip=False, read=False)
+        rel = lambda p: '/' + os.path.relpath(p, base).replace(os.sep, '/')
+        want = '/' + entry.replace('\\', '/').strip().strip('/')
+        if not want.endswith('.py'):
+            want += '.py'
+        hits = [p for p in files if rel(p).endswith(want)] or [p for p in files if rel(p).lower().endswith(want.lower())]
         if hits:
-            return min(hits, key=depth)
-        raise FileNotFoundError(f'Entry file "{entry}" not found in the .zip')
-    for name in ('main.py', '__main__.py', 'game.py', 'run.py', 'app.py'):
-        hits = [p for p in cands if os.path.basename(p) == name]
-        if hits:
-            return min(hits, key=depth)
-    for p in sorted(cands, key=depth):
-        try:
-            with open(p, encoding='utf-8', errors='replace') as fh:
-                src = fh.read()
-            if 'set_mode' in src and '__name__' in src:
-                return p
-        except OSError:
-            pass
-    for p in sorted(cands, key=depth):
-        with open(p, encoding='utf-8', errors='replace') as fh:
-            if 'set_mode' in fh.read():
-                return p
-    return min(cands, key=depth)
+            return min(hits, key=lambda p: p.count(os.sep))
+        found = ', '.join(sorted(os.path.relpath(p, base).replace(os.sep, '/') for _, p in ranked)[:12]) or 'none'
+        raise FileNotFoundError(f'The start file "{entry}" is not in the .zip. Python files in it: {found}. '
+                                'Fix the name in the admin (Play in browser → Start file), or clear it to detect the start file automatically.')
+    if not ranked:
+        raise FileNotFoundError('No .py files found in the uploaded .zip')
+    return ranked[0][1]
 
 
-def prepare(base, entry=''):
-    main = os.path.abspath(find_entry(base, entry))
+def prepare(base, entry='', hint=None):
+    ranked = rank_entries(base, hint)
+    main = os.path.abspath(find_entry(base, entry, hint, ranked))
     root = os.path.dirname(main)
     proj = Project(root)
-    STATE.update(root=root, main=main, project=proj)
+    STATE.update(root=root, main=main, project=proj, window=False)
+    others = [os.path.relpath(p, base) for _, p in ranked if os.path.abspath(p) != main][:4]
     return json.dumps({
         'entry': os.path.relpath(main, base),
+        'chosen': 'set' if entry else 'auto',
+        'others': others,
         'files': len(proj.trees),
         'converted': proj.report,
         'warnings': proj.errors + [f'Game loop inside {x} cannot be converted (may freeze)' for x in proj.loop_in_init],
@@ -456,6 +575,7 @@ def _patch_pygame():
         if not w or not h:
             size = (1280, 720)
         flags &= ~getattr(pygame, 'FULLSCREEN', 0)   # the page's own Fullscreen button handles this
+        STATE['window'] = True
         return real_set_mode(size, flags, *a, **k)
     pygame.display.set_mode = set_mode
 

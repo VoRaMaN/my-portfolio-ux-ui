@@ -328,12 +328,31 @@
             </div>`;
     }
 
+    // Lists the .py files in a .zip from its central directory (no unzipping), skipping venvs, caches and IDE folders
+    async function zipPyFiles(file) {
+        const tail = Math.min(file.size, 65557);
+        const t = new DataView(await file.slice(file.size - tail).arrayBuffer());
+        let e = -1;
+        for (let i = t.byteLength - 22; i >= 0; i--) if (t.getUint32(i, true) === 0x06054b50) { e = i; break; }
+        if (e < 0) return [];
+        const count = t.getUint16(e + 10, true), size = t.getUint32(e + 12, true), off = t.getUint32(e + 16, true);
+        if (count === 0xffff || off === 0xffffffff || off + size > file.size) return [];
+        const cd = new DataView(await file.slice(off, off + size).arrayBuffer()), utf8 = new TextDecoder(), names = [];
+        for (let k = 0, p = 0; k < count && p + 46 <= cd.byteLength && cd.getUint32(p, true) === 0x02014b50; k++) {
+            const n = cd.getUint16(p + 28, true), raw = new Uint8Array(cd.buffer, p + 46, n);
+            names.push(cd.getUint16(p + 8, true) & 0x800 ? utf8.decode(raw) : String.fromCharCode(...raw));
+            p += 46 + n + cd.getUint16(p + 30, true) + cd.getUint16(p + 32, true);
+        }
+        const skip = /^(__MACOSX|__pycache__|venv|env|site-packages|build|dist|\..*)$/;
+        return names.map((n) => n.replace(/\\/g, '/')).filter((n) => /\.py$/i.test(n) && !n.split('/').pop().startsWith('._') && !n.split('/').slice(0, -1).some((d) => skip.test(d)));
+    }
+
     const playKind = (g) => { const p = g.play || {}; return p.kind === 'python' ? 'python' : p.url ? 'url' : 'none'; };
     // The test link plays the uploaded files directly, so it also works for unpublished drafts
     const testUrl = (g) => {
         const p = g.play || {};
         if (p.kind === 'python' && (p.zip_parts || []).length) {
-            const q = new URLSearchParams({ src: p.zip_parts.map((x) => mediaUrl(x.path)).join(','), entry: p.entry || '', title: g.title || 'Python game' });
+            const q = new URLSearchParams({ src: p.zip_parts.map((x) => mediaUrl(x.path)).join(','), entry: p.entry || '', title: g.title || 'Python game', file: p.filename || '' });
             if (g.icon_url) q.set('icon', g.icon_url.startsWith('assets/') ? `../${g.icon_url}` : mediaUrl(g.icon_url));
             return `play/python.html?${q}`;
         }
@@ -433,7 +452,7 @@
                     ${field('pl-url', 'Game URL (embeddable)', (g.play || {}).url || '', 'url', 'placeholder="https://voraman.github.io/My-Game/"')}
                 </div>
                 <div id="pl-py-box" class="${playKind(g) === 'python' ? '' : 'hidden'} space-y-3">
-                    <p class="text-xs text-gray-400 leading-relaxed">Zip your pygame project folder (with <code>main.py</code> and its assets) and upload it. It runs on real Python 3.14 + pygame-ce in the visitor's browser (Pyodide/WebAssembly) — no build step. Normal <code>while running:</code> loops, <code>Clock.tick()</code>, <code>time.sleep()</code> and <code>event.wait()</code> are converted automatically. Pure-Python code and the standard library work; other pip packages and native code don't.</p>
+                    <p class="text-xs text-gray-400 leading-relaxed">Zip your pygame project folder (the script that starts the game, its modules and assets) and upload it. The start file is found automatically — e.g. <code>PyFighter.py</code> next to a <code>fighter.py</code> class file; PyCharm's sample <code>main.py</code>, <code>venv</code> and <code>.idea</code> are ignored. It runs on real Python 3.14 + pygame-ce in the visitor's browser (Pyodide/WebAssembly) — no build step. Normal <code>while running:</code> loops, <code>Clock.tick()</code>, <code>time.sleep()</code> and <code>event.wait()</code> are converted automatically. Pure-Python code and the standard library work; other pip packages and native code don't.</p>
                     ${(g.play || {}).kind === 'python' && (g.play.zip_parts || []).length ? `<p class="text-sm"><i class="fab fa-python text-yellow-300 mr-2"></i><b>${esc(g.play.filename || 'game.zip')}</b> · ${fmtBytes(g.play.size)}${g.play.uploaded_at ? ` · uploaded ${new Date(g.play.uploaded_at).toLocaleString()}` : ''}</p>` : '<p class="text-sm text-gray-400">No Python build uploaded yet.</p>'}
                     <div id="py-drop" class="drop rounded-xl p-6 text-center">
                         <i class="fab fa-python text-3xl text-yellow-300 mb-2"></i>
@@ -441,7 +460,9 @@
                         <label class="btn-main inline-block rounded-lg px-4 py-2 text-xs font-bold mt-3 cursor-pointer"><i class="fas fa-upload mr-1"></i>Choose .zip<input type="file" accept=".zip,application/zip" class="hidden" id="py-input"></label>
                     </div>
                     <div class="hidden" id="prog-py"></div>
-                    ${field('pl-entry', 'Entry file (optional — main.py is found automatically)', (g.play || {}).entry || '', 'text', 'placeholder="main.py"')}
+                    ${field('pl-entry', 'Start file (optional — leave empty to detect it)', (g.play || {}).entry || '', 'text', 'placeholder="e.g. PyFighter.py" list="pl-entry-list" autocomplete="off"')}
+                    <datalist id="pl-entry-list">${[...new Set(((g.play || {}).py_files || []).map((f) => f.split('/').pop()))].map((f) => `<option value="${esc(f)}">`).join('')}</datalist>
+                    ${((g.play || {}).py_files || []).length ? `<p class="text-xs text-gray-500 -mt-2">Python files in the zip: ${((g.play || {}).py_files).slice(0, 12).map((f) => `<code>${esc(f.split('/').pop())}</code>`).join(' ')}</p>` : ''}
                 </div>
                 <div class="grid sm:grid-cols-2 gap-4">
                     ${field('pl-itch', 'itch.io page (optional)', (g.play || {}).itch_url || '', 'url', 'placeholder="https://gojo-studio.itch.io/my-game"')}
@@ -600,8 +621,9 @@
             const prog = progressUI($('prog-py'));
             const old = ((g.play || {}).zip_parts || []).map((p) => p.path);
             try {
+                const pyFiles = await zipPyFiles(file).catch(() => []);
                 const up = await uploadLarge(`games/${g.slug}/python`, file, prog);
-                await persist({ play: { kind: 'python', zip_parts: up.parts, size: up.size, filename: file.name, entry: $('pl-entry').value.trim() || null, uploaded_at: new Date().toISOString(), ...shared() } });
+                await persist({ play: { kind: 'python', zip_parts: up.parts, size: up.size, filename: file.name, entry: $('pl-entry').value.trim() || null, py_files: pyFiles.slice(0, 200), uploaded_at: new Date().toISOString(), ...shared() } });
                 await removePaths(old);
                 toast('Python game uploaded — press "Test it"');
             } catch (e) { toast(e.message, true); }
