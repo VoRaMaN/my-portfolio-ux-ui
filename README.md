@@ -41,8 +41,9 @@ Start with the admin upload; if downloads grow, upgrade Supabase or switch the g
   - **Sounds:** 18 rows. The 16 classic 808 voices are kick, snare, clap, rim shot, closed and open hat (the closed hat chokes the open one), cymbal, cowbell, low/mid/hi tom, low/mid/hi conga, claves and maracas. Add a tuned 808 bass whose notes can glide, plus an accent track.
   - **Patterns:** 8, 16, 32, 64 or 128 steps (½ to 8 bars of 16th notes), with bar pages. Making a pattern longer repeats your loop into the new bars.
   - **Tempo and feel:** 40–240 BPM. Drag the number, scroll, use the arrow keys, ± or TAP. Swing goes from 50 to 75 %.
-  - **Per step:** right-click or long-press a step to set velocity, roll (2–4 hits), chance and, on the 808 row, the note. There's mute/solo on every row, and each voice has Level, Tune, Decay, Tone and Pan knobs. Master knobs are Volume, Boom (low-end drive) and Space (reverb).
-  - **Presets and generator:** nine presets (Trap, UK Drill, Boom Bap, Electro, Miami Bass, House, Dembow, Afrobeats, Lo-Fi). **Generate** writes a fresh groove in the current style.
+  - **Per step:** right-click or long-press a step to set velocity, roll (2–4 hits), chance, nudge and, on the 808 row, the note. There's mute/solo on every row, and each voice has Level, Tune, Decay, Tone and Pan knobs. Master knobs are Volume, Boom (low-end drive) and Space (reverb).
+  - **Presets and generator:** ten presets (Trap, UK Drill, Jersey Club, Boom Bap, Electro, Miami Bass, House, Dembow, Afrobeats, Lo-Fi). **Generate** writes a fresh groove in the current style.
+  - **Nudge:** shift any step early or late by ⅙, ⅓ or ½ of a step. ±⅓ places true triplets on the 16th grid; Jersey Club uses this for its kick bounce (two straight kicks, then a quarter-note-triplet trio).
   - **Keys and recording:** Space plays/stops. A–M play the drums and Q–P play 808 notes. Turn on **REC** to record what you play into the grid.
   - **Undo, save, export, share:** undo (⌘/Ctrl Z) and an automatic save in the browser. **WAV** renders the beat offline into a file that loops seamlessly. **Share** copies a link (`?beat=…`) that opens the same beat.
 - **Sounds** (`assets/js/sfx.js`): every button plays a click synthesized with Web Audio, so there are no audio files. Visitors can mute it with the speaker icon in the nav, the sidebar or the footer.

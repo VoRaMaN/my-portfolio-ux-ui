@@ -6,8 +6,8 @@
    16 classic 808 voices — kick, snare, three toms, three congas, rim shot,
    claves, clap, maracas, cowbell, cymbal, open + closed hats — plus a tuned,
    gliding 808 bass. Patterns run 8–128 steps (½ to 8 bars of 16ths) with
-   tempo, swing, an accent track, per-step velocity / rolls / chance / 808
-   notes, mute + solo, per-voice tone knobs, genre presets, a groove
+   tempo, swing, an accent track, per-step velocity / rolls / chance / nudge /
+   808 notes, mute + solo, per-voice tone knobs, genre presets, a groove
    generator, keyboard pads with record, undo, autosave, WAV export
    (rendered offline, loops seamlessly) and share links (?beat=…).
    ========================================================================= */
@@ -18,6 +18,9 @@ window.BeatLab = (() => {
     const VEL = [0, 0.45, 0.74, 1];
     const A64 = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_';
     const NCH = 'LKJIHGFEDCBA0123456789abc'; // preset 808 notes: L = −12 … A = −1, 0–9, a = 10, b = 11, c = 12
+    // nudge moves a hit off the grid in sixths of a step, so ±⅓ lands true triplets on a 16th grid
+    const NUD = ['−½', '−⅓', '−⅙', 'on grid', '+⅙', '+⅓', '+½'];
+    const JERSEY_KICK = { 0: 0, 4: 0, 8: 0, 11: -2, 13: 2 };  // two straight kicks, then a quarter-note-triplet trio
     const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
     const barsLabel = (n) => (n === 8 ? '½ bar' : `${n / 16} bar${n > 16 ? 's' : ''}`);
 
@@ -267,7 +270,7 @@ window.BeatLab = (() => {
     }
     function voice(E, S, i, t, v, x) { const R = E.rows[i]; if (R) SYN[V[i].id](E, R.g, t, v, S.r[i], x || {}); }
     // everything one step plays — shared by the live scheduler and the offline WAV render
-    function playStep(E, S, s, t, dur, skip) {
+    function playStep(E, S, s, t, dur, skip, limit) {
         const accent = S.r[ACC].on[s] ? 1 + S.r[ACC].level * 0.7 : 1;
         const solo = S.r.some((r, i) => i !== ACC && r.solo);
         for (let i = 1; i < V.length; i++) {
@@ -275,9 +278,10 @@ window.BeatLab = (() => {
             if (!r.on[s] || r.mute || (solo && !r.solo)) continue;
             if (skip && skip.delete(i * 1000 + s)) continue;
             if (r.prob[s] < 4 && Math.random() * 4 >= r.prob[s]) continue;
-            const v = VEL[r.vel[s]] * accent, n = r.roll[s] || 1;
+            const v = VEL[r.vel[s]] * accent, n = r.roll[s] || 1, t0 = t + ((r.nud[s] || 0) * dur) / 6;
             for (let k = 0; k < n; k++) {
-                const tt = t + (k * dur) / n, vv = k ? v * 0.82 : v;
+                const tt = Math.max(E.c.currentTime, t0 + (k * dur) / n), vv = k ? v * 0.82 : v; // a hit nudged into the past plays now
+                if (limit != null && tt >= limit) continue;
                 if (i === BASS) {
                     const f = bassFreq(S, r.note[s]), B = E.bass;
                     const from = S.glide && B && tt >= B.t && tt < B.end - 0.03 && Math.abs(B.f - f) > 0.5 ? B.f : 0;
@@ -290,11 +294,11 @@ window.BeatLab = (() => {
     // ------------------------------------------------------------------ state
     function blankRow(i) {
         const v = V[i];
-        return { on: new Uint8Array(MAXS), vel: new Uint8Array(MAXS).fill(2), roll: new Uint8Array(MAXS).fill(1), prob: new Uint8Array(MAXS).fill(4), note: new Int8Array(MAXS), mute: false, solo: false, level: v.accent ? 0.5 : 0.75, tune: 0.5, decay: 0.5, tone: 0.5, pan: v.pan ?? 0.5 };
+        return { on: new Uint8Array(MAXS), vel: new Uint8Array(MAXS).fill(2), roll: new Uint8Array(MAXS).fill(1), prob: new Uint8Array(MAXS).fill(4), note: new Int8Array(MAXS), nud: new Int8Array(MAXS), mute: false, solo: false, level: v.accent ? 0.5 : 0.75, tune: 0.5, decay: 0.5, tone: 0.5, pan: v.pan ?? 0.5 };
     }
     function blankState() { return { bpm: 120, swing: 0, len: 16, key: 5, glide: true, preset: 'trap', vol: 0.8, boom: 0.4, space: 0.22, r: V.map((_, i) => blankRow(i)) }; }
-    function clearStep(r, s) { r.on[s] = 0; r.vel[s] = 2; r.roll[s] = 1; r.prob[s] = 4; }
-    function copyStep(S, a, b) { S.r.forEach((r) => { r.on[b] = r.on[a]; r.vel[b] = r.vel[a]; r.roll[b] = r.roll[a]; r.prob[b] = r.prob[a]; r.note[b] = r.note[a]; }); }
+    function clearStep(r, s) { r.on[s] = 0; r.vel[s] = 2; r.roll[s] = 1; r.prob[s] = 4; r.nud[s] = 0; }
+    function copyStep(S, a, b) { S.r.forEach((r) => { r.on[b] = r.on[a]; r.vel[b] = r.vel[a]; r.roll[b] = r.roll[a]; r.prob[b] = r.prob[a]; r.note[b] = r.note[a]; r.nud[b] = r.nud[a]; }); }
 
     // Presets — original grooves in each style. '.' off · x hit · X hard · o soft · 2/3/4 roll · ? 50 % chance.
     // 808 rows hold notes relative to the key (see NCH).
@@ -305,6 +309,10 @@ window.BeatLab = (() => {
         { id: 'drill', name: 'UK Drill', bpm: 142, len: 32, key: 1, glide: 1, boom: 0.55, desc: 'sliding 808s and triplet-feel hats',
             rows: { ac: '........x...............x.......', bd: 'x.....x....x......x..x....x.....', b8: '0.....0....7......c..a....7.....', sd: '........X...............X.....x.', ch: 'x..x..x.x..x..x.x..x..x.x..3..x.', rs: '.............o...............o..' },
             params: { b8: { decay: 0.7, tone: 0.6 }, sd: { tone: 0.62, decay: 0.42 }, ch: { decay: 0.35 } } },
+        { id: 'jersey', name: 'Jersey Club', bpm: 140, len: 32, key: 7, boom: 0.45, desc: 'the Jersey bounce: two kicks then a true triplet trio, claps on 2 & 4, conga chirps',
+            rows: { ac: 'x.......x.......', bd: 'X...x...x..x.x..X...x...x..x.x.o', b8: '0.......0..3.5..0.......B..0.3..', cp: '....x.......x.......x.......x.2.', ch: '..o...o...o...o...o...o...o.....', oh: '..............................x.', hc: '.......x.......x.......x.x......', rs: '...o............' },
+            nud: { bd: { 11: -2, 13: 2, 27: -2, 29: 2 }, b8: { 11: -2, 13: 2, 27: -2, 29: 2 } },
+            params: { bd: { decay: 0.45, tone: 0.72 }, b8: { decay: 0.32, tone: 0.5 }, cp: { tone: 0.6, decay: 0.42 }, hc: { tune: 0.9, decay: 0.28, tone: 0.9 }, ch: { decay: 0.35 } } },
         { id: 'boombap', name: 'Boom Bap', bpm: 90, swing: 0.48, len: 16, key: 2, boom: 0.3, desc: 'swung 90s hip-hop with ghost notes',
             rows: { ac: '....x.......x...', bd: 'X......x.xx..o..', sd: '....X.......X...', ch: 'x.o.x.o.x.o.x..o', oh: '..............x.', rs: '..o.......o....o' },
             params: { sd: { tone: 0.35, decay: 0.55 }, bd: { decay: 0.36, tone: 0.6 } } },
@@ -344,6 +352,7 @@ window.BeatLab = (() => {
                 else if (ch >= '2' && ch <= '4') r.roll[s] = +ch;
             }
         });
+        Object.entries(p.nud || {}).forEach(([rid, m]) => Object.entries(m).forEach(([st, n]) => { S.r[ID[rid]].nud[+st] = n; }));
         Object.entries(p.params || {}).forEach(([rid, o]) => Object.assign(S.r[ID[rid]], o));
     }
 
@@ -351,6 +360,7 @@ window.BeatLab = (() => {
     const STY = {
         trap: { len: 32, half: 1, back: [8], snare: ['sd', 'cp'], kick: [3, 6, 7, 10, 11, 14], kp: 0.3, hat: 2, roll: 0.3, oh: 0.25, bass: 0.95, notes: [0, 0, 3, 5, 7, -2, 12], perc: ['rs'], pp: 0.05, fill: 'hats' },
         drill: { len: 32, half: 1, back: [8], snare: ['sd'], drill: 1, kick: [3, 6, 9, 11, 14], kp: 0.32, hat: 'trip', roll: 0.28, oh: 0, bass: 0.95, notes: [0, 12, 7, 5, 3, -2, 10], perc: ['rs'], pp: 0.04, fill: 'hats' },
+        jersey: { len: 32, jersey: 1, back: [4, 12], snare: ['cp'], kick: [2, 6, 15], kp: 0.16, hat: 'off', roll: 0.12, oh: 0.3, bass: 0.7, notes: [0, 0, 3, 5, 7, -2], perc: ['hc', 'rs'], pp: 0.2, fill: 'kicks' },
         boombap: { len: 16, back: [4, 12], snare: ['sd'], kick: [3, 7, 9, 10, 13], kp: 0.4, hat: 2, roll: 0, oh: 0.2, ghost: 0.35, bass: 0, perc: ['rs'], pp: 0.1, fill: 'snare' },
         electro: { len: 16, back: [4, 12], snare: ['cp'], kick: [3, 6, 10, 13, 14], kp: 0.42, hat: 1, roll: 0.04, oh: 0.1, bass: 0.65, notes: [0, 0, 7, 5, 3, 10, 12], perc: ['cb', 'hc', 'lc', 'mc', 'cl'], pp: 0.14, fill: 'toms' },
         miami: { len: 16, back: [4, 12], snare: ['cp'], kick: [3, 6, 8, 10, 14], kp: 0.42, hat: 1, roll: 0.06, oh: 0.1, bass: 1, notes: [0, 0, 0, 7, 5, 3], perc: ['cb', 'rs'], pp: 0.07, fill: 'toms' },
@@ -366,27 +376,28 @@ window.BeatLab = (() => {
         for (let s = o; s < o + n; s++) {
             const p = s % 16, bar = ((s - o) / 16) | 0;
             const back = st.dembow ? [3, 6, 11, 14].includes(p) : st.back.includes(p);
-            let k = st.four ? p % 4 === 0 : p === 0 && (bar === 0 || !st.half || rnd() < 0.7);
+            let k = st.four ? p % 4 === 0 : st.jersey ? JERSEY_KICK[p] !== undefined : p === 0 && (bar === 0 || !st.half || rnd() < 0.7);
             if (!k && !st.four && !back && st.kick.includes(p) && rnd() < st.kp) k = true;
-            if (k) { hit(S, 'bd', s, p === 0 ? 3 : 2); kicks.push(s); }
+            if (k) { hit(S, 'bd', s, p === 0 ? 3 : 2).nud[s] = st.jersey ? JERSEY_KICK[p] || 0 : 0; kicks.push(s); }
             if (back) { st.snare.forEach((id, j) => hit(S, id, s, j && st.soft ? 1 : 2)); if (rnd() < 0.75) hit(S, 'ac', s); }
             if (st.drill && bar === 1 && p === 14 && rnd() < 0.75) hit(S, 'sd', s);
             if (st.ghost && !back && [7, 9, 15].includes(p) && rnd() < st.ghost) hit(S, st.snare[0], s, 1);
-            const hh = st.hat === 1 || (st.hat === 2 && p % 2 === 0) || (st.hat === 'trip' && [0, 3, 6, 8, 11, 14].includes(p));
+            const hh = st.hat === 1 || (st.hat === 2 && p % 2 === 0) || (st.hat === 'trip' && [0, 3, 6, 8, 11, 14].includes(p)) || (st.hat === 'off' && p % 4 === 2);
             if (hh) {
-                const r = hit(S, 'ch', s, st.hat === 1 ? (p % 2 ? 1 : 2) : st.soft && rnd() < 0.5 ? 1 : 2);
+                const r = hit(S, 'ch', s, st.hat === 1 ? (p % 2 ? 1 : 2) : st.hat === 'off' || (st.soft && rnd() < 0.5) ? 1 : 2);
                 if (st.soft && rnd() < 0.2) r.prob[s] = 3;
                 if (st.roll && rnd() < st.roll * (p >= 12 ? 1.5 : 0.5)) r.roll[s] = pick([2, 2, 3, 3, 4]);
             }
             if (st.hat === 'shaker') hit(S, 'ma', s, p % 2 ? 2 : 1);
             if (st.ohOff && p % 4 === 2) { hit(S, 'oh', s); S.r[ID.ch].on[s] = 0; }
             if (st.clave && [0, 3, 6, 10, 12].includes(p)) hit(S, 'cl', s);
+            if (st.jersey && (p === 7 || p === 15) && rnd() < 0.7) hit(S, 'hc', s);      // the off-beat chirps
             if (p % 2) st.perc.forEach((id) => { if (rnd() < st.pp) hit(S, id, s, rnd() < 0.5 ? 1 : 2); });
             if (st.offBass && p % 4 === 2 && rnd() < st.offBass) hit(S, 'b8', s).note[s] = pick(st.notes);
         }
         const ohAt = [6, 14, 22, 30].filter((x) => x < n);
         if (st.oh && ohAt.length && rnd() < st.oh * 2.5) { const s = o + pick(ohAt); hit(S, 'oh', s); S.r[ID.ch].on[s] = 0; }
-        if (st.bass) kicks.forEach((s, j) => { if (j === 0 || rnd() < st.bass) hit(S, 'b8', s).note[s] = j === 0 ? 0 : pick(st.notes); });
+        if (st.bass) kicks.forEach((s, j) => { if (j === 0 || rnd() < st.bass) { const r = hit(S, 'b8', s); r.note[s] = j === 0 ? 0 : pick(st.notes); r.nud[s] = S.r[ID.bd].nud[s]; } });
         for (let s = o; s < o + n; s += 16) if (rnd() < 0.5) hit(S, 'ac', s);
     }
     function fill(S, st, o, n) {
@@ -394,6 +405,7 @@ window.BeatLab = (() => {
         if (st.fill === 'toms') [['ht', 0], ['mt', 1], ['mt', 2], ['lt', 3]].forEach(([id, k]) => hit(S, id, f + k, k === 1 ? 1 : 2));
         else if (st.fill === 'congas') [['hc', 0], ['hc', 1], ['mc', 2], ['lc', 3]].forEach(([id, k]) => hit(S, id, f + k, k === 1 ? 1 : 2));
         else if (st.fill === 'snare') { hit(S, st.snare[0], f + 2, 1); hit(S, st.snare[0], f + 3); }
+        else if (st.fill === 'kicks') { [1, 1, 2, 3].forEach((v, k) => { hit(S, 'bd', f + k, v).nud[f + k] = 0; }); hit(S, st.snare[0], f + 3).roll[f + 3] = 2; }
         else { const r = S.r[ID.ch]; for (let s = f; s < f + 4; s++) { r.on[s] = 1; r.vel[s] = 2; r.roll[s] = 1; } r.roll[f + 2] = pick([3, 4]); r.roll[f + 3] = 2; }
         if (st.bass) {
             const r = S.r[BASS];
@@ -402,7 +414,7 @@ window.BeatLab = (() => {
     }
     function generate(S) {
         const st = STY[S.preset] || STY.trap, L = S.len, base = Math.min(L, st.len);
-        S.r.forEach((r) => { r.on.fill(0); r.vel.fill(2); r.roll.fill(1); r.prob.fill(4); r.note.fill(0); });
+        S.r.forEach((r) => { r.on.fill(0); r.vel.fill(2); r.roll.fill(1); r.prob.fill(4); r.note.fill(0); r.nud.fill(0); });
         phrase(S, st, 0, base);
         for (let o = base; o < L; o += base) { for (let s = 0; s < base; s++) copyStep(S, s, o + s); if (o + base >= L) fill(S, st, o, base); }
         if (L === base && L >= 16 && rnd() < 0.35) fill(S, st, 0, base);
@@ -423,7 +435,8 @@ window.BeatLab = (() => {
             const same = ['level', 'tune', 'decay', 'tone', 'pan'].every((k, j) => prm[j] === Math.round(d[k] * 100));
             if (!any && same && !r.mute && !r.solo) return;
             const notes = i === BASS && any ? Array.from(r.note.subarray(0, n), (x) => A64[x + 24]).join('').replace(/Y+$/, '') : '';
-            rows.push([V[i].id, any ? steps.replace(/A+$/, '') : '', notes, prm, (r.mute ? 1 : 0) | (r.solo ? 2 : 0)]);
+            const nud = any ? Array.from(r.nud.subarray(0, n), (x, k) => A64[(r.on[k] ? x : 0) + 3]).join('').replace(/D+$/, '') : '';
+            rows.push([V[i].id, any ? steps.replace(/A+$/, '') : '', notes, prm, (r.mute ? 1 : 0) | (r.solo ? 2 : 0), nud]);
         });
         return { v: 1, p: S.preset, b: S.bpm, w: Math.round(S.swing * 100), l: S.len, k: S.key, g: S.glide ? 1 : 0, m: [S.vol, S.boom, S.space].map((x) => Math.round(x * 100)), r: rows };
     }
@@ -453,6 +466,7 @@ window.BeatLab = (() => {
             if (Array.isArray(row[3])) ['level', 'tune', 'decay', 'tone', 'pan'].forEach((k, j) => { r[k] = num(row[3][j], 0, 100, r[k] * 100) / 100; });
             const f = num(row[4], 0, 3, 0);
             r.mute = !!(f & 1); r.solo = !!(f & 2);
+            if (typeof row[5] === 'string') for (let s = 0; s < Math.min(MAXS, row[5].length); s++) { const x = A64.indexOf(row[5][s]); if (x >= 0) r.nud[s] = clamp(x - 3, -3, 3); }
         });
         return true;
     }
@@ -487,6 +501,8 @@ window.BeatLab = (() => {
         const sw = (s) => (s % 2 ? S.swing * 0.5 * dur : 0), first = Math.ceil((loop - pre) / dur - 1e-9);
         for (let s = first; s < S.len; s++) playStep(E, S, s, s * dur - (loop - pre) + sw(s), dur);
         for (let k = 0; k < reps; k++) for (let s = 0; s < S.len; s++) playStep(E, S, s, pre + k * loop + s * dur + sw(s), dur);
+        const end = pre + loop * reps;
+        playStep(E, S, 0, end, dur, null, end); // the next loop's first step, if nudged early, wraps into the end
         const buffer = await oc.startRendering();
         return { buffer, from: Math.round(pre * sr), reps, seconds: loop * reps };
     }
@@ -636,6 +652,7 @@ window.BeatLab = (() => {
     .bp-oct{display:flex;align-items:center;gap:6px}
     .bp-oct button{width:22px;height:22px;border-radius:6px;background:rgba(255,255,255,.08);font-weight:800}
     .bp-note{font:800 12px ui-monospace,monospace;color:#f0abfc;min-width:30px;text-align:center}
+    .bp-nud{font:800 11px ui-monospace,monospace;color:#f0abfc;min-width:56px;text-align:center}
     .bp-keys{display:grid;grid-template-columns:repeat(12,1fr);gap:2px;margin-top:7px;align-items:start}
     .bp-keys button{height:32px;border-radius:4px;font-size:7px;font-weight:800;display:flex;align-items:flex-end;justify-content:center;padding-bottom:3px}
     .bp-keys .w{background:#e4e4e7;color:#18181b}
@@ -726,7 +743,7 @@ window.BeatLab = (() => {
             <div class="bt-voice"><button class="bt-pad"><b></b><span></span><kbd></kbd></button><div class="bt-vk"></div>
                 <div class="bt-bx"><label>KEY <select class="bt-sel bt-key" aria-label="808 key">${NOTES.map((n, i) => `<option value="${i}">${n}</option>`).join('')}</select></label><button class="bt-chip bt-glide" aria-pressed="true" title="808 notes slide into each other">Glide</button></div></div>
             <div class="bt-master"></div>
-            <p class="bt-help">Click or drag to paint · right-click / long-press a step for velocity, rolls, chance &amp; 808 notes · <kbd>Space</kbd> play · pads <kbd>A</kbd>–<kbd>M</kbd> · 808 <kbd>Q</kbd>–<kbd>P</kbd> · <kbd>⌘/Ctrl Z</kbd> undo</p>
+            <p class="bt-help">Click or drag to paint · right-click / long-press a step for velocity, rolls, chance, nudge &amp; 808 notes · <kbd>Space</kbd> play · pads <kbd>A</kbd>–<kbd>M</kbd> · 808 <kbd>Q</kbd>–<kbd>P</kbd> · <kbd>⌘/Ctrl Z</kbd> undo</p>
         </div>
         <div class="bt-mini">${play(' sm')}<span class="bt-mbpm bt-mono"><b class="bt-bpmv">120</b> BPM</span><span class="bt-mname"></span><button class="bt-open" title="Open the full drum machine">Full 808 <i class="fas fa-expand"></i></button></div>
         <div class="bt-pop" role="dialog" aria-label="Step settings" hidden></div>
@@ -822,7 +839,8 @@ window.BeatLab = (() => {
             if (!c) { toast('Audio isn’t available in this browser'); return; }
             if (window.SFX && !window.SFX.enabled) window.SFX.setEnabled(true);
             if (c.state !== 'running') c.resume();
-            T.playing = true; T.step = 0; T.next = c.currentTime + 0.08; T.queue.length = 0; T.skip.clear(); T.cur = -1;
+            const early = S.r.some((r) => r.on[0] && r.nud[0] < 0) ? (60 / S.bpm / 4) * 0.5 : 0; // room for hits nudged ahead of step 1
+            T.playing = true; T.step = 0; T.next = c.currentTime + 0.08 + early; T.queue.length = 0; T.skip.clear(); T.cur = -1;
             clearInterval(T.timer); T.timer = setInterval(tick, 25); tick();
             stage.classList.add('bt-playing'); playUi();
         }
@@ -841,7 +859,7 @@ window.BeatLab = (() => {
             const c = E.c, dur = 60 / S.bpm / 4;
             if (T.next < c.currentTime - 0.2) T.next = c.currentTime + 0.03; // the tab was throttled: resync instead of bursting
             let guard = 0;
-            while (T.next < c.currentTime + AHEAD && guard++ < 64) {
+            while (T.next - dur * 0.5 < c.currentTime + AHEAD && guard++ < 64) {
                 if (T.step >= S.len) T.step = 0;
                 const s = T.step, u = T.next, t = u + (s % 2 ? S.swing * 0.5 * dur : 0);
                 try { playStep(E, S, s, t, dur, T.skip); } catch (e) { console.error('[beatlab]', e); }
@@ -868,7 +886,7 @@ window.BeatLab = (() => {
             let s = T.cur, u = T.curU;
             if (now - u > dur / 2) { s = (s + 1) % S.len; u += dur; } // closer to the next step
             const r = S.r[i];
-            r.on[s] = 1; r.vel[s] = 2; r.roll[s] = 1; r.prob[s] = 4;
+            r.on[s] = 1; r.vel[s] = 2; r.roll[s] = 1; r.prob[s] = 4; r.nud[s] = 0;
             if (i === BASS) r.note[s] = note;
             if (u >= T.next - 1e-4) T.skip.add(i * 1000 + s); // not scheduled yet — don't double the live hit
             renderCell(i, s - page * cols); changed();
@@ -901,8 +919,10 @@ window.BeatLab = (() => {
             const roll = on && r.roll[s] > 1 ? `${r.roll[s]}×` : '';
             if ((b.dataset.roll || '') !== roll) { if (roll) b.dataset.roll = roll; else delete b.dataset.roll; }
             if (i === BASS) { const txt = on ? noteName(S, r.note[s]) : ''; if (b.textContent !== txt) b.textContent = txt; }
+            const nd = on ? r.nud[s] : 0, tr = nd ? `${nd * 7}% 0` : '';
+            if (b.style.translate !== tr) b.style.translate = tr;
             b.setAttribute('aria-pressed', on ? 'true' : 'false');
-            b.setAttribute('aria-label', `${V[i].name}, step ${s + 1}${on ? `, ${['', 'soft', 'medium', 'hard'][r.vel[s]]}${r.roll[s] > 1 ? `, roll ${r.roll[s]}` : ''}${r.prob[s] < 4 ? `, ${r.prob[s] * 25}% chance` : ''}${i === BASS ? `, ${noteName(S, r.note[s])}` : ''}` : ''}`);
+            b.setAttribute('aria-label', `${V[i].name}, step ${s + 1}${on ? `, ${['', 'soft', 'medium', 'hard'][r.vel[s]]}${r.roll[s] > 1 ? `, roll ${r.roll[s]}` : ''}${r.prob[s] < 4 ? `, ${r.prob[s] * 25}% chance` : ''}${nd ? `, nudged ${NUD[nd + 3]} step` : ''}${i === BASS ? `, ${noteName(S, r.note[s])}` : ''}` : ''}`);
         }
         function renderPage() { for (let i = 0; i < V.length; i++) for (let c = 0; c < cols; c++) renderCell(i, c); pageSel(); }
         const tabLabel = (k) => (cols === 16 ? `${k + 1}` : `${(k >> 1) + 1}${k % 2 ? 'B' : 'A'}`);
@@ -948,7 +968,7 @@ window.BeatLab = (() => {
                 if (mode === 'compact' && !V[i].core) continue;
                 for (let c = 0; c < cols; c++) {
                     const b = cells[i][c];
-                    if (b.classList.contains('on')) b.animate([{ transform: 'scale(.2)', opacity: 0 }, { transform: 'scale(1.12)', opacity: 1, offset: 0.7 }, { transform: 'scale(1)', opacity: 1 }], { duration: 420, delay: c * 22 + i * 7, easing: 'cubic-bezier(.22,1,.36,1)', fill: 'backwards' });
+                    if (b.classList.contains('on')) b.animate([{ transform: 'scale(0)' }, { transform: 'scale(1.12)', offset: 0.7 }, { transform: 'scale(1)' }], { duration: 420, delay: c * 22 + i * 7, easing: 'cubic-bezier(.22,1,.36,1)', fill: 'backwards' }); // transform only, so soft steps keep their dimmer look
                 }
             }
         }
@@ -1186,6 +1206,7 @@ window.BeatLab = (() => {
                 + seg('vel', 'Velocity', [[1, 'Soft'], [2, 'Med'], [3, 'Hard']])
                 + seg('roll', 'Roll', [[1, '1×'], [2, '2×'], [3, '3×'], [4, '4×']])
                 + seg('prob', 'Chance', [[4, '100%'], [3, '75%'], [2, '50%'], [1, '25%']])
+                + `<div class="bp-r"><span>Nudge</span><div class="bp-oct"><button data-nud="-1" aria-label="Earlier">‹</button><b class="bp-nud">${NUD[r.nud[s] + 3]}</b><button data-nud="1" aria-label="Later">›</button></div></div>`
                 + (i === BASS ? noteHtml(r.note[s]) : '')
                 + '<button class="bp-del">Remove step</button>';
             pop.hidden = false;
@@ -1218,6 +1239,7 @@ window.BeatLab = (() => {
             if (sg) { r[sg.dataset.f][s] = +b.dataset.v; sg.querySelectorAll('button').forEach((x) => x.setAttribute('aria-pressed', String(x === b))); }
             else if (b.dataset.n != null) { r.note[s] = clamp(+b.dataset.n, -12, 23); syncNotes(); pad(i, r.note[s]); }
             else if (b.dataset.oct) { r.note[s] = clamp(r.note[s] + 12 * +b.dataset.oct, -12, 23); syncNotes(); pad(i, r.note[s]); }
+            else if (b.dataset.nud) { r.nud[s] = clamp(r.nud[s] + +b.dataset.nud, -3, 3); pop.querySelector('.bp-nud').textContent = NUD[r.nud[s] + 3]; }
             renderCell(i, s - page * cols); changed();
         });
         document.addEventListener('pointerdown', (e) => { if (!pop.hidden && !pop.contains(e.target)) closePop(); }, true);
@@ -1273,7 +1295,7 @@ window.BeatLab = (() => {
         });
         undoBtn.addEventListener('click', undo);
         $('.bt-clear').addEventListener('click', () => {
-            snapshot(); S.r.forEach((r) => { r.on.fill(0); r.vel.fill(2); r.roll.fill(1); r.prob.fill(4); });
+            snapshot(); S.r.forEach((r) => { r.on.fill(0); r.vel.fill(2); r.roll.fill(1); r.prob.fill(4); r.nud.fill(0); });
             renderPage(); changed(); toast('Cleared — undo brings it back');
         });
         wavBtn.addEventListener('click', async () => {
