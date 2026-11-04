@@ -284,16 +284,7 @@
     .di-btns button:hover,.di-btns button.on{background:#fff;color:#000}
 
     /* 15 beat lab */
-    .bt-stage{background:radial-gradient(ellipse at 50% 35%,#1a0f2e 0%,#05040a 75%)}
-    .bt-ui{position:absolute;left:0;right:0;bottom:12px;display:flex;align-items:center;justify-content:center;gap:10px;z-index:5}
-    .bt-play{width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,#c63aeb,#7c3aed);font-size:14px;box-shadow:0 0 20px rgba(198,58,235,.45);flex-shrink:0}
-    .bt-grid{display:grid;grid-template-columns:auto repeat(8,1fr);gap:3px;align-items:center}
-    .bt-grid em{font-style:normal;font-size:8px;font-weight:800;letter-spacing:.1em;color:#a1a1aa;padding-right:4px;text-transform:uppercase}
-    .bt-step{width:18px;height:18px;border-radius:5px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);transition:transform .1s,background .15s}
-    .is-focus .bt-step{width:30px;height:30px}
-    .bt-step.on{background:var(--c);box-shadow:0 0 10px var(--c)}
-    .bt-step.now{transform:scale(1.18);border-color:#fff}
-    .bt-bpm{position:absolute;right:12px;top:12px;font-size:10px;font-weight:800;letter-spacing:.2em;color:#a1a1aa;z-index:5}
+    .bt-load{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;gap:10px;font-size:10px;font-weight:800;letter-spacing:.22em;color:#a1a1aa;background:radial-gradient(ellipse at 50% 30%,#1c1031 0%,#07060c 72%)}
 
     /* 16 game HUD */
     .hud-stage{background:#000}
@@ -1002,76 +993,26 @@
         };
     }
 
-    // 15 ─ Beat lab: step sequencer + radial audio visualizer (Web Audio)
+    // 15 ─ Beat Lab 808: a full drum machine — lives in assets/js/beatlab.js, loaded the first time it is seen
     function beats(stage) {
         stage.classList.add('bt-stage');
-        const cv = canvas(stage, 2);
-        const ROWS = [['Kick', '#c63aeb'], ['Clap', '#60a5fa'], ['Hat', '#facc15']];
-        const pattern = [[1, 0, 0, 0, 1, 0, 1, 0], [0, 0, 1, 0, 0, 0, 1, 0], [1, 1, 1, 1, 1, 1, 1, 1]];
-        stage.insertAdjacentHTML('beforeend', `<span class="bt-bpm">112 BPM</span><div class="bt-ui"><button class="bt-play" aria-label="Play beat" data-sfx="none"><i class="fas fa-play"></i></button>
-            <div class="bt-grid">${ROWS.map(([l, col], r) => `<em>${l}</em>${pattern[r].map((on, s) => `<button class="bt-step${on ? ' on' : ''}" style="--c:${col}" data-r="${r}" data-s="${s}" aria-label="${l} step ${s + 1}" aria-pressed="${!!on}" data-sfx="none"></button>`).join('')}`).join('')}</div></div>`);
-        const playBtn = stage.querySelector('.bt-play'), steps = [...stage.querySelectorAll('.bt-step')];
-        steps.forEach((b) => b.addEventListener('click', () => { const r = +b.dataset.r, s = +b.dataset.s; pattern[r][s] ^= 1; b.classList.toggle('on', !!pattern[r][s]); b.setAttribute('aria-pressed', String(!!pattern[r][s])); }));
-        let playing = false, step = 0, next = 0, timer = 0, bus = null, an = null, data = null, nbuf = null, current = -1;
-        const queue = [];
-        const SPB = 60 / 112 / 2;
-        const audio = () => {
-            const c = window.SFX?.ctx(); if (!c) return null;
-            if (!bus) {
-                bus = c.createGain(); bus.gain.value = 0.85; an = c.createAnalyser(); an.fftSize = 256; an.smoothingTimeConstant = 0.75;
-                bus.connect(an); an.connect(window.SFX.out()); data = new Uint8Array(an.frequencyBinCount);
-                nbuf = c.createBuffer(1, c.sampleRate, c.sampleRate); const d = nbuf.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
-            }
-            return c;
-        };
-        const kick = (c, t) => { const o = c.createOscillator(), g = c.createGain(); o.frequency.setValueAtTime(160, t); o.frequency.exponentialRampToValueAtTime(42, t + 0.35); g.gain.setValueAtTime(0.9, t); g.gain.exponentialRampToValueAtTime(0.001, t + 0.45); o.connect(g).connect(bus); o.start(t); o.stop(t + 0.5); };
-        const noise = (c, t, type, freq, dur, vol) => { const s = c.createBufferSource(); s.buffer = nbuf; const f = c.createBiquadFilter(); f.type = type; f.frequency.value = freq; const g = c.createGain(); g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(0.001, t + dur); s.connect(f).connect(g).connect(bus); s.start(t, Math.random() * 0.4); s.stop(t + dur + 0.02); };
-        const clap = (c, t) => { [0, 0.012, 0.024].forEach((o) => noise(c, t + o, 'bandpass', 1500, 0.16, 0.45)); };
-        const hat = (c, t) => noise(c, t, 'highpass', 7500, 0.045, 0.22);
-        const sched = () => {
-            const c = audio(); if (!c) return;
-            while (next < c.currentTime + 0.12) {
-                if (pattern[0][step]) kick(c, next); if (pattern[1][step]) clap(c, next); if (pattern[2][step]) hat(c, next);
-                queue.push({ step, time: next }); next += SPB; step = (step + 1) % 8;
-            }
-        };
-        const start = () => {
-            if (!window.SFX?.enabled) window.SFX?.setEnabled(true);
-            const c = audio(); if (!c) return;
-            c.resume(); playing = true; step = 0; next = c.currentTime + 0.06; queue.length = 0;
-            timer = setInterval(sched, 25); sched();
-            playBtn.innerHTML = '<i class="fas fa-stop"></i>'; playBtn.setAttribute('aria-label', 'Stop beat');
-        };
-        const stop = () => {
-            playing = false; clearInterval(timer); current = -1;
-            steps.forEach((b) => b.classList.remove('now'));
-            playBtn.innerHTML = '<i class="fas fa-play"></i>'; playBtn.setAttribute('aria-label', 'Play beat');
-        };
-        playBtn.addEventListener('click', () => (playing ? stop() : start()));
+        stage.insertAdjacentHTML('beforeend', '<div class="bt-load"><i class="fas fa-circle-notch fa-spin"></i>LOADING THE 808…</div>');
+        let api = null, on = true;
+        const idx = DEMOS.findIndex((d) => d.id === 'beats');
+        const ready = window.BeatLab ? Promise.resolve() : new Promise((res, rej) => {
+            const sc = document.createElement('script'); sc.src = 'assets/js/beatlab.js'; sc.onload = res; sc.onerror = rej; document.body.appendChild(sc);
+        });
+        ready.then(() => {
+            stage.querySelector('.bt-load')?.remove();
+            api = window.BeatLab.mount(stage, { openFocus: () => openFocus(idx) });
+            on ? api.start() : api.stop();
+        }).catch(() => { stage.querySelector('.bt-load').textContent = 'The drum machine could not load — check your connection.'; });
         return {
-            frame(t) {
-                const ctx = cv.ctx, w = cv.w, h = cv.h; ctx.clearRect(0, 0, w, h);
-                const c = window.SFX?.ctx && bus ? window.SFX.ctx() : null;
-                if (playing && c) {
-                    while (queue.length && queue[0].time <= c.currentTime) current = queue.shift().step;
-                    steps.forEach((b) => b.classList.toggle('now', +b.dataset.s === current));
-                }
-                if (an && playing) an.getByteFrequencyData(data);
-                const cx = w / 2, cy = h * 0.4, base = Math.min(w, h) * 0.16, N = 64;
-                ctx.save(); ctx.translate(cx, cy); ctx.rotate(t * 0.15);
-                for (let i = 0; i < N; i++) {
-                    const v = an && playing ? data[(i * 1.6) | 0] / 255 : 0.12 + 0.08 * Math.sin(t * 2 + i * 0.4);
-                    const len = 6 + v * base * 1.4, a = (i / N) * Math.PI * 2;
-                    ctx.strokeStyle = `hsl(${280 - v * 120 + i},90%,${55 + v * 20}%)`; ctx.lineWidth = 3; ctx.lineCap = 'round';
-                    ctx.beginPath(); ctx.moveTo(Math.cos(a) * base, Math.sin(a) * base); ctx.lineTo(Math.cos(a) * (base + len), Math.sin(a) * (base + len)); ctx.stroke();
-                }
-                ctx.restore();
-                const lvl = an && playing ? data[2] / 255 : 0.15;
-                const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, base * (0.9 + lvl * 0.5));
-                g.addColorStop(0, `rgba(198,58,235,${0.35 + lvl * 0.5})`); g.addColorStop(1, 'rgba(198,58,235,0)');
-                ctx.fillStyle = g; ctx.beginPath(); ctx.arc(cx, cy, base * (0.9 + lvl * 0.5), 0, Math.PI * 2); ctx.fill();
-            },
-            stop,
+            frame: (t, dt) => api?.frame(t, dt),
+            start() { on = true; api?.start(); },
+            stop() { on = false; api?.stop(); },
+            escape: () => api?.escape() || false,
+            get machine() { return api; },
         };
     }
 
@@ -1311,7 +1252,7 @@
         { id: 'radial', n: 'Radial Goo Menu', cat: 'micro', tags: ['Stagger', 'SVG goo'], hint: 'Click +', desc: 'A floating action button that bursts into six liquid actions with staggered springs.', init: radial },
         { id: 'island', n: 'Dynamic Island', cat: 'ux', tags: ['Mobile', 'Morph'], hint: 'Try each state', desc: 'A pill that morphs into a call, music player, timer and Face ID scan.', init: island },
         { id: 'plasma', n: 'WebGL Plasma Orb', cat: 'canvas', tags: ['GLSL', 'Metaballs'], hint: 'Move · click', desc: 'A real fragment shader: fbm noise and metaballs, with one orb following your cursor.', init: plasma },
-        { id: 'beats', n: 'Beat Lab', cat: 'audio', tags: ['Web Audio', 'Sequencer'], hint: 'Press play', desc: 'An 8-step drum machine synthesized live, with a radial spectrum visualizer.', init: beats },
+        { id: 'beats', n: 'Beat Lab 808', cat: 'audio', wide: true, tags: ['Web Audio', '808', 'Sequencer'], hint: 'Press play', desc: 'A full 808 drum machine: 16 classic voices plus a gliding 808 bass, 8–128 steps, tempo, swing, rolls, genre presets, a groove generator, WAV export and share links.', init: beats },
         { id: 'hud', n: 'Game HUD: Damage', cat: 'game', tags: ['Game UI', 'Feedback'], hint: 'Hit · crit · heal', desc: 'Health bar with delayed ghost damage, crits, screen shake, shields and a K.O.', init: hud },
         { id: 'loot', n: 'Loot Chest', cat: 'game', tags: ['Reveal', 'Rarity'], hint: 'Open the chest', desc: 'Anticipation shake, god rays and a flipping reward card with weighted rarity.', init: loot },
         { id: 'xray', n: 'Wireframe X-Ray', cat: 'ux', tags: ['clip-path', 'Process'], hint: 'Move · click', desc: 'A lens that reveals the wireframe under the final UI — design process in one glance.', init: xray },
@@ -1320,9 +1261,11 @@
     ];
 
     // ---------- cards ----------
+    const aspect = (d) => (d.wide ? 'aspect-[4/3] sm:aspect-[16/10]' : 'aspect-[4/3]');
+    grid.classList.add('grid-flow-row-dense');
     grid.innerHTML = DEMOS.map((d, i) => `
-        <article class="lab-card glass-dark rounded-3xl overflow-hidden flex flex-col" data-cat="${d.cat}" data-idx="${i}" style="--i:${i}">
-            <div class="lab-stage aspect-[4/3]" data-stage="${d.id}"><span class="lab-hint">${d.hint}</span></div>
+        <article class="lab-card glass-dark rounded-3xl overflow-hidden flex flex-col${d.wide ? ' sm:col-span-2' : ''}" data-cat="${d.cat}" data-idx="${i}" style="--i:${i}">
+            <div class="lab-stage ${aspect(d)}" data-stage="${d.id}"><span class="lab-hint">${d.hint}</span></div>
             <div class="p-5 flex items-start gap-3">
                 <span class="lab-num">${String(i + 1).padStart(2, '0')}</span>
                 <div class="flex-1 min-w-0">
@@ -1397,7 +1340,7 @@
         focusIdx = i;
         state.forEach((_, k) => { if (k !== i) pause(k); });
         const stage = document.querySelector(`.lab-stage[data-stage="${DEMOS[i].id}"]`);
-        cards[i].querySelector('.p-5').insertAdjacentHTML('beforebegin', '<div class="lab-ph aspect-[4/3] bg-black/40"></div>');
+        cards[i].querySelector('.p-5').insertAdjacentHTML('beforebegin', `<div class="lab-ph ${aspect(DEMOS[i])} bg-black/40"></div>`);
         stage.classList.add('is-focus'); slot.appendChild(stage);
         document.getElementById('lf-num').textContent = String(i + 1).padStart(2, '0');
         document.getElementById('lf-title').textContent = DEMOS[i].n;
@@ -1436,11 +1379,13 @@
     F?.addEventListener('click', (e) => { if (e.target === F) closeFocus(); });
     window.addEventListener('keydown', (e) => {
         if (focusIdx < 0) return;
-        if (e.key === 'Escape') { e.stopImmediatePropagation(); closeFocus(); }
+        if (e.key === 'Escape') { e.stopImmediatePropagation(); if (!state[focusIdx].api?.escape?.()) closeFocus(); }
         else if (e.key === 'ArrowRight' && !e.target.closest?.('.lab-stage')) step(1);
         else if (e.key === 'ArrowLeft' && !e.target.closest?.('.lab-stage')) step(-1);
     }, true);
     document.addEventListener('visibilitychange', () => { if (document.hidden) state.forEach((_, k) => pause(k)); else state.forEach((s, k) => { if (s.visible && (focusIdx < 0 || k === focusIdx)) run(k); }); });
+
+    if (new URLSearchParams(location.search).has('beat')) setTimeout(() => openFocus(DEMOS.findIndex((d) => d.id === 'beats')), 400);
 
     window.Lab = { DEMOS, openFocus, closeFocus, state };
 })();

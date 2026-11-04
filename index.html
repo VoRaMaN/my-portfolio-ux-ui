@@ -1635,6 +1635,7 @@
             let loaded = false;
             const load = () => { if (loaded) return; loaded = true; const sc = document.createElement('script'); sc.src = 'assets/js/lab.js'; document.body.appendChild(sc); };
             new IntersectionObserver((es, o) => { if (es.some((e) => e.isIntersecting)) { load(); o.disconnect(); } }, { rootMargin: '900px 0px' }).observe(pg);
+            if (/[?&]beat=/.test(location.search)) load(); // a shared Beat Lab link opens the drum machine straight away
         })();
 
         // --- Scroll progress + nav state (rAF-throttled, passive) ---
